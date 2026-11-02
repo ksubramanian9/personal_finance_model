@@ -4,22 +4,21 @@ import { tickYear, runUntil } from '../engine/tick.js';
 import { nextStage, stageEnd, currentOption, applyPicks, playStage } from '../engine/stages.js';
 import { stageSummary, decadeSummary } from '../engine/summary.js';
 import { loadStages, checkStages } from '../data/stages.js';
-import { loadJSON } from '../data/loader.js';
+import { loadParams } from '../data/params.js';
 import { loadPersonas } from '../data/personas.js';
-import { schemas } from '../data/validate.js';
 import { getFetch } from './dataFetch.js';
 
 const fetchImpl = await getFetch();
-const params = await loadJSON('data/engine.json', { schema: schemas.engine, label: 'engine.json', fetchImpl });
+const params = await loadParams({ fetchImpl });
 const personas = await loadPersonas({ fetchImpl });
 const aarav = personas.find(p => p.id === 'metro-it');
 const meera = personas.find(p => p.id === 'govt-psu');
-const data = await loadStages({ fetchImpl });
+const data = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
 const { decisions, stages } = data;
 
 const fresh = (persona = aarav, seed = 4271, retirementAge = 60) =>
   createState(persona, params, { seed, retirementAge });
-const balanced = { savings: 'balanced', growth: 'none', retire: 'at60' };
+const balanced = { savings: 'balanced', invest: 'mixed', growth: 'none', retire: 'at60' };
 
 // Plays a whole life stage by stage with the same picks every time.
 function playLife(state, picks) {
@@ -129,17 +128,17 @@ test('playStage and applyPicks do not mutate their input', () => {
 });
 
 test('picks are recorded in state.choices, by stage', () => {
-  const s = playStage(fresh(), params, stages[0], decisions, { savings: 'frugal', growth: 'light' });
-  assertEqual(s.choices.early, { savings: 'frugal', growth: 'light' });
+  const s = playStage(fresh(), params, stages[0], decisions, { savings: 'frugal', invest: 'mixed', growth: 'light' });
+  assertEqual(s.choices.early, { savings: 'frugal', invest: 'mixed', growth: 'light' });
 });
 
 test('a missing or unknown pick is refused', async () => {
-  await assertThrows(() => playStage(fresh(), params, stages[0], decisions, { savings: 'balanced' }), 'No valid pick for "growth"');
-  await assertThrows(() => playStage(fresh(), params, stages[0], decisions, { savings: 'yolo', growth: 'none' }), 'No valid pick for "savings"');
+  await assertThrows(() => playStage(fresh(), params, stages[0], decisions, { savings: 'balanced', invest: 'mixed' }), 'No valid pick for "growth"');
+  await assertThrows(() => playStage(fresh(), params, stages[0], decisions, { savings: 'yolo', invest: 'mixed', growth: 'none' }), 'No valid pick for "savings"');
 });
 
 test('picks stay in force into later stages until changed', () => {
-  let s = playStage(fresh(), params, stages[0], decisions, { savings: 'frugal', growth: 'serious' });
+  let s = playStage(fresh(), params, stages[0], decisions, { savings: 'frugal', invest: 'mixed', growth: 'serious' });
   assertEqual(s.savingsRate, 0.9);
   s = tickYear(s, params);
   assertEqual(s.history.at(-1).learning > 0, true);
@@ -154,8 +153,8 @@ test('same seed, different savings style: saving harder ends richer', () => {
 });
 
 test('investing in yourself costs money now and raises pay later', () => {
-  const none = playStage(fresh(), params, stages[0], decisions, { savings: 'balanced', growth: 'none' });
-  const serious = playStage(fresh(), params, stages[0], decisions, { savings: 'balanced', growth: 'serious' });
+  const none = playStage(fresh(), params, stages[0], decisions, { savings: 'balanced', invest: 'mixed', growth: 'none' });
+  const serious = playStage(fresh(), params, stages[0], decisions, { savings: 'balanced', invest: 'mixed', growth: 'serious' });
   assertEqual(none.history[0].learning, 0);
   assert(serious.history[0].learning > 0, 'serious should spend on learning');
   assertEqual(serious.history[0].income, none.history[0].income, 'year-1 pay is the same');
@@ -164,7 +163,7 @@ test('investing in yourself costs money now and raises pay later', () => {
 });
 
 test('learning cost shows up in expenses, so every year still balances', () => {
-  const s = playLife(fresh(), { savings: 'balanced', growth: 'serious', retire: 'at60' });
+  const s = playLife(fresh(), { savings: 'balanced', invest: 'mixed', growth: 'serious', retire: 'at60' });
   for (const y of s.history) {
     const explained = y.netWorthStart + y.income - y.expenses - y.consumed
       + y.investGain + y.cashInterest - y.debtInterest;
@@ -193,7 +192,7 @@ test('playing stage by stage with fixed picks equals one straight run with the s
 });
 
 test('a staged life is reproducible and reloadable mid-way', () => {
-  const picks = { savings: 'frugal', growth: 'light', retire: 'at60' };
+  const picks = { savings: 'frugal', invest: 'mixed', growth: 'light', retire: 'at60' };
   const a = playLife(fresh(), picks);
   const b = playLife(fresh(), picks);
   assertEqual(a, b);

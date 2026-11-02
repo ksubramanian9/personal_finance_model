@@ -1,0 +1,73 @@
+{
+  "instruments": [
+    {
+      "id": "pf", "name": "Provident funds", "emoji": "🏦",
+      "blurb": "EPF and PPF. Steady, government-set returns, locked in until you retire.",
+      "liquid": false,
+      "returns": {
+        "boom":     { "meanPct": 7.6, "volPct": 0 },
+        "normal":   { "meanPct": 7.6, "volPct": 0 },
+        "slowdown": { "meanPct": 7.6, "volPct": 0 },
+        "crisis":   { "meanPct": 7.6, "volPct": 0 }
+      },
+      "provenance": {
+        "basis": "PPF has paid 7.1% since April 2020 (small-savings notices via secondary sources, rate reset quarterly). EPF 8.25% for FY2024-25 is from memory of the EPFO announcement and was not confirmed in this pass. 7.6% is a rough blend. Held constant across regimes because rates are set by the government.",
+        "confidence": "medium",
+        "asOf": 2026
+      }
+    },
+    {
+      "id": "equity", "name": "Equity index funds", "emoji": "📈",
+      "blurb": "Shares through a low-cost index fund. High long-run growth, scary dips.",
+      "liquid": true, "drawOrder": 3,
+      "returns": {
+        "boom":     { "meanPct": 30, "volPct": 11 },
+        "normal":   { "meanPct": 17, "volPct": 12 },
+        "slowdown": { "meanPct": 5,  "volPct": 14 },
+        "crisis":   { "meanPct": -22, "volPct": 16 }
+      },
+      "provenance": {
+        "basis": "Calibrated so the long-run mix gives about 14% average a year, 19% volatility and about 12.2% compounded. Anchor: Nifty 50 TRI 20-year CAGR of about 12.4% (secondary sources citing NSE data as of March 2026; not checked against NSE directly) and a calendar-2008 drawdown of roughly -60% on a TR basis (NSE whitepaper). The 19% volatility is an estimate; no 20-year figure was found.",
+        "confidence": "medium",
+        "asOf": 2026
+      }
+    },
+    {
+      "id": "fd", "name": "Fixed deposits", "emoji": "🏧",
+      "blurb": "Bank deposits. Safe and boring; barely beats inflation.",
+      "liquid": true, "drawOrder": 1,
+      "returns": {
+        "boom":     { "meanPct": 7.0, "volPct": 0 },
+        "normal":   { "meanPct": 6.8, "volPct": 0 },
+        "slowdown": { "meanPct": 6.3, "volPct": 0 },
+        "crisis":   { "meanPct": 5.8, "volPct": 0 }
+      },
+      "provenance": {
+        "basis": "Rough 5-year bank FD rates, falling when the economy slows. No current rate was confirmed in this pass (SBI's rate page was not found). Pre-tax.",
+        "confidence": "low",
+        "asOf": 2026
+      }
+    },
+    {
+      "id": "gold", "name": "Gold", "emoji": "🪙",
+      "blurb": "India's favourite safety blanket. Tends to hold up when shares fall.",
+      "liquid": true, "drawOrder": 2,
+      "returns": {
+        "boom":     { "meanPct": 8,  "volPct": 11 },
+        "normal":   { "meanPct": 11, "volPct": 12 },
+        "slowdown": { "meanPct": 15, "volPct": 14 },
+        "crisis":   { "meanPct": 20, "volPct": 18 }
+      },
+      "provenance": {
+        "basis": "Compounds at about 11% in the long-run mix. Secondary sources give rupee gold CAGRs of roughly 10-15% over 10 years and 8-15% over 20 years, with a large share from rupee weakness; 11% is a central pick. Volatility and the safe-haven pattern across regimes are estimates, not sourced.",
+        "confidence": "low",
+        "asOf": 2026
+      }
+    }
+  ],
+  "provenance": {
+    "basis": "Regime-dependent annual returns, drawn independently each year (no equity-gold correlation beyond the shared regime). All pre-tax and before fund costs; tax arrives in a later step.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

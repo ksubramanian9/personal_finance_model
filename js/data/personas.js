@@ -12,6 +12,7 @@ export function checkPersona(p, label) {
     if (typeof v !== 'number' || v < 0 || v > 1) problems.push(`"biases.${k}" should be between 0 and 1`);
   }
   if (p.career.layoffRisk < 0 || p.career.layoffRisk > 1) problems.push('"career.layoffRisk" should be between 0 and 1');
+  if (p.career.cyclicality < 0 || p.career.cyclicality > 1) problems.push('"career.cyclicality" should be between 0 and 1 (0 = immune to the economy, 1 = fully exposed)');
   if (!ACCENTS.includes(p.accent)) problems.push(`"accent" should be one of ${ACCENTS.join(', ')}`);
   if (!CONFIDENCE.includes(p.provenance.confidence)) problems.push(`"provenance.confidence" should be one of ${CONFIDENCE.join(', ')}`);
   if (p.profile.startAge < 18 || p.profile.startAge > 40) problems.push('"profile.startAge" should be between 18 and 40');

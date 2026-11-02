@@ -78,6 +78,27 @@ export function renderStageDecisions(root, ctx) {
       })));
 }
 
+// One chip per year: the economy's mood, with the age so it works without colour.
+function economyStrip(economy, regimes) {
+  const counts = {};
+  for (const e of economy) counts[e.regime] = (counts[e.regime] ?? 0) + 1;
+  const summary = Object.entries(regimes)
+    .filter(([id]) => counts[id])
+    .map(([id, r]) => `${counts[id]} ${r.name.toLowerCase()}`)
+    .join(', ');
+  return h('section', { class: 'economy' },
+    h('h2', { text: 'How the economy was' }),
+    h('ol', { class: 'weather', 'aria-label': 'Economy by year' },
+      economy.map(e => {
+        const r = regimes[e.regime];
+        return h('li', { class: `weather-chip w-${e.regime}`, title: `${e.year}: ${r.name}. ${r.blurb}` },
+          h('span', { class: 'weather-emoji', 'aria-hidden': 'true', text: r.emoji }),
+          h('span', { class: 'weather-age', text: `age ${e.age}` }),
+          h('span', { class: 'weather-name', text: r.name }));
+      })),
+    h('p', { class: 'hint', text: `${summary}.` }));
+}
+
 function stat(label, value) {
   return h('div', { class: 'stat' },
     h('span', { class: 'stat-value', text: value }),
@@ -99,6 +120,7 @@ export function renderStageResult(root, ctx) {
       h('h1', { text: 'Here\'s how it went' }),
       h('p', { class: 'headline', text: headline }),
       h('p', { class: 'hint', text: "All amounts are in today's rupees." })),
+    economyStrip(s.economy, ctx.regimes),
     h('div', { class: 'stats' },
       stat('earning a year by the end', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),

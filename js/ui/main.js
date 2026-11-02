@@ -1,6 +1,7 @@
 import { loadJSON, applyTheme } from '../data/loader.js';
 import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
+import { loadParams } from '../data/params.js';
 import { schemas } from '../data/validate.js';
 import { h, mount } from './dom.js';
 import { createFlow } from './flow.js';
@@ -21,9 +22,9 @@ async function boot() {
     if (theme.fonts.googleFontsUrl) {
       document.head.append(h('link', { rel: 'stylesheet', href: theme.fonts.googleFontsUrl }));
     }
-    const params = await loadJSON('data/engine.json', { schema: schemas.engine, label: 'engine.json' });
+    const params = await loadParams();
     const personas = await loadPersonas();
-    const { stages, decisions } = await loadStages();
+    const { stages, decisions } = await loadStages({ instrumentIds: params.instruments.map(i => i.id) });
 
     const session = { personaId: null, retirementAge: 60, seed: null };
     const flow = createFlow(app, { personas, params, stages, decisions }, session);

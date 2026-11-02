@@ -3,13 +3,12 @@ import { createRng, nextFloat, nextNormal, hashSeed } from '../engine/rng.js';
 import { createState, netWorth } from '../engine/state.js';
 import { tickYear, runUntil } from '../engine/tick.js';
 import { decadeSummary } from '../engine/summary.js';
-import { loadJSON } from '../data/loader.js';
-import { schemas } from '../data/validate.js';
+import { loadParams } from '../data/params.js';
 import { loadPersonas } from '../data/personas.js';
 import { getFetch } from './dataFetch.js';
 
 const fetchImpl = await getFetch();
-const params = await loadJSON('data/engine.json', { schema: schemas.engine, label: 'engine.json', fetchImpl });
+const params = await loadParams({ fetchImpl });
 const personas = await loadPersonas({ fetchImpl });
 const aarav = personas.find(p => p.id === 'metro-it');
 const meera = personas.find(p => p.id === 'govt-psu');
@@ -61,8 +60,10 @@ test('rng: normal draws have mean near 0 and sd near 1', () => {
 
 // ---- engine ----
 
-test('engine.json loads and validates', () => {
+test('params load: engine.json, macro.json and instruments.json together', () => {
   assert(params.savingsRate > 0 && params.savingsRate <= 1, 'savingsRate out of range');
+  assertEqual(params.macro.order, ['boom', 'normal', 'slowdown', 'crisis']);
+  assertEqual(params.instruments.map(i => i.id), ['pf', 'equity', 'fd', 'gold']);
 });
 
 test('engine: same seed and persona gives an identical life', () => {
@@ -114,8 +115,8 @@ test('engine: balances never go negative', () => {
       let s = createState(persona, params, { seed, retirementAge: 65 });
       while (s.age < 65) {
         s = tickYear(s, params);
-        assert(s.cash >= -1e-9 && s.invested >= -1e-9 && s.debt >= -1e-9,
-          `${persona.id} seed ${seed} age ${s.age}: ${s.cash}, ${s.invested}, ${s.debt}`);
+        const lowest = Math.min(s.cash, s.debt, ...Object.values(s.holdings));
+        assert(lowest >= -1e-9, `${persona.id} seed ${seed} age ${s.age}: ${JSON.stringify({ cash: s.cash, debt: s.debt, ...s.holdings })}`);
       }
     }
   }
@@ -136,13 +137,17 @@ test('engine: debt is paid down and never overpaid', () => {
   for (const y of s.history) assert(y.debtPaid >= 0, 'negative payment');
 });
 
-test('engine: today\'s rupees are deflated by compounding inflation', () => {
-  const s = play(aarav, 1, 25);
-  const infl = params.inflationPct / 100;
-  assert(Math.abs(s.history[0].priceIndexEnd - (1 + infl)) < 1e-12, 'year-1 index');
-  assert(Math.abs(s.history[2].priceIndexEnd - (1 + infl) ** 3) < 1e-12, 'year-3 index');
+test('engine: today\'s rupees are deflated by each year\'s own inflation, compounded', () => {
+  const s = play(aarav, 1, 28);
+  let index = 1;
+  for (const y of s.history) {
+    assert(Math.abs(y.priceIndexStart - index) < 1e-12, `start index at age ${y.age}`);
+    index *= 1 + y.inflation;
+    assert(Math.abs(y.priceIndexEnd - index) < 1e-12, `end index at age ${y.age}`);
+    assert(Math.abs(y.netWorthReal - y.netWorth / index) < 1e-6, `real net worth at age ${y.age}`);
+    assert(Math.abs(y.incomeReal - y.income / y.priceIndexStart) < 1e-6, `real income at age ${y.age}`);
+  }
   assertEqual(s.history[0].incomeReal, s.history[0].income);
-  assert(Math.abs(s.history[0].netWorthReal - s.history[0].netWorth / (1 + infl)) < 1e-6, 'real net worth');
 });
 
 test('engine: a higher savings rate leaves the same life richer on the same seed', () => {
@@ -152,14 +157,14 @@ test('engine: a higher savings rate leaves the same life richer on the same seed
     'saving more should win with a positive expected return');
 });
 
-// Golden values for seed 4271 with the current data/engine.json and persona files.
+// Golden values for seed 4271 with the current engine.json, macro.json, instruments.json and persona files.
 // If you change those numbers on purpose, re-pin these; if you didn't, something broke.
 test('engine: known outcomes for seed 4271 (regression guard)', () => {
   const near = (actual, expected) => Math.abs(actual - expected) / expected < 1e-8;
   const a = play(aarav, 4271).history.at(-1);
   const m = play(meera, 4271).history.at(-1);
-  assert(near(a.netWorth, 506620831), `Aarav final nominal net worth ${a.netWorth}`);
-  assert(near(m.netWorth, 174958907), `Meera final nominal net worth ${m.netWorth}`);
+  assert(near(a.netWorth, 2038433386.77), `Aarav final nominal net worth ${a.netWorth}`);
+  assert(near(m.netWorth, 912560366.45), `Meera final nominal net worth ${m.netWorth}`);
 });
 
 // ---- decade summary ----

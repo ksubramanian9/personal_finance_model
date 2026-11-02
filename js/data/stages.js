@@ -2,16 +2,19 @@ import { loadJSON } from './loader.js';
 import { ValidationError, schemas } from './validate.js';
 
 // Which effect keys a choice may set, and the range each must stay inside.
+// "alloc.<instrumentId>" sets the share of new savings going to that instrument.
 export const EFFECT_RANGES = {
   savingsRate: [0, 1],
   learningPct: [0, 0.5],
   growthBoost: [0, 0.1],
   retirementAge: [50, 75],
 };
+const ALLOC = 'alloc.';
+const rangeFor = (k) => EFFECT_RANGES[k] ?? (k.startsWith(ALLOC) ? [0, 1] : undefined);
 
 const isStr = (x) => typeof x === 'string' && x.length > 0;
 
-function checkDecision(id, d, problems) {
+function checkDecision(id, d, problems, instrumentIds) {
   const at = `decisions.${id}`;
   if (!isStr(d.title)) problems.push(`"${at}.title" is missing`);
   if (!isStr(d.question)) problems.push(`"${at}.question" is missing`);
@@ -32,18 +35,28 @@ function checkDecision(id, d, problems) {
     }
     keySets.add(Object.keys(o.effects).sort().join(','));
     for (const [k, v] of Object.entries(o.effects)) {
-      const range = EFFECT_RANGES[k];
-      if (!range) problems.push(`"${oat}.effects.${k}" is not a known effect (${Object.keys(EFFECT_RANGES).join(', ')})`);
+      const range = rangeFor(k);
+      if (!range) problems.push(`"${oat}.effects.${k}" is not a known effect (${Object.keys(EFFECT_RANGES).join(', ')}, alloc.<instrument>)`);
       else if (typeof v !== 'number' || v < range[0] || v > range[1]) problems.push(`"${oat}.effects.${k}" should be a number from ${range[0]} to ${range[1]}`);
+    }
+    // An allocation option must cover every instrument and add up to 1.
+    const allocKeys = Object.keys(o.effects).filter(k => k.startsWith(ALLOC));
+    if (allocKeys.length) {
+      if (instrumentIds) {
+        for (const id of instrumentIds) if (!allocKeys.includes(ALLOC + id)) problems.push(`"${oat}.effects" is missing "${ALLOC}${id}"`);
+        for (const k of allocKeys) if (!instrumentIds.includes(k.slice(ALLOC.length))) problems.push(`"${oat}.effects.${k}" is not a known instrument`);
+      }
+      const sum = allocKeys.reduce((a, k) => a + (Number(o.effects[k]) || 0), 0);
+      if (Math.abs(sum - 1) > 1e-9) problems.push(`"${oat}.effects" allocations should add up to 1 but add up to ${Math.round(sum * 1e6) / 1e6}`);
     }
   }
   // All options of one decision must set the same things, so "which one is current?" is answerable.
   if (keySets.size > 1) problems.push(`"${at}" options should all set the same effects`);
 }
 
-export function checkStages(data, label) {
+export function checkStages(data, label, instrumentIds = null) {
   const problems = [];
-  for (const [id, d] of Object.entries(data.decisions)) checkDecision(id, d, problems);
+  for (const [id, d] of Object.entries(data.decisions)) checkDecision(id, d, problems, instrumentIds);
 
   if (!data.stages.length) problems.push('"stages" is empty');
   const seen = new Set();
@@ -70,8 +83,9 @@ export function checkStages(data, label) {
   return data;
 }
 
-export async function loadStages({ fetchImpl = fetch } = {}) {
+// Pass instrumentIds (from loadParams) to also check allocation options against the instruments.
+export async function loadStages({ fetchImpl = fetch, instrumentIds = null } = {}) {
   const label = 'stages.json';
   const data = await loadJSON('data/stages.json', { schema: schemas.stages, label, fetchImpl });
-  return checkStages(data, label);
+  return checkStages(data, label, instrumentIds);
 }

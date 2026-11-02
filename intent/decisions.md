@@ -24,3 +24,7 @@
 | 18 | Choices are data: a decision library plus stages in `stages.json`; picks persist until changed | Hard-coded stage screens | Adding a choice or stage is a data change, like personas |
 | 19 | Stage flow lives in `flow.js`, testable in Node with a fake DOM | Flow inside `main.js` | UI behavior could not be tested otherwise; it caught a real bug |
 | 20 | Retirement age is a decision in the last stage, applied before playing it | Fixed at the start only | Intent says it is overridable at pre-retirement |
+| 21 | Equity return parameters are arithmetic means calibrated so the compounded (geometric) return matches the sourced CAGR | Using the CAGR directly as the mean | A random simulation compounds at roughly mean minus half the variance; using 12.4% as the mean would have given about 10.6% |
+| 22 | One economy-regime table drives inflation, market returns and raises; the job's `cyclicality` scales the raise effect | Independent shocks per asset | Correlated pain; government job stays steady, IT job swings |
+| 23 | New savings follow the player's mix; existing holdings are never sold to rebalance; provident funds are locked | Auto-rebalance each stage | Rebalancing would trigger tax and hide the lesson that switching late is slow |
+| 24 | Calibration is enforced by tests (long-run mix, compounded returns, inflation, ordering) | Trusting the numbers by eye | Data edits that break the sourced anchors fail loudly |

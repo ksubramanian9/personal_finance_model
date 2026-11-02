@@ -1,0 +1,37 @@
+{
+  "order": ["boom", "normal", "slowdown", "crisis"],
+  "start": "normal",
+  "regimes": {
+    "boom": {
+      "name": "Boom", "emoji": "☀️",
+      "blurb": "Markets are cheerful and companies are hiring.",
+      "inflationPct": 5.8, "wageAdjPct": 2
+    },
+    "normal": {
+      "name": "Steady", "emoji": "⛅",
+      "blurb": "A fairly ordinary year.",
+      "inflationPct": 5.0, "wageAdjPct": 0.5
+    },
+    "slowdown": {
+      "name": "Slowdown", "emoji": "🌧️",
+      "blurb": "Growth cools, hiring freezes and raises shrink.",
+      "inflationPct": 4.5, "wageAdjPct": -2
+    },
+    "crisis": {
+      "name": "Crisis", "emoji": "⛈️",
+      "blurb": "Markets crash, jobs get shaky and prices still rise.",
+      "inflationPct": 6.0, "wageAdjPct": -4
+    }
+  },
+  "transitions": {
+    "boom":     { "boom": 0.50, "normal": 0.40, "slowdown": 0.08, "crisis": 0.02 },
+    "normal":   { "boom": 0.20, "normal": 0.62, "slowdown": 0.14, "crisis": 0.04 },
+    "slowdown": { "boom": 0.05, "normal": 0.35, "slowdown": 0.42, "crisis": 0.18 },
+    "crisis":   { "boom": 0.05, "normal": 0.35, "slowdown": 0.20, "crisis": 0.40 }
+  },
+  "provenance": {
+    "basis": "Illustrative four-state economy, tuned so the long-run mix is about 23% boom, 50% steady, 18% slowdown, 10% crisis. Inflation per regime averages about 5.2% across the mix; sources put India's CPI average at about 5.6% for 2012-2026 and 4.9% in the RBI inflation-targeting era (target 4%, band 2-6%; RBI and Trading Economics via secondary summaries, not checked against MoSPI). Crises last about 1.7 years on average. wageAdjPct is the extra raise (in percentage points) a fully cyclical job gets that year, averaging about zero across the mix.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

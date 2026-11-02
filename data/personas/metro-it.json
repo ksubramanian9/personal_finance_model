@@ -26,6 +26,7 @@
     "salaryGrowthPct": 9,
     "jobSwitchJumpPct": 30,
     "layoffRisk": 0.06,
+    "cyclicality": 1,
     "pension": false,
     "employerHealthCover": true
   },

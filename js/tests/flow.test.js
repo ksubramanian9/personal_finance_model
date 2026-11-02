@@ -1,18 +1,17 @@
 import { test, assert, assertEqual } from './harness.js';
 import { installFakeDom, createRoot, findAll, buttons, buttonWithText, hasClass } from './fakeDom.js';
 import { createFlow } from '../ui/flow.js';
-import { loadJSON } from '../data/loader.js';
+import { loadParams } from '../data/params.js';
 import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
-import { schemas } from '../data/validate.js';
 import { getFetch } from './dataFetch.js';
 
 installFakeDom();
 
 const fetchImpl = await getFetch();
-const params = await loadJSON('data/engine.json', { schema: schemas.engine, label: 'engine.json', fetchImpl });
+const params = await loadParams({ fetchImpl });
 const personas = await loadPersonas({ fetchImpl });
-const { stages, decisions } = await loadStages({ fetchImpl });
+const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
 
 function newGame(seed = 4271, retirementAge = 60) {
   const root = createRoot();
@@ -67,7 +66,7 @@ test('landing -> picker -> first question for both personas', () => {
     const g = newGame();
     begin(g, idx);
     assert(/Early career/.test(text(g.root)), 'should be in the first stage');
-    assert(/Question 1 of 2/.test(text(g.root)), 'two questions in the first stage');
+    assert(/Question 1 of 3/.test(text(g.root)), 'three questions in the first stage');
   }
 });
 
@@ -102,10 +101,10 @@ test('a full game walks through every stage and ends with the whole story', () =
 test('stage result screen shows a net-worth sentence and the choices made', () => {
   const g = newGame();
   begin(g);
-  playStageScreen(g, { 0: /Save hard/, 1: /Go all in/ });
+  playStageScreen(g, { 0: /Save hard/, 1: /Go for growth/, 2: /Go all in/ });
   const t = text(g.root);
   assert(/Net worth (grew|fell) from/.test(t), 'headline');
-  assert(t.includes('Save hard') && t.includes('Go all in'), 'choices listed');
+  assert(t.includes('Save hard') && t.includes('Go for growth') && t.includes('Go all in'), 'choices listed');
   assert(/spent on getting better/.test(t), 'learning spend shown when > 0');
   assert(/On to Building a life/.test(t), 'next stage button');
 });
@@ -125,7 +124,7 @@ test('Back returns to the previous question and keeps the pick', () => {
   begin(g);
   pickCard(g.root, /Enjoy life/);
   click(g.root, /^Next$/);
-  assert(/Question 2 of 2/.test(text(g.root)), 'moved to question 2');
+  assert(/Question 2 of 3/.test(text(g.root)), 'moved to question 2');
   click(g.root, /^Back$/);
   const selected = findAll(g.root, n => hasClass(n, 'option-card') && hasClass(n, 'selected'));
   assertEqual(selected.length, 1);
@@ -139,6 +138,7 @@ test('the last stage offers a retirement age, and the button counts the years it
   assert(/Pre-retirement/.test(text(g.root)), 'in the last stage');
   click(g.root, /^Next$/);
   click(g.root, /^Next$/);
+  click(g.root, /^Next$/);
   assert(/when do you want to stop working/i.test(text(g.root)), 'retirement question');
   assert(buttonWithText(g.root, /^Play these 8 years$/), 'defaults to 52 -> 60');
   pickCard(g.root, /At 65/);
@@ -150,7 +150,7 @@ test('the last stage offers a retirement age, and the button counts the years it
 test('retiring at 65 in the last stage runs the life to 65', () => {
   const g = newGame();
   begin(g);
-  finish(g, { 3: { 2: /At 65/ } });
+  finish(g, { 3: { 3: /At 65/ } });
   assert(/At 65 you have about/.test(text(g.root)), text(g.root).slice(0, 300));
 });
 
@@ -170,7 +170,7 @@ test('"Same luck, different choices" restarts at stage 1 with the same seed', ()
   begin(g);
   finish(g);
   click(g.root, /Same luck, different choices/);
-  assert(/Early career/.test(text(g.root)) && /Question 1 of 2/.test(text(g.root)), 'back to the first question');
+  assert(/Early career/.test(text(g.root)) && /Question 1 of 3/.test(text(g.root)), 'back to the first question');
   assertEqual(g.session.seed, 4271);
 });
 
@@ -232,4 +232,25 @@ test('no screen leaks stray words like "undefined", "null", "NaN" or "false"', (
     const m = t.match(stray);
     assert(!m, `${label}: found "${m && m[0]}"`);
   }
+});
+
+test('stage result shows the economy year by year, with ages so it works without colour', () => {
+  const g = newGame();
+  begin(g);
+  playStageScreen(g);
+  const chips = findAll(g.root, n => hasClass(n, 'weather-chip'));
+  assertEqual(chips.length, 10);
+  assert(/age 22/.test(chips[0].textContent) && /age 31/.test(chips[9].textContent), 'ages on the chips');
+  assert(/Boom|Steady|Slowdown|Crisis/.test(chips[0].textContent), 'a named mood on each chip');
+  assert(/How the economy was/.test(text(g.root)), 'section heading');
+});
+
+test('the same life with a different savings mix ends differently, on the same luck', () => {
+  const ending = (mix) => {
+    const g = newGame(4271);
+    begin(g);
+    finish(g, { 0: { 1: mix }, 1: { 1: mix }, 2: { 1: mix }, 3: { 1: mix } });
+    return findAll(g.root, n => hasClass(n, 'headline'))[0].textContent;
+  };
+  assert(ending(/Play it safe/) !== ending(/Go for growth/), 'allocation should matter');
 });

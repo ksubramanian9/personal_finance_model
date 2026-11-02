@@ -4,27 +4,144 @@
       "title": "Money style",
       "question": "What's your money style right now?",
       "options": [
-        { "id": "enjoy", "emoji": "🎉", "title": "Enjoy life", "blurb": "More fun now. Less of what's left goes to the future.", "effects": { "savingsRate": 0.4 } },
-        { "id": "balanced", "emoji": "⚖️", "title": "Balanced", "blurb": "Some for fun, a good chunk for later.", "effects": { "savingsRate": 0.7 } },
-        { "id": "frugal", "emoji": "🐜", "title": "Save hard", "blurb": "Almost everything left after bills goes to the future.", "effects": { "savingsRate": 0.9 } }
+        {
+          "id": "enjoy",
+          "emoji": "🎉",
+          "title": "Enjoy life",
+          "blurb": "More fun now. Less of what's left goes to the future.",
+          "effects": {
+            "savingsRate": 0.4
+          }
+        },
+        {
+          "id": "balanced",
+          "emoji": "⚖️",
+          "title": "Balanced",
+          "blurb": "Some for fun, a good chunk for later.",
+          "effects": {
+            "savingsRate": 0.7
+          }
+        },
+        {
+          "id": "frugal",
+          "emoji": "🐜",
+          "title": "Save hard",
+          "blurb": "Almost everything left after bills goes to the future.",
+          "effects": {
+            "savingsRate": 0.9
+          }
+        }
+      ]
+    },
+    "invest": {
+      "title": "Where the money goes",
+      "question": "Where should your new savings go?",
+      "options": [
+        {
+          "id": "safe",
+          "emoji": "🛡️",
+          "title": "Play it safe",
+          "blurb": "Mostly provident funds and deposits. Steady and boring.",
+          "effects": {
+            "alloc.pf": 0.4,
+            "alloc.equity": 0.1,
+            "alloc.fd": 0.4,
+            "alloc.gold": 0.1
+          }
+        },
+        {
+          "id": "mixed",
+          "emoji": "🧺",
+          "title": "A bit of everything",
+          "blurb": "Shares for growth, provident funds and gold for cushion.",
+          "effects": {
+            "alloc.pf": 0.3,
+            "alloc.equity": 0.45,
+            "alloc.fd": 0.15,
+            "alloc.gold": 0.1
+          }
+        },
+        {
+          "id": "bold",
+          "emoji": "🎢",
+          "title": "Go for growth",
+          "blurb": "Mostly shares. Bigger swings, bigger upside over decades.",
+          "effects": {
+            "alloc.pf": 0.2,
+            "alloc.equity": 0.7,
+            "alloc.fd": 0,
+            "alloc.gold": 0.1
+          }
+        }
       ]
     },
     "growth": {
       "title": "Invest in yourself",
       "question": "How much will you invest in getting better at what you do?",
       "options": [
-        { "id": "none", "emoji": "🛋️", "title": "Coast", "blurb": "Do the job well. No extra courses or effort.", "effects": { "learningPct": 0, "growthBoost": 0 } },
-        { "id": "light", "emoji": "📚", "title": "Keep learning", "blurb": "Some courses and mentors. Costs about 2% of your pay.", "effects": { "learningPct": 0.02, "growthBoost": 0.01 } },
-        { "id": "serious", "emoji": "🚀", "title": "Go all in", "blurb": "Certifications, side projects, long evenings. Costs about 6% of your pay.", "effects": { "learningPct": 0.06, "growthBoost": 0.025 } }
+        {
+          "id": "none",
+          "emoji": "🛋️",
+          "title": "Coast",
+          "blurb": "Do the job well. No extra courses or effort.",
+          "effects": {
+            "learningPct": 0,
+            "growthBoost": 0
+          }
+        },
+        {
+          "id": "light",
+          "emoji": "📚",
+          "title": "Keep learning",
+          "blurb": "Some courses and mentors. Costs about 2% of your pay.",
+          "effects": {
+            "learningPct": 0.02,
+            "growthBoost": 0.01
+          }
+        },
+        {
+          "id": "serious",
+          "emoji": "🚀",
+          "title": "Go all in",
+          "blurb": "Certifications, side projects, long evenings. Costs about 6% of your pay.",
+          "effects": {
+            "learningPct": 0.06,
+            "growthBoost": 0.025
+          }
+        }
       ]
     },
     "retire": {
       "title": "Retirement age",
       "question": "When do you want to stop working?",
       "options": [
-        { "id": "at55", "emoji": "🏖️", "title": "At 55", "blurb": "Early exit. Fewer years to earn, more to fund.", "effects": { "retirementAge": 55 } },
-        { "id": "at60", "emoji": "🌅", "title": "At 60", "blurb": "The classic.", "effects": { "retirementAge": 60 } },
-        { "id": "at65", "emoji": "🧗", "title": "At 65", "blurb": "Keep going. More earning years, a shorter retirement.", "effects": { "retirementAge": 65 } }
+        {
+          "id": "at55",
+          "emoji": "🏖️",
+          "title": "At 55",
+          "blurb": "Early exit. Fewer years to earn, more to fund.",
+          "effects": {
+            "retirementAge": 55
+          }
+        },
+        {
+          "id": "at60",
+          "emoji": "🌅",
+          "title": "At 60",
+          "blurb": "The classic.",
+          "effects": {
+            "retirementAge": 60
+          }
+        },
+        {
+          "id": "at65",
+          "emoji": "🧗",
+          "title": "At 65",
+          "blurb": "Keep going. More earning years, a shorter retirement.",
+          "effects": {
+            "retirementAge": 65
+          }
+        }
       ]
     }
   },
@@ -37,8 +154,17 @@
       "toAge": 32,
       "intro": "First paycheques, first big decisions. Habits you set now compound for decades.",
       "decisions": [
-        { "id": "savings", "question": "Your first real salary just landed. What's your money style?" },
-        { "id": "growth" }
+        {
+          "id": "savings",
+          "question": "Your first real salary just landed. What's your money style?"
+        },
+        {
+          "id": "invest",
+          "question": "Where do you put the money you save?"
+        },
+        {
+          "id": "growth"
+        }
       ]
     },
     {
@@ -49,8 +175,17 @@
       "toAge": 42,
       "intro": "Life gets fuller and the bills get bigger. Family and a home arrive in a later version of this game.",
       "decisions": [
-        { "id": "savings", "question": "Life is getting busier. How will you handle money now?" },
-        { "id": "growth" }
+        {
+          "id": "savings",
+          "question": "Life is getting busier. How will you handle money now?"
+        },
+        {
+          "id": "invest",
+          "question": "Where should the savings go from here?"
+        },
+        {
+          "id": "growth"
+        }
       ]
     },
     {
@@ -61,8 +196,18 @@
       "toAge": 52,
       "intro": "Your biggest earning years. What you do with them decides how the rest goes.",
       "decisions": [
-        { "id": "savings", "question": "You're earning the most you ever will. What's the plan?" },
-        { "id": "growth", "question": "Still worth investing in yourself at this stage?" }
+        {
+          "id": "savings",
+          "question": "You're earning the most you ever will. What's the plan?"
+        },
+        {
+          "id": "invest",
+          "question": "Your savings are bigger now. Where do they go?"
+        },
+        {
+          "id": "growth",
+          "question": "Still worth investing in yourself at this stage?"
+        }
       ]
     },
     {
@@ -73,14 +218,27 @@
       "toAge": null,
       "intro": "The finish line is in sight. Time to decide how hard to push.",
       "decisions": [
-        { "id": "savings", "question": "The last stretch. How do you want to handle money?" },
-        { "id": "growth", "question": "Keep upskilling this late in your career?" },
-        { "id": "retire", "question": "Last call: when do you want to stop working?" }
+        {
+          "id": "savings",
+          "question": "The last stretch. How do you want to handle money?"
+        },
+        {
+          "id": "invest",
+          "question": "Retirement is near. Where should new savings go?"
+        },
+        {
+          "id": "growth",
+          "question": "Keep upskilling this late in your career?"
+        },
+        {
+          "id": "retire",
+          "question": "Last call: when do you want to stop working?"
+        }
       ]
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2.",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance.",
     "confidence": "low",
     "asOf": 2025
   }

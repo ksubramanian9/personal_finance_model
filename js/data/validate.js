@@ -53,9 +53,17 @@ export const schemas = {
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
   engine: {
-    startYear: 'number', inflationPct: 'number',
-    investReturnMeanPct: 'number', investReturnVolPct: 'number', cashReturnPct: 'number',
+    startYear: 'number', cashReturnPct: 'number',
     debtInterestPct: 'number', debtPaydownShare: 'number', savingsRate: 'number',
+    allocation: 'object',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
+  macro: {
+    order: 'array', start: 'string', regimes: 'object', transitions: 'object',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
+  instruments: {
+    instruments: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
   persona: {
@@ -65,7 +73,7 @@ export const schemas = {
     money: { startingSalary: 'number', startingSavings: 'number', startingDebt: 'number', monthlyExpenses: 'number' },
     obligations: { parentsSupportMonthly: 'number', siblingSupportMonthly: 'number' },
     career: {
-      salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number',
+      salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number', cyclicality: 'number',
       pension: 'boolean', employerHealthCover: 'boolean',
     },
     biases: { lifestyleCreep: 'number', panicSell: 'number', overConservatism: 'number' },

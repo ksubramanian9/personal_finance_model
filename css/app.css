@@ -279,6 +279,38 @@ h1, h2, h3 {
 
 .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 0 5px 0 var(--c-ink); transform: none; }
 
+.economy { margin: 1.25rem 0; text-align: center; }
+.economy h2 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+
+.weather {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.weather-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 4.6rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--c-surface);
+  border: 3px solid var(--c-ink);
+  border-radius: 1rem;
+  line-height: 1.15;
+}
+
+.weather-emoji { font-size: 1.8rem; }
+.weather-age { font-size: 0.85rem; color: var(--c-inkSoft); }
+.weather-name { font-size: 0.95rem; font-weight: 600; }
+.weather-chip.w-crisis { border-color: var(--c-bad); border-width: 4px; }
+.weather-chip.w-slowdown { border-style: dashed; }
+.weather-chip.w-boom { border-color: var(--c-good); }
+
 .picks-recap h2 { font-size: 1.4rem; }
 .picks-recap ul { margin: 0; padding-left: 1.25rem; }
 .picks-recap li { margin: 0.25rem 0; }

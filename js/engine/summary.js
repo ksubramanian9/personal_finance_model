@@ -13,6 +13,7 @@ export function stageSummary(history, startIdx) {
     incomeEndReal: last.incomeReal,
     savedReal: years.reduce((sum, y) => sum + y.savedReal, 0),
     learningReal: years.reduce((sum, y) => sum + y.learningReal, 0),
+    economy: years.map(y => ({ age: y.age, year: y.year, regime: y.regime })),
   };
 }
 
