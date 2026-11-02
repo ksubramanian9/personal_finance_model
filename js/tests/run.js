@@ -1,0 +1,23 @@
+// Browser entry for tests.html. Add new *.test.js imports here.
+import { runAll } from './harness.js';
+import './scaffold.test.js';
+
+const results = await runAll();
+const failed = results.filter(r => !r.ok);
+
+document.getElementById('summary').textContent =
+  failed.length ? `${failed.length} of ${results.length} failed` : `All ${results.length} tests passed`;
+document.getElementById('summary').className = failed.length ? 'fail' : 'pass';
+
+const list = document.getElementById('results');
+for (const r of results) {
+  const li = document.createElement('li');
+  li.className = r.ok ? 'pass' : 'fail';
+  li.textContent = `${r.ok ? '✓' : '✗'} ${r.name}`;
+  if (!r.ok) {
+    const pre = document.createElement('pre');
+    pre.textContent = r.error;
+    li.append(pre);
+  }
+  list.append(li);
+}

@@ -1,0 +1,26 @@
+{
+  "fonts": {
+    "display": "'Fredoka', 'Baloo 2', 'Comic Sans MS', system-ui, sans-serif",
+    "body": "'Fredoka', system-ui, 'Segoe UI', sans-serif",
+    "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+  },
+  "colors": {
+    "bg": "#fff7e6",
+    "surface": "#ffffff",
+    "ink": "#2b2350",
+    "inkSoft": "#5b5385",
+    "primary": "#ffd23f",
+    "primaryInk": "#2b2350",
+    "accent1": "#2ec4b6",
+    "accent2": "#ff5d8f",
+    "accent3": "#7b5cff",
+    "good": "#1f9d6b",
+    "warn": "#e08a00",
+    "bad": "#d93b4a"
+  },
+  "sizes": {
+    "base": "1.25rem",
+    "hero": "clamp(2.6rem, 8vw, 4.5rem)",
+    "radius": "1.25rem"
+  }
+}
