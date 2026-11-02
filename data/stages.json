@@ -1,0 +1,87 @@
+{
+  "decisions": {
+    "savings": {
+      "title": "Money style",
+      "question": "What's your money style right now?",
+      "options": [
+        { "id": "enjoy", "emoji": "🎉", "title": "Enjoy life", "blurb": "More fun now. Less of what's left goes to the future.", "effects": { "savingsRate": 0.4 } },
+        { "id": "balanced", "emoji": "⚖️", "title": "Balanced", "blurb": "Some for fun, a good chunk for later.", "effects": { "savingsRate": 0.7 } },
+        { "id": "frugal", "emoji": "🐜", "title": "Save hard", "blurb": "Almost everything left after bills goes to the future.", "effects": { "savingsRate": 0.9 } }
+      ]
+    },
+    "growth": {
+      "title": "Invest in yourself",
+      "question": "How much will you invest in getting better at what you do?",
+      "options": [
+        { "id": "none", "emoji": "🛋️", "title": "Coast", "blurb": "Do the job well. No extra courses or effort.", "effects": { "learningPct": 0, "growthBoost": 0 } },
+        { "id": "light", "emoji": "📚", "title": "Keep learning", "blurb": "Some courses and mentors. Costs about 2% of your pay.", "effects": { "learningPct": 0.02, "growthBoost": 0.01 } },
+        { "id": "serious", "emoji": "🚀", "title": "Go all in", "blurb": "Certifications, side projects, long evenings. Costs about 6% of your pay.", "effects": { "learningPct": 0.06, "growthBoost": 0.025 } }
+      ]
+    },
+    "retire": {
+      "title": "Retirement age",
+      "question": "When do you want to stop working?",
+      "options": [
+        { "id": "at55", "emoji": "🏖️", "title": "At 55", "blurb": "Early exit. Fewer years to earn, more to fund.", "effects": { "retirementAge": 55 } },
+        { "id": "at60", "emoji": "🌅", "title": "At 60", "blurb": "The classic.", "effects": { "retirementAge": 60 } },
+        { "id": "at65", "emoji": "🧗", "title": "At 65", "blurb": "Keep going. More earning years, a shorter retirement.", "effects": { "retirementAge": 65 } }
+      ]
+    }
+  },
+  "stages": [
+    {
+      "id": "early",
+      "name": "Early career",
+      "emoji": "🚀",
+      "fromAge": 22,
+      "toAge": 32,
+      "intro": "First paycheques, first big decisions. Habits you set now compound for decades.",
+      "decisions": [
+        { "id": "savings", "question": "Your first real salary just landed. What's your money style?" },
+        { "id": "growth" }
+      ]
+    },
+    {
+      "id": "family",
+      "name": "Building a life",
+      "emoji": "🏡",
+      "fromAge": 32,
+      "toAge": 42,
+      "intro": "Life gets fuller and the bills get bigger. Family and a home arrive in a later version of this game.",
+      "decisions": [
+        { "id": "savings", "question": "Life is getting busier. How will you handle money now?" },
+        { "id": "growth" }
+      ]
+    },
+    {
+      "id": "peak",
+      "name": "Peak earning",
+      "emoji": "🏔️",
+      "fromAge": 42,
+      "toAge": 52,
+      "intro": "Your biggest earning years. What you do with them decides how the rest goes.",
+      "decisions": [
+        { "id": "savings", "question": "You're earning the most you ever will. What's the plan?" },
+        { "id": "growth", "question": "Still worth investing in yourself at this stage?" }
+      ]
+    },
+    {
+      "id": "pre",
+      "name": "Pre-retirement",
+      "emoji": "🌇",
+      "fromAge": 52,
+      "toAge": null,
+      "intro": "The finish line is in sight. Time to decide how hard to push.",
+      "decisions": [
+        { "id": "savings", "question": "The last stretch. How do you want to handle money?" },
+        { "id": "growth", "question": "Keep upskilling this late in your career?" },
+        { "id": "retire", "question": "Last call: when do you want to stop working?" }
+      ]
+    }
+  ],
+  "provenance": {
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2.",
+    "confidence": "low",
+    "asOf": 2025
+  }
+}

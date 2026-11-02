@@ -21,3 +21,6 @@
 | 15 | Nudges the user can resist, plus visible slow drift | Silent behavioral drift; no behavioral modeling | Honest and educational |
 | 16 | Illustrative seed data with basis/confidence/asOf; sourcing for high-impact numbers | All guessed; all sourced | Truthful without swallowing the project |
 | 17 | Macro regimes link shocks | Independent draws | Correlated pain is why liquidity and insurance matter |
+| 18 | Choices are data: a decision library plus stages in `stages.json`; picks persist until changed | Hard-coded stage screens | Adding a choice or stage is a data change, like personas |
+| 19 | Stage flow lives in `flow.js`, testable in Node with a fake DOM | Flow inside `main.js` | UI behavior could not be tested otherwise; it caught a real bug |
+| 20 | Retirement age is a decision in the last stage, applied before playing it | Fixed at the start only | Intent says it is overridable at pre-retirement |

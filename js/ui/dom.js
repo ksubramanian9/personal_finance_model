@@ -1,3 +1,9 @@
+// Replaces everything inside `root`. Unlike a bare replaceChildren, it skips undefined / null / false
+// (which the DOM would otherwise print as the words "undefined" / "null" / "false").
+export function mount(root, ...children) {
+  root.replaceChildren(...children.flat().filter(c => c != null && c !== false));
+}
+
 // Tiny element builder. Text goes in via textContent, never as HTML.
 export function h(tag, props = {}, ...children) {
   const el = document.createElement(tag);

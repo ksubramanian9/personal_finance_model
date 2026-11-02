@@ -26,6 +26,9 @@ export function createState(persona, params, { seed, retirementAge }) {
 
     priceIndex: 1,
     savingsRate: params.savingsRate,
+    learningPct: 0,   // share of salary spent on getting better at work
+    growthBoost: 0,   // extra yearly salary growth that buys
+    choices: {},      // stageId -> { decisionId: optionId }
     history: [],
   };
 }

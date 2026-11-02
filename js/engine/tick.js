@@ -27,7 +27,8 @@ export function tickYear(state, params) {
   s.debt += debtInterest;
 
   const income = s.salary;
-  const expenses = s.livingCost + s.support;
+  const learning = income * s.learningPct;
+  const expenses = s.livingCost + s.support + learning;
   const debtPaid = Math.min(s.debt, Math.max(0, income - expenses) * params.debtPaydownShare);
   s.debt -= debtPaid;
 
@@ -58,7 +59,7 @@ export function tickYear(state, params) {
   s.history.push({
     age: s.age,
     year: s.year,
-    income, expenses, debtPaid, debtInterest, saved, consumed, borrowed,
+    income, expenses, learning, debtPaid, debtInterest, saved, consumed, borrowed,
     investReturn, investGain, cashInterest,
     netWorthStart,
     netWorth: nw,
@@ -67,13 +68,14 @@ export function tickYear(state, params) {
     // today's rupees: flows at the prices of that year, balances at year end
     incomeReal: income / priceIndexStart,
     savedReal: saved / priceIndexStart,
+    learningReal: learning / priceIndexStart,
     netWorthReal: nw / priceIndexEnd,
   });
 
   s.age += 1;
   s.year += 1;
   s.priceIndex = priceIndexEnd;
-  s.salary *= 1 + s.salaryGrowth;
+  s.salary *= 1 + s.salaryGrowth + s.growthBoost;
   s.livingCost *= 1 + inflation;
   s.support *= 1 + inflation;
   return s;

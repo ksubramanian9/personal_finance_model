@@ -1,4 +1,4 @@
-import { h } from '../dom.js';
+import { h, mount } from '../dom.js';
 import { formatINR, formatINRPerMonth } from '../format.js';
 
 const RETIREMENT_AGES = [55, 60, 65];
@@ -53,7 +53,7 @@ export function renderPersonaPicker(root, personas, session, onContinue) {
   const redraw = () => renderPersonaPicker(root, personas, session, onContinue);
   const chosen = personas.find(p => p.id === session.personaId);
 
-  root.replaceChildren(
+  mount(root,
     h('section', { class: 'hero compact' },
       h('h1', { text: 'Who are you playing?' }),
       h('p', { text: 'Pick a starting point. Where you end up is up to your choices, and a bit of luck.' })),

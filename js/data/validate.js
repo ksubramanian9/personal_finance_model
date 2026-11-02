@@ -48,6 +48,10 @@ export function validate(data, schema, label) {
 }
 
 export const schemas = {
+  stages: {
+    decisions: 'object', stages: 'array',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   engine: {
     startYear: 'number', inflationPct: 'number',
     investReturnMeanPct: 'number', investReturnVolPct: 'number', cashReturnPct: 'number',

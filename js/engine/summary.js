@@ -1,3 +1,21 @@
+// One stage's worth of years (history from `startIdx` on), in today's rupees.
+export function stageSummary(history, startIdx) {
+  const years = history.slice(startIdx);
+  if (!years.length) return null;
+  const first = years[0];
+  const last = years[years.length - 1];
+  return {
+    fromAge: first.age,
+    toAge: last.age + 1,
+    years: years.length,
+    netWorthStartReal: first.netWorthStart / first.priceIndexStart,
+    netWorthEndReal: last.netWorthReal,
+    incomeEndReal: last.incomeReal,
+    savedReal: years.reduce((sum, y) => sum + y.savedReal, 0),
+    learningReal: years.reduce((sum, y) => sum + y.learningReal, 0),
+  };
+}
+
 // Groups played years into decade cards ("Your 20s", "Your 30s", ...), all in today's rupees.
 export function decadeSummary(state) {
   const byDecade = new Map();

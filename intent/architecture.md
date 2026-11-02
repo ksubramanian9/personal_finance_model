@@ -2,7 +2,7 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
-**Status:** as of increment 2 (engine skeleton). Planned-but-unbuilt modules are listed at the bottom.
+**Status:** as of increment 3 (life stages and choices). Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
 
@@ -14,6 +14,7 @@ package.json            only marks files as ES modules and defines `npm test`
 data/                   all tunable numbers and content (JSON)
   theme.json            colors, sizes, fonts -> CSS variables
   engine.json           engine parameters (inflation, returns, savings rate)
+  stages.json           decision library (options + effects) and the ordered life stages
   personas/index.json   lists persona files, in display order
   personas/*.json       one thick persona each
 
@@ -21,22 +22,27 @@ js/data/                load + validate; no DOM, no engine
   validate.js           tiny schema checker + the schemas table
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks
+  stages.js             loadStages + checkStages (ranges, contiguity, same-effects rule)
 
 js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ imports
   rng.js                seeded mulberry32; generator is a plain {s} object
   state.js              createState, netWorth
   tick.js               tickYear (one year), runUntil
-  summary.js            decadeSummary (history -> decade cards)
+  stages.js             nextStage, stageEnd, currentOption, applyPicks, playStage
+  summary.js            stageSummary (one stage) and decadeSummary (decade cards)
 
 js/ui/                  rendering and user input; may import data/ and engine/
-  main.js               boot, session, screen switching
-  dom.js                h(): element builder using textContent
+  main.js               boot: load theme + data, create the flow, show landing
+  flow.js               createFlow(root, data, session): screen-to-screen game flow
+  dom.js                h(): element builder (textContent); mount(): safe replaceChildren
   format.js             formatINR (lakh/crore)
   screens/              one file per screen
     personaPicker.js
-    fastForward.js
+    stage.js            journey bar, one-question-at-a-time decisions, stage result
+    lifeSummary.js      end of run: decade cards, choices recap, replay buttons
 
 js/tests/               harness + *.test.js; run in browser and Node
+  fakeDom.js            minimal DOM so UI flows can be driven in Node (browser uses the real one)
 ```
 
 ## Import rules
@@ -64,7 +70,9 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
                                                   ui/screens render
 ```
 
-- **Session** (`main.js`): what the user chose (persona, retirement age, seed). Lives in the UI.
+- **Session** (created in `main.js`, owned by `flow.js`): what the user chose up front (persona, retirement age, seed). Lives in the UI.
+- **Stage loop** (`flow.js`): `nextStage` -> `renderStageDecisions` (collect `picks`) -> `playStage` (apply picks, run to the stage end) -> `renderStageResult` -> repeat, then `renderLifeSummary`. The engine never knows about screens.
+- **Choices are data.** `stages.json` holds a decision library (`savings`, `growth`, `retire`) and stages that reference decisions by id. An option's `effects` set whitelisted state fields (`savingsRate`, `learningPct`, `growthBoost`, `retirementAge`). Picks stay in force until a later stage changes them. "What you do now" is found by matching a state to an option's effects (`currentOption`), so all options of one decision must set the same keys.
 - **State** (`engine/state.js`): the whole game in one JSON-serializable object, including the RNG state. `JSON.parse(JSON.stringify(state))` resumes with identical luck. A test guards this.
 - **History**: `tickYear` appends one record per year (flows, return, net worth nominal and real). Charts and "why" panels read history; they never recompute.
 
@@ -74,6 +82,7 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - **Each draw consumes a fixed number of RNG values**, so adding a new random event later does not shuffle unrelated outcomes in a replay of the same seed. (Not yet tested; becomes important in increment 4+.)
 - **Errors are for people.** Loader and validator messages name the file and the field. The UI shows them in an error card; it does not swallow them.
 - **UI text goes in with `textContent`** (via `dom.js`), never `innerHTML`, since persona text comes from JSON.
+- **Use `mount(root, ...)`, never bare `replaceChildren`.** The real DOM prints `undefined`/`false` as text; `mount` drops empty children so `cond && h(...)` is safe. A test walks every screen looking for stray words.
 - **Every tunable carries provenance** (`basis`, `confidence`, `asOf`) where it is a real-world estimate.
 - **Accent colors** are theme keys (`accent1..3`), mapped to CSS classes `accent-accentN` that set `--accent`.
 
@@ -90,7 +99,9 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 
 **Add an engine step.** Put it in its own pure module under `js/engine/`, call it from `tickYear`, record its effect in the year's `history` record, and extend the balance-identity test in `engine.test.js` so the new flow is accounted for.
 
-**Add a screen.** Create `js/ui/screens/<name>.js` exporting `render<Name>(root, ...)` that ends with `root.replaceChildren(...)`, and wire it into `main.js`.
+**Add a screen.** Create `js/ui/screens/<name>.js` exporting `render<Name>(root, ...)` that calls `mount(root, ...)`, and wire it into `flow.js`.
+
+**Add a stage or a choice.** Edit `data/stages.json` only: add an option to a decision, or a stage whose `decisions` reference decision ids. Stages must be contiguous and the last must end with `toAge: null`. `checkStages` reports mistakes in plain words. A new *kind* of effect needs a line in `EFFECT_RANGES` (`js/data/stages.js`), `SETTABLE` (`js/engine/stages.js`) and the tick that uses it.
 
 **Add a test.** Create `js/tests/<name>.test.js` using `test/assert*` from `harness.js`, then import it in **both** `run.js` (browser) and `run-node.mjs` (Node). Use `getFetch()` from `dataFetch.js` to load real data files in either environment.
 
@@ -100,14 +111,17 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - Replay a run: `index.html?seed=4271`.
 
 ## Testing approach
+- **UI flows run in Node** against `fakeDom.js` (`flow.test.js`): play whole games by clicking buttons, check Back/replay behavior, retirement-age labels, and that no screen shows stray text. The fake DOM mimics the browser by turning non-node children into text, which is what exposed a real bug.
 - Engine tests assert **invariants** (every year's net-worth change is fully explained; balances never negative; determinism; save/reload continues identically) rather than only golden numbers.
 - One **golden-value** test pins seed 4271. When parameters change on purpose, re-pin it; if they did not change, something broke.
 - Data tests load the real files and also feed deliberately broken ones to check error messages.
 
 ## Planned but not built yet
-Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/macro.js`, `income.js`, `assets.js`, `tax.js`, `events.js`, `family.js`, `housing.js`, `nudges.js`, `outcomes.js`; `data/stages.json`, `macro.json`, `instruments.json`, `events.json`, `tax.json`; `ui/charts.js`, `ui/disclosure.js`. The `engine.json` single-investment placeholder is replaced by instruments and regimes in increment 4.
+Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/macro.js`, `income.js`, `assets.js`, `tax.js`, `events.js`, `family.js`, `housing.js`, `nudges.js`, `outcomes.js`; `data/macro.json`, `instruments.json`, `events.json`, `tax.json`; `ui/charts.js`, `ui/disclosure.js`. The `engine.json` single-investment placeholder is replaced by instruments and regimes in increment 4.
 
 ## Known loose ends
-- `data/personas.js` imports `validate` but does not use it.
+- No retirement (drawdown) stage yet; the run ends at the retirement age. Arrives with the outcomes work in increment 9.
+- "Go all in" on learning is currently the best choice for every persona and seed tried (see decisions log). Diminishing returns and decay come with increment 9.
+- The stage screens are tested through the fake DOM only; nobody has looked at them in a real browser yet.
 - The "fixed draws per step" convention above has no test yet.
 - Seeds from `?seed=` are used as given; there is no UI to type a seed yet (Level 3, increment 10).

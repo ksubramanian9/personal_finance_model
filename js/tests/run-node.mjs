@@ -4,6 +4,8 @@ import './scaffold.test.js';
 import './format.test.js';
 import './personas.test.js';
 import './engine.test.js';
+import './stages.test.js';
+import './flow.test.js';
 
 const results = await runAll();
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'} ${r.name}${r.ok ? '' : `\n     ${r.error}`}`);

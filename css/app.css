@@ -204,6 +204,85 @@ h1, h2, h3 {
 .decade-card .big-label { color: var(--c-inkSoft); margin-bottom: 0.5rem; }
 .decade-card .small-line { font-size: 1rem; }
 
+.journey {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.journey-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.9rem;
+  border: 3px solid var(--c-ink);
+  border-radius: 999px;
+  background: var(--c-surface);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.journey-step.todo { opacity: 0.55; border-style: dashed; }
+.journey-step.current { background: var(--c-primary); }
+
+.eyebrow { font-weight: 600; color: var(--c-inkSoft); margin: 0 0 0.25rem; }
+.stage-intro { max-width: 36rem; margin: 0 auto 1rem; color: var(--c-inkSoft); }
+.step-count { color: var(--c-inkSoft); font-size: 1rem; margin: 0.5rem 0 0; }
+
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+
+.option-card {
+  font: inherit;
+  color: var(--c-ink);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.25rem;
+  background: var(--c-surface);
+  border: 3px solid var(--c-ink);
+  border-radius: var(--s-radius);
+  box-shadow: 0 5px 0 var(--c-ink);
+  cursor: pointer;
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.option-card:hover { transform: translateY(-3px); box-shadow: 0 8px 0 var(--c-ink); }
+.option-card:focus-visible { outline: 4px solid var(--c-accent3); outline-offset: 4px; }
+.option-card.selected {
+  background: var(--c-primary);
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 var(--c-ink);
+}
+
+.option-emoji { font-size: 2.6rem; line-height: 1; }
+.option-title { font-family: var(--f-display); font-size: 1.5rem; font-weight: 700; line-height: 1.15; }
+.option-blurb { font-size: 1.05rem; }
+.option-tag {
+  align-self: flex-start;
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  background: var(--c-bg);
+}
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 0 5px 0 var(--c-ink); transform: none; }
+
+.picks-recap h2 { font-size: 1.4rem; }
+.picks-recap ul { margin: 0; padding-left: 1.25rem; }
+.picks-recap li { margin: 0.25rem 0; }
+
 .headline { font-family: var(--f-display); font-size: 1.6rem; margin: 0 0 0.25rem; }
 .hint { color: var(--c-inkSoft); margin: 0; font-size: 1rem; }
 

@@ -1,5 +1,5 @@
 import { loadJSON } from './loader.js';
-import { validate, ValidationError, schemas } from './validate.js';
+import { ValidationError, schemas } from './validate.js';
 
 const DIR = 'data/personas/';
 const ACCENTS = ['accent1', 'accent2', 'accent3'];
