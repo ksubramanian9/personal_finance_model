@@ -1,6 +1,8 @@
 // Node entry: `node js/tests/run-node.mjs`. Same tests as tests.html; engine has no DOM.
 import { runAll } from './harness.js';
 import './scaffold.test.js';
+import './format.test.js';
+import './personas.test.js';
 
 const results = await runAll();
 for (const r of results) console.log(`${r.ok ? 'PASS' : 'FAIL'} ${r.name}${r.ok ? '' : `\n     ${r.error}`}`);

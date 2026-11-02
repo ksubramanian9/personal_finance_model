@@ -1,0 +1,42 @@
+{
+  "id": "metro-it",
+  "name": "Aarav, the Metro Techie",
+  "emoji": "💻",
+  "accent": "accent3",
+  "tagline": "Big city, big salary growth, big layoff nerves.",
+  "story": "First in the family to graduate. Landed a software job in Bengaluru, sends money home, and is already getting calls from recruiters. Income can jump fast here, and so can the risks.",
+  "profile": {
+    "startAge": 22,
+    "city": "Bengaluru",
+    "cityTier": 1,
+    "education": "B.Tech",
+    "job": "Software engineer, product company"
+  },
+  "money": {
+    "startingSalary": 800000,
+    "startingSavings": 50000,
+    "startingDebt": 400000,
+    "monthlyExpenses": 30000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 10000,
+    "siblingSupportMonthly": 5000
+  },
+  "career": {
+    "salaryGrowthPct": 9,
+    "jobSwitchJumpPct": 30,
+    "layoffRisk": 0.06,
+    "pension": false,
+    "employerHealthCover": true
+  },
+  "biases": {
+    "lifestyleCreep": 0.7,
+    "panicSell": 0.5,
+    "overConservatism": 0.1
+  },
+  "provenance": {
+    "basis": "Illustrative: typical fresher package at an Indian product company, mid-2020s",
+    "confidence": "low",
+    "asOf": 2025
+  }
+}

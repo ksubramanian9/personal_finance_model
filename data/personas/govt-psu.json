@@ -1,0 +1,42 @@
+{
+  "id": "govt-psu",
+  "name": "Meera, the Steady Officer",
+  "emoji": "🏛️",
+  "accent": "accent1",
+  "tagline": "Slow and safe, with a pension at the end.",
+  "story": "Cleared a competitive exam and joined a government department in a tier-2 city. The job is secure, the raises are predictable, and the whole family relaxes. The question is whether playing it this safe costs her later.",
+  "profile": {
+    "startAge": 24,
+    "city": "Lucknow",
+    "cityTier": 2,
+    "education": "B.A. plus competitive exam",
+    "job": "State government officer"
+  },
+  "money": {
+    "startingSalary": 600000,
+    "startingSavings": 20000,
+    "startingDebt": 0,
+    "monthlyExpenses": 20000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 5000,
+    "siblingSupportMonthly": 0
+  },
+  "career": {
+    "salaryGrowthPct": 5,
+    "jobSwitchJumpPct": 0,
+    "layoffRisk": 0,
+    "pension": true,
+    "employerHealthCover": true
+  },
+  "biases": {
+    "lifestyleCreep": 0.2,
+    "panicSell": 0.4,
+    "overConservatism": 0.8
+  },
+  "provenance": {
+    "basis": "Illustrative: entry-level state government pay including allowances, mid-2020s",
+    "confidence": "low",
+    "asOf": 2025
+  }
+}

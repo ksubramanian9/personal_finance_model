@@ -1,6 +1,8 @@
 // Browser entry for tests.html. Add new *.test.js imports here.
 import { runAll } from './harness.js';
 import './scaffold.test.js';
+import './format.test.js';
+import './personas.test.js';
 
 const results = await runAll();
 const failed = results.filter(r => !r.ok);

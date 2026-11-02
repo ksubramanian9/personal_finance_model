@@ -48,6 +48,19 @@ export function validate(data, schema, label) {
 }
 
 export const schemas = {
+  persona: {
+    id: 'string', name: 'string', emoji: 'string', accent: 'string',
+    tagline: 'string', story: 'string',
+    profile: { startAge: 'number', city: 'string', cityTier: 'number', education: 'string', job: 'string' },
+    money: { startingSalary: 'number', startingSavings: 'number', startingDebt: 'number', monthlyExpenses: 'number' },
+    obligations: { parentsSupportMonthly: 'number', siblingSupportMonthly: 'number' },
+    career: {
+      salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number',
+      pension: 'boolean', employerHealthCover: 'boolean',
+    },
+    biases: { lifestyleCreep: 'number', panicSell: 'number', overConservatism: 'number' },
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   theme: {
     fonts: { display: 'string', body: 'string', 'googleFontsUrl': 'string?' },
     colors: {
