@@ -1,0 +1,15 @@
+{
+  "startYear": 2026,
+  "inflationPct": 5.5,
+  "investReturnMeanPct": 10,
+  "investReturnVolPct": 12,
+  "cashReturnPct": 3,
+  "debtInterestPct": 9.5,
+  "debtPaydownShare": 0.5,
+  "savingsRate": 0.7,
+  "provenance": {
+    "basis": "Placeholder single blended investment and flat inflation for the engine skeleton. Replaced by regimes and named instruments in increment 4, where the numbers get sourced.",
+    "confidence": "low",
+    "asOf": 2025
+  }
+}

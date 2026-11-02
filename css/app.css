@@ -179,6 +179,38 @@ h1, h2, h3 {
 .chip input:focus-visible + span { outline: 4px solid var(--c-accent3); outline-offset: 3px; }
 
 .actions { text-align: center; margin-top: 2rem; }
+.actions.inline { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.25rem; }
+
+.btn.secondary { background: var(--c-surface); }
+
+.decade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: 1rem;
+}
+
+.decade-card {
+  background: var(--c-surface);
+  border: 3px solid var(--c-ink);
+  border-top: 0.9rem solid var(--accent);
+  border-radius: var(--s-radius);
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+.decade-card h3 { font-size: 1.6rem; }
+.decade-card p { margin: 0; }
+.decade-card .ages { color: var(--c-inkSoft); font-weight: 500; }
+.decade-card .big-number { font-family: var(--f-display); font-size: 2.2rem; font-weight: 700; line-height: 1.1; margin-top: 0.75rem; }
+.decade-card .big-label { color: var(--c-inkSoft); margin-bottom: 0.5rem; }
+.decade-card .small-line { font-size: 1rem; }
+
+.headline { font-family: var(--f-display); font-size: 1.6rem; margin: 0 0 0.25rem; }
+.hint { color: var(--c-inkSoft); margin: 0; font-size: 1rem; }
+
+.advanced { margin-top: 1.5rem; font-size: 1rem; color: var(--c-inkSoft); }
+.advanced summary { cursor: pointer; font-weight: 600; }
+.advanced code { background: var(--c-surface); padding: 0.1rem 0.5rem; border-radius: 0.5rem; border: 2px solid var(--c-ink); color: var(--c-ink); }
+.advanced a { color: var(--c-ink); font-weight: 600; text-decoration: underline; }
 
 .footer {
   padding: 1rem;

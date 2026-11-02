@@ -48,6 +48,12 @@ export function validate(data, schema, label) {
 }
 
 export const schemas = {
+  engine: {
+    startYear: 'number', inflationPct: 'number',
+    investReturnMeanPct: 'number', investReturnVolPct: 'number', cashReturnPct: 'number',
+    debtInterestPct: 'number', debtPaydownShare: 'number', savingsRate: 'number',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   persona: {
     id: 'string', name: 'string', emoji: 'string', accent: 'string',
     tagline: 'string', story: 'string',

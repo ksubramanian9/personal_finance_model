@@ -3,6 +3,7 @@ import { runAll } from './harness.js';
 import './scaffold.test.js';
 import './format.test.js';
 import './personas.test.js';
+import './engine.test.js';
 
 const results = await runAll();
 const failed = results.filter(r => !r.ok);
