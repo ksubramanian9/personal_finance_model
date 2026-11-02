@@ -8,6 +8,9 @@ Working rules for every increment:
 - Anything tunable goes in JSON, not code.
 - Each increment: build, add engine tests to `tests.html`, open in liveserver and look at it, then commit.
 - Pick up `intent/open-questions.md` items just before the increment that needs them (flagged below).
+- At the end of each increment, update [architecture.md](architecture.md) so it describes the code as built.
+
+Progress: increments 0, 1, 2 done.
 
 ## Target layout
 ```

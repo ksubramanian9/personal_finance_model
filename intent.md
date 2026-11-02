@@ -36,6 +36,7 @@ Pick a persona. Move through life stages (early career, family building, peak ea
 | The three disclosure levels | [ux-disclosure](intent/ux-disclosure.md) |
 | Technical ground rules | [tech](intent/tech.md) |
 | v1 / v2 / v3 staging | [roadmap](intent/roadmap.md) |
+| Code architecture as built | [architecture](intent/architecture.md) |
 | Step-by-step build plan for v1 | [implementation-plan](intent/implementation-plan.md) |
 | Why we chose what we chose | [decisions](intent/decisions.md) |
 | Unresolved items | [open-questions](intent/open-questions.md) |
