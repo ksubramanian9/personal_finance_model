@@ -3,7 +3,7 @@ import { runUntil } from './tick.js';
 // Effect keys a choice may set on the state. Anything else is ignored by design
 // (data/stages.js rejects unknown keys when the file loads).
 // "alloc.<id>" keys live in state.alloc.<id>; the rest are top-level state fields.
-const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge'];
+const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium'];
 const ALLOC = 'alloc.';
 
 function readEffect(state, key) {
@@ -45,7 +45,7 @@ export function applyPicks(state, stage, decisions, picks) {
       s[k] = v;
     }
   }
-  s.choices[stage.id] = { ...picks };
+  s.choices[stage.id] = Object.fromEntries(stage.decisions.map(ref => [ref.id, picks[ref.id]]));
   return s;
 }
 

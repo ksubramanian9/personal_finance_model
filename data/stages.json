@@ -75,6 +75,75 @@
         }
       ]
     },
+    "emergency": {
+      "title": "Emergency fund",
+      "question": "How much cash will you keep for a rainy day?",
+      "options": [
+        {
+          "id": "none",
+          "emoji": "🎲",
+          "title": "Wing it",
+          "blurb": "No separate cushion. Every spare rupee gets invested.",
+          "effects": {
+            "emergencyMonths": 0
+          }
+        },
+        {
+          "id": "three",
+          "emoji": "🧯",
+          "title": "3 months",
+          "blurb": "Three months of bills sit in cash before you invest.",
+          "effects": {
+            "emergencyMonths": 3
+          }
+        },
+        {
+          "id": "six",
+          "emoji": "🛟",
+          "title": "6 months",
+          "blurb": "Six months of bills in cash. Safe, but cash earns very little.",
+          "effects": {
+            "emergencyMonths": 6
+          }
+        }
+      ]
+    },
+    "health": {
+      "title": "Health insurance",
+      "question": "Will you buy your own health cover?",
+      "options": [
+        {
+          "id": "none",
+          "emoji": "🤞",
+          "title": "Rely on work's cover",
+          "blurb": "Your employer's small cover is free, but it ends if you lose the job.",
+          "effects": {
+            "healthCover": 0,
+            "healthPremium": 0
+          }
+        },
+        {
+          "id": "basic",
+          "emoji": "🩺",
+          "title": "Basic cover",
+          "blurb": "₹5 lakh of cover. About ₹12,000 a year at 30, rising with age.",
+          "effects": {
+            "healthCover": 500000,
+            "healthPremium": 12000
+          }
+        },
+        {
+          "id": "strong",
+          "emoji": "🏥",
+          "title": "Strong cover",
+          "blurb": "₹25 lakh of cover. About ₹30,000 a year at 30, rising with age.",
+          "effects": {
+            "healthCover": 2500000,
+            "healthPremium": 30000
+          }
+        }
+      ]
+    },
     "growth": {
       "title": "Invest in yourself",
       "question": "How much will you invest in getting better at what you do?",
@@ -163,6 +232,14 @@
           "question": "Where do you put the money you save?"
         },
         {
+          "id": "emergency",
+          "question": "A layoff or a hospital bill can strike any time. What's your cushion?"
+        },
+        {
+          "id": "health",
+          "question": "Hospital bills can wipe out years of saving. What about your cover?"
+        },
+        {
           "id": "growth"
         }
       ]
@@ -182,6 +259,14 @@
         {
           "id": "invest",
           "question": "Where should the savings go from here?"
+        },
+        {
+          "id": "emergency",
+          "question": "More people depend on you now. How big a cushion?"
+        },
+        {
+          "id": "health",
+          "question": "Is your health cover enough for a family?"
         },
         {
           "id": "growth"
@@ -227,6 +312,10 @@
           "question": "Retirement is near. Where should new savings go?"
         },
         {
+          "id": "health",
+          "question": "Health costs climb with age. What cover now?"
+        },
+        {
           "id": "growth",
           "question": "Keep upskilling this late in your career?"
         },
@@ -238,7 +327,7 @@
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance.",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers.",
     "confidence": "low",
     "asOf": 2025
   }

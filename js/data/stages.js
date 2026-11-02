@@ -8,6 +8,9 @@ export const EFFECT_RANGES = {
   learningPct: [0, 0.5],
   growthBoost: [0, 0.1],
   retirementAge: [50, 75],
+  emergencyMonths: [0, 24],
+  healthCover: [0, 1e8],
+  healthPremium: [0, 1e7],
 };
 const ALLOC = 'alloc.';
 const rangeFor = (k) => EFFECT_RANGES[k] ?? (k.startsWith(ALLOC) ? [0, 1] : undefined);

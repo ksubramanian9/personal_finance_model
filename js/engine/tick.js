@@ -1,5 +1,6 @@
 import { nextFloat, nextNormal } from './rng.js';
 import { nextRegime } from './macro.js';
+import { rollEvents, settleEvents } from './events.js';
 import { netWorth } from './state.js';
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -8,15 +9,18 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 //
 // Randomness: exactly 1 uniform draw (the economy) plus 1 normal draw per instrument, in the
 // order instruments.json lists them, whatever the player holds. So the same seed gives the same
-// economy and the same market returns however the player invests.
+// economy and the same market returns however the player invests. Life events draw from their
+// own stream (state.rngEvents), 3 numbers per event, with the same guarantee.
 //
 // Order within the year:
 //   1. the economy moves to this year's regime; every instrument gets its return for that regime
 //   2. holdings and cash earn; debt accrues interest
-//   3. debt is paid down from income, up to a share of income left after expenses
-//   4. surplus is split into saved (spread over instruments by the player's allocation) and
-//      consumed; a deficit is drawn from cash, then liquid instruments in drawOrder (provident
-//      funds are locked in, never sold), then borrowed
+//   3. life events happen (layoff, hospital bill, windfall...); insurance pays what it covers
+//   4. debt is paid down from income, up to a share of income left after expenses
+//   5. surplus is split into saved (first topping up the emergency fund in cash, the rest spread
+//      over instruments by the player's allocation) and consumed; a deficit is drawn from cash,
+//      then liquid instruments in drawOrder (provident funds are locked in, never sold), then
+//      borrowed
 //   5. salary, costs and prices roll forward to next year (raises follow the economy)
 export function tickYear(state, params) {
   const s = structuredClone(state);
@@ -46,24 +50,35 @@ export function tickYear(state, params) {
   s.cash += cashInterest;
   s.debt += debtInterest;
 
-  // 3-4. income, expenses, saving
-  const income = s.salary;
-  const learning = income * s.learningPct;
-  const expenses = s.livingCost + s.support + learning;
-  const debtPaid = Math.min(s.debt, Math.max(0, income - expenses) * params.debtPaydownShare);
+  // 3. life events
+  const ev = settleEvents(s, rollEvents(s, params.events, regime), params.insurance, priceIndexStart);
+  const income = ev.salaryReceived + ev.severance;
+  const extraIncome = ev.extraIncome;
+  const learning = s.salary * s.learningPct;
+  const premium = s.healthPremium * priceIndexStart * (1 + (params.insurance.premiumAgeLoadingPct / 100) * Math.max(0, s.age - 30));
+  const expenses = s.livingCost + s.support + learning + premium + ev.eventCost;
+
+  // 4-5. debt, saving
+  const debtPaid = Math.min(s.debt, Math.max(0, income + extraIncome - expenses) * params.debtPaydownShare);
   s.debt -= debtPaid;
 
-  const surplus = income - expenses - debtPaid;
+  const surplus = income + extraIncome - expenses - debtPaid;
   let saved = 0;
+  let toCash = 0;
   let consumed = 0;
   let borrowed = 0;
+  let fromCash = 0;
+  const sold = {};
   if (surplus >= 0) {
     saved = surplus * s.savingsRate;
     consumed = surplus - saved;
-    for (const inst of params.instruments) s.holdings[inst.id] += saved * s.alloc[inst.id];
+    const fundTarget = (s.emergencyMonths * (s.livingCost + s.support)) / 12;
+    toCash = Math.min(saved, Math.max(0, fundTarget - s.cash));
+    s.cash += toCash;
+    for (const inst of params.instruments) s.holdings[inst.id] += (saved - toCash) * s.alloc[inst.id];
   } else {
     let need = -surplus;
-    const fromCash = Math.min(s.cash, need);
+    fromCash = Math.min(s.cash, need);
     s.cash -= fromCash;
     need -= fromCash;
     const sellOrder = params.instruments.filter(i => i.liquid).sort((a, b) => a.drawOrder - b.drawOrder);
@@ -71,6 +86,7 @@ export function tickYear(state, params) {
       const take = Math.min(s.holdings[inst.id], need);
       s.holdings[inst.id] -= take;
       need -= take;
+      if (take > 0) sold[inst.id] = take;
     }
     borrowed = need;
     s.debt += borrowed;
@@ -87,7 +103,10 @@ export function tickYear(state, params) {
     regime,
     inflation,
     returns,
-    income, expenses, learning, debtPaid, debtInterest, saved, consumed, borrowed,
+    income, extraIncome, expenses, learning, premium, eventCost: ev.eventCost, insurancePaid: ev.insurancePaid,
+    debtPaid, debtInterest, saved, toCash, consumed, borrowed,
+    events: ev.records.map(r => ({ ...r, age: s.age, year: s.year })),
+    coping: { fromCash, sold, borrowed }, // how a shortfall was met
     investGain, cashInterest,
     holdings: { ...s.holdings },
     cash: s.cash,
@@ -110,6 +129,8 @@ export function tickYear(state, params) {
   s.year += 1;
   s.priceIndex = priceIndexEnd;
   s.salary *= 1 + raise;
+  if (ev.payHit) s.salary *= 1 - ev.payHit;   // the next job after a layoff pays less
+  if (ev.payJump) s.salary *= 1 + ev.payJump; // the offer you took
   s.livingCost *= 1 + inflation;
   s.support *= 1 + inflation;
   return s;

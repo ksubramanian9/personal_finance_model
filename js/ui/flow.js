@@ -72,6 +72,8 @@ export function createFlow(root, data, session) {
       stage,
       summary: stageSummary(game.state.history, game.startIdx),
       regimes: data.params.macro.regimes,
+      eventDefs: Object.fromEntries(data.params.events.map(e => [e.id, e])),
+      instruments: data.params.instruments,
       doneIds: doneIds(),
       picked,
       nextStage: nextStage(data.stages, game.state),

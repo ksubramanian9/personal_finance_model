@@ -21,6 +21,11 @@ function newGame(seed = 4271, retirementAge = 60) {
   return { root, session, flow };
 }
 
+// Where a decision sits in a stage's list of questions (0-based), so tests survive new questions.
+const qIndex = (stageIdx, decisionId) => stages[stageIdx].decisions.findIndex(d => d.id === decisionId);
+const N0 = stages[0].decisions.length;
+const NLAST = stages[stages.length - 1].decisions.length;
+
 const text = (root) => root.textContent;
 const click = (root, re) => {
   const b = buttonWithText(root, re);
@@ -66,7 +71,7 @@ test('landing -> picker -> first question for both personas', () => {
     const g = newGame();
     begin(g, idx);
     assert(/Early career/.test(text(g.root)), 'should be in the first stage');
-    assert(/Question 1 of 3/.test(text(g.root)), 'three questions in the first stage');
+    assert(new RegExp(`Question 1 of ${N0}`).test(text(g.root)), 'question count shown');
   }
 });
 
@@ -101,7 +106,7 @@ test('a full game walks through every stage and ends with the whole story', () =
 test('stage result screen shows a net-worth sentence and the choices made', () => {
   const g = newGame();
   begin(g);
-  playStageScreen(g, { 0: /Save hard/, 1: /Go for growth/, 2: /Go all in/ });
+  playStageScreen(g, { [qIndex(0, 'savings')]: /Save hard/, [qIndex(0, 'invest')]: /Go for growth/, [qIndex(0, 'growth')]: /Go all in/ });
   const t = text(g.root);
   assert(/Net worth (grew|fell) from/.test(t), 'headline');
   assert(t.includes('Save hard') && t.includes('Go for growth') && t.includes('Go all in'), 'choices listed');
@@ -124,7 +129,7 @@ test('Back returns to the previous question and keeps the pick', () => {
   begin(g);
   pickCard(g.root, /Enjoy life/);
   click(g.root, /^Next$/);
-  assert(/Question 2 of 3/.test(text(g.root)), 'moved to question 2');
+  assert(new RegExp(`Question 2 of ${N0}`).test(text(g.root)), 'moved to question 2');
   click(g.root, /^Back$/);
   const selected = findAll(g.root, n => hasClass(n, 'option-card') && hasClass(n, 'selected'));
   assertEqual(selected.length, 1);
@@ -136,9 +141,7 @@ test('the last stage offers a retirement age, and the button counts the years it
   begin(g);
   for (let i = 0; i < 3; i++) { playStageScreen(g); click(g.root, /^On to/); }
   assert(/Pre-retirement/.test(text(g.root)), 'in the last stage');
-  click(g.root, /^Next$/);
-  click(g.root, /^Next$/);
-  click(g.root, /^Next$/);
+  for (let i = 0; i < NLAST - 1; i++) click(g.root, /^Next$/);
   assert(/when do you want to stop working/i.test(text(g.root)), 'retirement question');
   assert(buttonWithText(g.root, /^Play these 8 years$/), 'defaults to 52 -> 60');
   pickCard(g.root, /At 65/);
@@ -150,7 +153,7 @@ test('the last stage offers a retirement age, and the button counts the years it
 test('retiring at 65 in the last stage runs the life to 65', () => {
   const g = newGame();
   begin(g);
-  finish(g, { 3: { 3: /At 65/ } });
+  finish(g, { 3: { [qIndex(3, 'retire')]: /At 65/ } });
   assert(/At 65 you have about/.test(text(g.root)), text(g.root).slice(0, 300));
 });
 
@@ -170,7 +173,7 @@ test('"Same luck, different choices" restarts at stage 1 with the same seed', ()
   begin(g);
   finish(g);
   click(g.root, /Same luck, different choices/);
-  assert(/Early career/.test(text(g.root)) && /Question 1 of 3/.test(text(g.root)), 'back to the first question');
+  assert(/Early career/.test(text(g.root)) && new RegExp(`Question 1 of ${N0}`).test(text(g.root)), 'back to the first question');
   assertEqual(g.session.seed, 4271);
 });
 
@@ -249,8 +252,40 @@ test('the same life with a different savings mix ends differently, on the same l
   const ending = (mix) => {
     const g = newGame(4271);
     begin(g);
-    finish(g, { 0: { 1: mix }, 1: { 1: mix }, 2: { 1: mix }, 3: { 1: mix } });
+    finish(g, Object.fromEntries(stages.map((st, i) => [i, { [qIndex(i, 'invest')]: mix }])));
     return findAll(g.root, n => hasClass(n, 'headline'))[0].textContent;
   };
   assert(ending(/Play it safe/) !== ending(/Go for growth/), 'allocation should matter');
+});
+
+test('stage result says what happened: event cards with names and ages, or a quiet stretch', () => {
+  let sawCards = 0, sawQuiet = 0;
+  for (let seed = 1; seed <= 12; seed++) {
+    const g = newGame(seed);
+    begin(g);
+    playStageScreen(g);
+    const t = text(g.root);
+    assert(/What happened/.test(t), `seed ${seed}: section heading`);
+    const cards = findAll(g.root, n => hasClass(n, 'event-card'));
+    if (cards.length) {
+      sawCards++;
+      for (const c of cards) assert(/ · age \d\d/.test(c.textContent), `seed ${seed}: card shows an age`);
+    } else {
+      sawQuiet++;
+      assert(/Nothing dramatic/.test(t), `seed ${seed}: quiet message`);
+    }
+  }
+  assert(sawCards > 0, 'at least one of twelve lives had an event in the first stage');
+  assert(sawQuiet + sawCards === 12, 'every seed rendered one or the other');
+});
+
+test('health premiums show up as a line item once you buy cover', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g, { [qIndex(0, 'health')]: /Basic cover/ });
+  assert(/paid for health cover/.test(text(g.root)), 'premiums line');
+  const g2 = newGame(4271);
+  begin(g2);
+  playStageScreen(g2);
+  assert(!/paid for health cover/.test(text(g2.root)), 'no premiums line without cover');
 });

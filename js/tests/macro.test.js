@@ -17,6 +17,7 @@ const aarav = personas.find(p => p.id === 'metro-it');
 const meera = personas.find(p => p.id === 'govt-psu');
 const inst = (id) => params.instruments.find(i => i.id === id);
 const pi = stationaryDistribution(params.macro);
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', retire: 'at60' };
 const fresh = (persona = aarav, seed = 4271, p = params) => createState(persona, p, { seed, retirementAge: 60 });
 
 // Params where every row of the economy leads to one regime, so a year's regime is known in advance.
@@ -139,7 +140,7 @@ test('each year records its regime, inflation, returns and holdings', () => {
 test('same seed: the economy and market returns do not depend on how the player invests', () => {
   const life = (allocKey) => {
     const stage = stages[0];
-    const picks = { savings: 'balanced', invest: allocKey, growth: 'none' };
+    const picks = { ...base, invest: allocKey };
     let s = applyPicks(fresh(), stage, decisions, picks);
     s = runUntil(s, params, 50);
     return s.history.map(y => [y.regime, y.returns]);
@@ -149,9 +150,10 @@ test('same seed: the economy and market returns do not depend on how the player 
 });
 
 test('new savings are spread over instruments by the allocation, and only that', () => {
-  const picks = { savings: 'balanced', invest: 'bold', growth: 'none' };
+  const picks = { ...base, invest: 'bold' };
+  const noEvents = { ...params, events: [] }; // keep life events out of this one
   const s0 = applyPicks(fresh(), stages[0], decisions, picks);
-  const y = tickYear(s0, params).history[0];
+  const y = tickYear(s0, noEvents).history[0];
   assert(y.saved > 0, 'saved something');
   assert(Math.abs(y.holdings.equity - 0.70 * y.saved) < 1e-6, 'equity share');
   assert(Math.abs(y.holdings.pf - 0.20 * y.saved) < 1e-6, 'pf share');
@@ -160,10 +162,10 @@ test('new savings are spread over instruments by the allocation, and only that',
 });
 
 test('changing the allocation never sells existing holdings', () => {
-  let s = applyPicks(fresh(), stages[0], decisions, { savings: 'balanced', invest: 'bold', growth: 'none' });
+  let s = applyPicks(fresh(), stages[0], decisions, { ...base, invest: 'bold' });
   s = runUntil(s, params, 30);
   const equityBefore = s.holdings.equity;
-  const switched = applyPicks(s, stages[1], decisions, { savings: 'balanced', invest: 'safe', growth: 'none' });
+  const switched = applyPicks(s, stages[1], decisions, { ...base, invest: 'safe' });
   assertEqual(switched.holdings, s.holdings);
   assertEqual(switched.holdings.equity, equityBefore);
 });

@@ -100,7 +100,7 @@ test('engine: every year balances (net worth change is fully explained)', () => 
   for (const persona of [aarav, meera]) {
     for (const seed of [1, 2, 3, 4271]) {
       for (const y of play(persona, seed).history) {
-        const explained = y.netWorthStart + y.income - y.expenses - y.consumed
+        const explained = y.netWorthStart + y.income + y.extraIncome - y.expenses - y.consumed
           + y.investGain + y.cashInterest - y.debtInterest;
         assert(Math.abs(explained - y.netWorth) < 1e-6,
           `${persona.id} seed ${seed} age ${y.age}: ${explained} vs ${y.netWorth}`);
@@ -157,14 +157,14 @@ test('engine: a higher savings rate leaves the same life richer on the same seed
     'saving more should win with a positive expected return');
 });
 
-// Golden values for seed 4271 with the current engine.json, macro.json, instruments.json and persona files.
+// Golden values for seed 4271 with the current engine, macro, instruments, events and persona files.
 // If you change those numbers on purpose, re-pin these; if you didn't, something broke.
 test('engine: known outcomes for seed 4271 (regression guard)', () => {
   const near = (actual, expected) => Math.abs(actual - expected) / expected < 1e-8;
   const a = play(aarav, 4271).history.at(-1);
   const m = play(meera, 4271).history.at(-1);
-  assert(near(a.netWorth, 2038433386.77), `Aarav final nominal net worth ${a.netWorth}`);
-  assert(near(m.netWorth, 912560366.45), `Meera final nominal net worth ${m.netWorth}`);
+  assert(near(a.netWorth, 1901579470.32), `Aarav final nominal net worth ${a.netWorth}`);
+  assert(near(m.netWorth, 822987188.20), `Meera final nominal net worth ${m.netWorth}`);
 });
 
 // ---- decade summary ----

@@ -1,6 +1,7 @@
 import { h, mount } from '../dom.js';
 import { formatINR } from '../format.js';
 import { currentOption, stageEnd } from '../../engine/stages.js';
+import { describeEvent, describeCoping } from '../eventText.js';
 
 // Row of stage dots across the top: done / current / still to come.
 export function journeyBar(stages, currentId, doneIds) {
@@ -99,6 +100,33 @@ function economyStrip(economy, regimes) {
     h('p', { class: 'hint', text: `${summary}.` }));
 }
 
+// What happened along the way, year by year, and how any shortfall was met.
+function eventsSection(eventYears, eventDefs, instruments) {
+  if (!eventYears.length) {
+    return h('section', { class: 'events quiet' },
+      h('h2', { text: 'What happened' }),
+      h('p', { text: 'A quiet stretch. Nothing dramatic came your way.' }));
+  }
+  return h('section', { class: 'events' },
+    h('h2', { text: 'What happened' }),
+    h('ul', { class: 'event-list' },
+      eventYears.flatMap(y => {
+        const coping = describeCoping(y.coping, instruments);
+        return y.events.map((rec, i) => {
+          const def = eventDefs[rec.id];
+          const lines = describeEvent(def, rec);
+          return h('li', { class: `event-card kind-${def.kind}` },
+            h('span', { class: 'event-emoji', 'aria-hidden': 'true', text: def.emoji }),
+            h('div', { class: 'event-body' },
+              h('p', { class: 'event-title' },
+                h('strong', { text: def.name }),
+                h('span', { class: 'event-age', text: ` · age ${y.age}` })),
+              lines.map(t => h('p', { class: 'event-line', text: t })),
+              i === y.events.length - 1 && coping && h('p', { class: 'event-line coping', text: coping })));
+        });
+      })));
+}
+
 function stat(label, value) {
   return h('div', { class: 'stat' },
     h('span', { class: 'stat-value', text: value }),
@@ -121,10 +149,12 @@ export function renderStageResult(root, ctx) {
       h('p', { class: 'headline', text: headline }),
       h('p', { class: 'hint', text: "All amounts are in today's rupees." })),
     economyStrip(s.economy, ctx.regimes),
+    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments),
     h('div', { class: 'stats' },
       stat('earning a year by the end', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),
-      s.learningReal > 0 && stat('spent on getting better', formatINR(s.learningReal))),
+      s.learningReal > 0 && stat('spent on getting better', formatINR(s.learningReal)),
+      s.premiumsReal > 0 && stat('paid for health cover', formatINR(s.premiumsReal))),
     ctx.picked.length > 0 && h('section', { class: 'card picks-recap' },
       h('h2', { text: 'Your choices' }),
       h('ul', {}, ctx.picked.map(p => h('li', { text: `${p.emoji} ${p.title}` })))),

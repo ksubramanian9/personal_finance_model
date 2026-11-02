@@ -58,6 +58,11 @@ export const schemas = {
     allocation: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  events: {
+    insurance: { employerCoverReal: 'number', premiumAgeLoadingPct: 'number' },
+    events: 'array',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   macro: {
     order: 'array', start: 'string', regimes: 'object', transitions: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

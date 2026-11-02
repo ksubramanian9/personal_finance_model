@@ -67,6 +67,62 @@ export function checkInstruments(data, regimeIds, label) {
   return data;
 }
 
+const EVENT_KINDS = ['jobLoss', 'payJump', 'expense', 'windfall'];
+const COVERS = ['employer', 'player'];
+const isRange = (r) => Array.isArray(r) && r.length === 2 && r.every(isNum) && r[0] >= 0 && r[0] <= r[1];
+
+export function checkEvents(data, regimeIds, label) {
+  const problems = [];
+  const ins = data.insurance;
+  if (ins.employerCoverReal < 0) problems.push('"insurance.employerCoverReal" should not be negative');
+  if (ins.premiumAgeLoadingPct < 0 || ins.premiumAgeLoadingPct > 20) problems.push('"insurance.premiumAgeLoadingPct" should be from 0 to 20');
+  if (!data.events.length) problems.push('"events" is empty');
+  const seen = new Set();
+  data.events.forEach((e, i) => {
+    const at = `events[${i}]`;
+    for (const f of ['id', 'emoji', 'name', 'story']) if (!isStr(e[f])) problems.push(`"${at}.${f}" is missing`);
+    if (seen.has(e.id)) problems.push(`"${at}.id" "${e.id}" is used twice`);
+    seen.add(e.id);
+    if (!EVENT_KINDS.includes(e.kind)) problems.push(`"${at}.kind" should be one of ${EVENT_KINDS.join(', ')}`);
+
+    const p = e.prob;
+    if (!p || typeof p !== 'object') problems.push(`"${at}.prob" is missing`);
+    else if (isNum(p.base)) { if (p.base < 0 || p.base > 1) problems.push(`"${at}.prob.base" should be a probability from 0 to 1`); }
+    else if (!isStr(p.fromCareer)) problems.push(`"${at}.prob" needs either "base" or "fromCareer"`);
+
+    for (const r of regimeIds) {
+      const m = e.regimeMult?.[r];
+      if (!isNum(m) || m < 0 || m > 10) problems.push(`"${at}.regimeMult.${r}" should be a number from 0 to 10`);
+    }
+    const bands = e.ageMult;
+    if (!Array.isArray(bands) || !bands.length) problems.push(`"${at}.ageMult" should list [maxAge, multiplier] bands`);
+    else {
+      bands.forEach((b, j) => {
+        if (!Array.isArray(b) || !isNum(b[0]) || !isNum(b[1]) || b[1] < 0) problems.push(`"${at}.ageMult[${j}]" should be [maxAge, multiplier]`);
+        else if (j > 0 && isNum(bands[j - 1][0]) && b[0] <= bands[j - 1][0]) problems.push(`"${at}.ageMult" ages should go up`);
+      });
+      const lastAge = bands[bands.length - 1]?.[0];
+      if (!(lastAge >= 100)) problems.push(`"${at}.ageMult" should end with a band up to age 100 or more`);
+    }
+    if (e.capabilityEffect !== undefined && !isNum(e.capabilityEffect)) problems.push(`"${at}.capabilityEffect" should be a number`);
+
+    if (e.kind === 'jobLoss') {
+      if (!isRange(e.monthsOut) || e.monthsOut[1] > 12) problems.push(`"${at}.monthsOut" should be [min, max] months, at most 12`);
+      if (!isNum(e.severanceMonths) || e.severanceMonths < 0) problems.push(`"${at}.severanceMonths" should be a number`);
+      if (!isRange(e.payHitPct) || e.payHitPct[1] > 60) problems.push(`"${at}.payHitPct" should be [min, max] percent, at most 60`);
+    }
+    if (e.kind === 'expense' || e.kind === 'windfall') {
+      if (!isRange(e.amountReal)) problems.push(`"${at}.amountReal" should be [min, max] in today's rupees`);
+      if (!isNum(e.shape) || e.shape < 0.5 || e.shape > 6) problems.push(`"${at}.shape" should be a number from 0.5 to 6 (1 = even, higher = mostly small, sometimes big)`);
+    }
+    if (e.kind === 'expense') {
+      if (!Array.isArray(e.coveredBy) || e.coveredBy.some(c => !COVERS.includes(c))) problems.push(`"${at}.coveredBy" should list any of ${COVERS.join(', ')}`);
+    }
+  });
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
 export function checkEngine(e, instrumentIds, label) {
   const problems = [];
   if (e.savingsRate < 0 || e.savingsRate > 1) problems.push('"savingsRate" should be between 0 and 1');
@@ -84,7 +140,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [<instrument>, ...] }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...} }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -94,5 +150,8 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
   const engine = checkEngine(
     await loadJSON('data/engine.json', opts(schemas.engine, 'engine.json')),
     inst.instruments.map(i => i.id), 'engine.json');
-  return { ...engine, macro, instruments: inst.instruments };
+  const ev = checkEvents(
+    await loadJSON('data/events.json', opts(schemas.events, 'events.json')),
+    macro.order, 'events.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance };
 }

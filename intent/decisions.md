@@ -28,3 +28,7 @@
 | 22 | One economy-regime table drives inflation, market returns and raises; the job's `cyclicality` scales the raise effect | Independent shocks per asset | Correlated pain; government job stays steady, IT job swings |
 | 23 | New savings follow the player's mix; existing holdings are never sold to rebalance; provident funds are locked | Auto-rebalance each stage | Rebalancing would trigger tax and hide the lesson that switching late is slow |
 | 24 | Calibration is enforced by tests (long-run mix, compounded returns, inflation, ordering) | Trusting the numbers by eye | Data edits that break the sourced anchors fail loudly |
+| 25 | Events use their own random stream and never depend on what the player buys, saves or invests; skill (`capabilityEffect`) shifts only the odds | One shared stream; choices that change which events happen | Same seed + different choices must show the same luck. Skill is the intended exception (intent: layoffs hit lower-capability people harder) |
+| 26 | Insurance and an emergency fund are decisions in the early and family stages (health again before retirement) | Always on; or a separate screen | They persist like other choices and keep Level 1 to one question at a time |
+| 27 | Term life insurance is deferred to the family increment | Build it now | Nothing can kill the breadwinner until family exists, so it would have no effect |
+| 28 | Persona base pay growth lowered for IT (9 to 7%) once job offers became explicit events | Keep 9% | Switching premiums were counted twice |

@@ -23,9 +23,9 @@
     "siblingSupportMonthly": 5000
   },
   "career": {
-    "salaryGrowthPct": 9,
+    "salaryGrowthPct": 7,
     "jobSwitchJumpPct": 30,
-    "layoffRisk": 0.06,
+    "layoffRisk": 0.045,
     "cyclicality": 1,
     "pension": false,
     "employerHealthCover": true

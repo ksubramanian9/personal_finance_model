@@ -1,0 +1,83 @@
+{
+  "insurance": {
+    "employerCoverReal": 300000,
+    "premiumAgeLoadingPct": 4
+  },
+  "events": [
+    {
+      "id": "job_loss", "kind": "jobLoss", "emoji": "📉", "name": "Layoff",
+      "prob": { "fromCareer": "layoffRisk" },
+      "regimeMult": { "boom": 0.4, "normal": 1, "slowdown": 2, "crisis": 4 },
+      "ageMult": [[55, 1], [100, 1.5]],
+      "capabilityEffect": -8,
+      "monthsOut": [3, 9], "severanceMonths": 2, "payHitPct": [0, 12],
+      "story": "Layoffs hit and you were out of work for {months} months. Your next job paid {pct}% less."
+    },
+    {
+      "id": "job_offer", "kind": "payJump", "emoji": "📞", "name": "Recruiter's call",
+      "prob": { "base": 0.08, "requiresCareerPositive": "jobSwitchJumpPct" },
+      "regimeMult": { "boom": 1.6, "normal": 1, "slowdown": 0.5, "crisis": 0.2 },
+      "ageMult": [[45, 1], [100, 0.3]],
+      "capabilityEffect": 12,
+      "story": "A recruiter's offer was too good to refuse. Your pay jumped {pct}%."
+    },
+    {
+      "id": "medical_self", "kind": "expense", "emoji": "🚑", "name": "Hospital stay",
+      "prob": { "base": 0.05 },
+      "regimeMult": { "boom": 1, "normal": 1, "slowdown": 1, "crisis": 1.1 },
+      "ageMult": [[35, 0.6], [50, 1], [100, 2]],
+      "amountReal": [100000, 2000000], "shape": 6,
+      "coveredBy": ["employer", "player"],
+      "story": "A hospital stay cost {cost}."
+    },
+    {
+      "id": "parent_health", "kind": "expense", "emoji": "🧓", "name": "Parent's health scare",
+      "prob": { "base": 0.05 },
+      "regimeMult": { "boom": 1, "normal": 1, "slowdown": 1, "crisis": 1 },
+      "ageMult": [[35, 0.5], [50, 1.2], [100, 1.5]],
+      "amountReal": [150000, 2500000], "shape": 5,
+      "coveredBy": ["player"],
+      "story": "A parent fell seriously ill and the bills came to {cost}."
+    },
+    {
+      "id": "big_repair", "kind": "expense", "emoji": "🔧", "name": "Big unplanned expense",
+      "prob": { "base": 0.06 },
+      "regimeMult": { "boom": 1, "normal": 1, "slowdown": 1, "crisis": 1 },
+      "ageMult": [[100, 1]],
+      "amountReal": [30000, 250000], "shape": 2,
+      "coveredBy": [],
+      "story": "The roof leaked, the bike died and the laptop gave up. It all came to {cost}."
+    },
+    {
+      "id": "relative_loan", "kind": "expense", "emoji": "🤝", "name": "A relative asks for help",
+      "prob": { "base": 0.03 },
+      "regimeMult": { "boom": 0.8, "normal": 1, "slowdown": 1.3, "crisis": 1.6 },
+      "ageMult": [[100, 1]],
+      "amountReal": [100000, 500000], "shape": 1,
+      "coveredBy": [],
+      "story": "A relative needed urgent money. You lent {cost} and most of it never came back."
+    },
+    {
+      "id": "family_wedding", "kind": "expense", "emoji": "💒", "name": "Family wedding",
+      "prob": { "base": 0.05 },
+      "regimeMult": { "boom": 1, "normal": 1, "slowdown": 1, "crisis": 1 },
+      "ageMult": [[40, 1], [100, 0.5]],
+      "amountReal": [50000, 300000], "shape": 1,
+      "coveredBy": [],
+      "story": "Wedding season in the family. Your share came to {cost}."
+    },
+    {
+      "id": "windfall", "kind": "windfall", "emoji": "🎁", "name": "Windfall",
+      "prob": { "base": 0.03 },
+      "regimeMult": { "boom": 1.5, "normal": 1, "slowdown": 0.7, "crisis": 0.5 },
+      "ageMult": [[100, 1]],
+      "amountReal": [200000, 3000000], "shape": 2,
+      "story": "A bonus, a small inheritance or a lucky break brought in {amount}."
+    }
+  ],
+  "provenance": {
+    "basis": "Illustrative. Probabilities, sizes and the age and economy multipliers are game tuning meant to produce roughly one notable event every three years, not measured rates. Amounts are in today's rupees and grow with prices. Layoff chance comes from each persona. Insurance: employer cover of 3 lakh and a premium that rises 4% a year of age after 30 are rough guesses; the player-bought covers and premiums are in stages.json.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}
