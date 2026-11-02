@@ -2,6 +2,7 @@ import { h, mount } from '../dom.js';
 import { formatINR } from '../format.js';
 import { currentOption, stageEnd } from '../../engine/stages.js';
 import { describeEvent, describeCoping } from '../eventText.js';
+import { whyToggle } from '../whyPanel.js';
 
 // Row of stage dots across the top: done / current / still to come.
 export function journeyBar(stages, currentId, doneIds) {
@@ -155,6 +156,7 @@ export function renderStageResult(root, ctx) {
       stat('saved over these years', formatINR(s.savedReal)),
       s.learningReal > 0 && stat('spent on getting better', formatINR(s.learningReal)),
       s.premiumsReal > 0 && stat('paid for health cover', formatINR(s.premiumsReal))),
+    whyToggle({ disclosure: ctx.disclosure, years: ctx.years, regimes: ctx.regimes, eventDefs: ctx.eventDefs, title: `Age ${s.fromAge} to ${s.toAge}, in detail` }),
     ctx.picked.length > 0 && h('section', { class: 'card picks-recap' },
       h('h2', { text: 'Your choices' }),
       h('ul', {}, ctx.picked.map(p => h('li', { text: `${p.emoji} ${p.title}` })))),

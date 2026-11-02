@@ -210,7 +210,8 @@ test('a start age past the first stage skips straight to the stage it is in', ()
 });
 
 test('no screen leaks stray words like "undefined", "null", "NaN" or "false"', () => {
-  const stray = /undefined|\bnull\b|NaN|\bfalse\b|\[object/;
+  // No word boundaries on purpose: a stray "false" glued to the end of "lakh" must still be caught.
+  const stray = /undefined|null|NaN|false|\[object/;
   const g = newGame();
   const seen = [];
   const snap = (label) => seen.push([label, text(g.root)]);
@@ -288,4 +289,162 @@ test('health premiums show up as a line item once you buy cover', () => {
   begin(g2);
   playStageScreen(g2);
   assert(!/paid for health cover/.test(text(g2.root)), 'no premiums line without cover');
+});
+
+// ---- Level 2: the "why" ----
+
+const figures = (root) => findAll(root, n => n.tagName === 'FIGURE');
+const tables = (root) => findAll(root, n => n.tagName === 'TABLE');
+const whyRegion = (root) => findAll(root, n => n.attrs.id === 'why')[0];
+const whyButtons = (root) => findAll(root, n => hasClass(n, 'why-btn'));
+const chooseMoney = (root, value) => {
+  const radio = findAll(root, n => n.tagName === 'INPUT' && n.attrs.value === value)[0];
+  assert(radio, `no ${value} radio on screen`);
+  radio.checked = true;
+  radio.dispatch('change');
+};
+
+function playToEnd(seed = 4271) {
+  const g = newGame(seed);
+  begin(g);
+  finish(g);
+  return g;
+}
+
+test('Level 1 stays plain: no charts, no tables, the why region is closed', () => {
+  const g = playToEnd();
+  assertEqual(figures(g.root).length, 0);
+  assertEqual(tables(g.root).length, 0);
+  assertEqual(whyRegion(g.root).hidden, true);
+  assert(!/Forces at work/.test(text(g.root)), 'no explanations until asked');
+});
+
+test('"Why did it go this way?" opens Level 2: two charts and a prompt, no table yet', () => {
+  const g = playToEnd();
+  click(g.root, /^Why did it go this way\?$/);
+  assertEqual(whyRegion(g.root).hidden, false);
+  assertEqual(figures(g.root).length, 2);
+  assertEqual(tables(g.root).length, 0);
+  assert(/What you owned/.test(text(g.root)) && /What came in and what went out/.test(text(g.root)), 'both charts');
+  assert(/Tap "Why\?" on a decade card/.test(text(g.root)), 'prompt for the next step');
+  assert(buttonWithText(g.root, /^Hide the why$/), 'the button now closes it');
+});
+
+test("a decade's Why? opens its own chart, its money story and a year-by-year table", () => {
+  const g = playToEnd();
+  const btns = whyButtons(g.root);
+  assert(btns.length >= 4, 'one per decade');
+  btns[1].click(); // the 30s
+  assertEqual(whyRegion(g.root).hidden, false);
+  assertEqual(figures(g.root).length, 3);
+  assert(/Your 30s: what you owned/.test(text(g.root)), 'decade chart');
+  assert(/Your 30s, in detail/.test(text(g.root)), 'panel title');
+  const t = tables(g.root);
+  assertEqual(t.length, 1);
+  const bodyRows = findAll(t[0], n => n.tagName === 'TR').length - 1; // minus the header row
+  assertEqual(bodyRows, 10);
+  assert(/Forces at work/.test(text(g.root)) && /Prices rose \d+% over these 10 years/.test(text(g.root)), 'named forces');
+  assert(/What came in/.test(text(g.root)) && /Investment growth/.test(text(g.root)), 'bridge lines');
+  assertEqual(btns.map(b => b.attrs['aria-expanded']), ['false', 'true', 'false', 'false']);
+});
+
+test('opening another decade replaces the first one', () => {
+  const g = playToEnd();
+  const btns = whyButtons(g.root);
+  btns[0].click();
+  assert(/Your 20s, in detail/.test(text(g.root)), '20s open');
+  btns[2].click();
+  assert(/Your 40s, in detail/.test(text(g.root)) && !/Your 20s, in detail/.test(text(g.root)), '40s replaced 20s');
+  assertEqual(tables(g.root).length, 1);
+  assertEqual(btns.map(b => b.attrs['aria-expanded']), ['false', 'false', 'true', 'false']);
+});
+
+test('the bridge shows lines that explain the change, each with a signed amount', () => {
+  const g = playToEnd();
+  whyButtons(g.root)[0].click();
+  const rows = findAll(g.root, n => hasClass(n, 'bridge-row'));
+  assert(rows.length >= 6, `bridge rows: ${rows.length}`);
+  assert(rows.every(r => /[+−]₹/.test(r.textContent)), 'every line has a signed amount');
+  assert(/Prices rising on what you hold/.test(text(g.root)), 'inflation line in today\'s rupees');
+});
+
+test('the rupee toggle switches charts, panel and table between kinds of rupee', () => {
+  const g = playToEnd();
+  whyButtons(g.root)[1].click();
+  assert(/today's rupees/.test(tables(g.root)[0].textContent), 'table starts in today\'s rupees');
+  const realText = text(g.root);
+  chooseMoney(g.root, 'nominal');
+  assert(/rupees of each year/.test(tables(g.root)[0].textContent), 'table follows the toggle');
+  assert(/rupees of that year/.test(figures(g.root)[0].textContent), 'charts follow too');
+  assert(!/Prices rising on what you hold/.test(text(g.root)), 'no inflation line in nominal rupees');
+  assert(text(g.root) !== realText, 'numbers changed');
+  assertEqual(whyButtons(g.root)[1].attrs['aria-expanded'], 'true');
+  chooseMoney(g.root, 'real');
+  assert(/Prices rising on what you hold/.test(text(g.root)), 'back to today\'s rupees');
+});
+
+test('"Hide the why" closes everything again', () => {
+  const g = playToEnd();
+  whyButtons(g.root)[0].click();
+  click(g.root, /^Hide the why$/);
+  assertEqual(whyRegion(g.root).hidden, true);
+  assertEqual(figures(g.root).length, 0);
+  assertEqual(tables(g.root).length, 0);
+  assertEqual(whyButtons(g.root).map(b => b.attrs['aria-expanded']), ['false', 'false', 'false', 'false']);
+});
+
+test('a stage result has its own Why button, and the level sticks for later stages', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g);
+  assertEqual(findAll(g.root, n => hasClass(n, 'why-panel')).length, 0);
+  assertEqual(tables(g.root).length, 0);
+  click(g.root, /^Why did it go this way\?$/);
+  assertEqual(findAll(g.root, n => hasClass(n, 'why-panel')).length, 1);
+  assertEqual(tables(g.root).length, 1);
+  assert(/Age 22 to 32, in detail/.test(text(g.root)), 'panel covers the stage');
+  click(g.root, /^On to/);
+  playStageScreen(g);
+  assertEqual(findAll(g.root, n => hasClass(n, 'why-panel')).length, 1);
+  assert(/Age 32 to 42, in detail/.test(text(g.root)), 'the next stage opens by itself');
+  click(g.root, /^Hide the why$/);
+  click(g.root, /^On to/);
+  playStageScreen(g);
+  assertEqual(findAll(g.root, n => hasClass(n, 'why-panel')).length, 0);
+});
+
+test('having asked at a stage, the end screen opens with the charts already showing', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g);
+  click(g.root, /^Why did it go this way\?$/);
+  click(g.root, /^On to/);
+  for (let i = 1; i < stages.length; i++) { playStageScreen(g); click(g.root, /^(On to|See the whole story)/); }
+  assertEqual(whyRegion(g.root).hidden, false);
+  assertEqual(figures(g.root).length, 2);
+});
+
+test('no stray words on any Level 2 screen, in either kind of rupee', () => {
+  const stray = /undefined|null|NaN|Infinity|false|\[object/;
+  for (const seed of [4271, 11, 3]) {
+    const g = playToEnd(seed);
+    click(g.root, /^Why did it go this way\?$/);
+    for (const mode of ['real', 'nominal']) {
+      chooseMoney(g.root, mode);
+      for (const b of whyButtons(g.root)) {
+        b.click();
+        const m = text(g.root).match(stray);
+        assert(!m, `seed ${seed} ${mode}: found "${m && m[0]}"`);
+      }
+    }
+  }
+});
+
+test('the year table has real structure: a caption, column headers and row headers', () => {
+  const g = playToEnd();
+  whyButtons(g.root)[0].click();
+  const t = tables(g.root)[0];
+  assert(findAll(t, n => n.tagName === 'CAPTION').length === 1, 'caption');
+  assert(findAll(t, n => n.tagName === 'TH' && n.attrs.scope === 'col').length === 7, 'seven column headers');
+  assert(findAll(t, n => n.tagName === 'TH' && n.attrs.scope === 'row').length >= 8, 'a row header per year');
 });

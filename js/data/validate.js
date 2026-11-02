@@ -93,5 +93,10 @@ export const schemas = {
       good: 'string', warn: 'string', bad: 'string',
     },
     sizes: { base: 'string', hero: 'string', radius: 'string' },
+    chart: {
+      cash: 'string', fd: 'string', pf: 'string', gold: 'string', equity: 'string', loans: 'string',
+      earned: 'string', spent: 'string', surface: 'string', grid: 'string', axis: 'string', muted: 'string', band: 'string',
+    },
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
 };

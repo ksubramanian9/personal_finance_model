@@ -6,6 +6,8 @@ import './personas.test.js';
 import './engine.test.js';
 import './macro.test.js';
 import './events.test.js';
+import './explain.test.js';
+import './charts.test.js';
 import './stages.test.js';
 import './flow.test.js';
 

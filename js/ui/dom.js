@@ -4,6 +4,25 @@ export function mount(root, ...children) {
   root.replaceChildren(...children.flat().filter(c => c != null && c !== false));
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Same idea as h(), for SVG elements (they need their own namespace). Attributes only; class is
+// set as an attribute.
+export function svg(tag, props = {}, ...children) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v === false || v == null) continue;
+    if (k === 'text') el.textContent = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
+    else el.setAttribute(k, v === true ? '' : String(v));
+  }
+  for (const c of children.flat()) {
+    if (c == null || c === false) continue;
+    el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }
+  return el;
+}
+
 // Tiny element builder. Text goes in via textContent, never as HTML.
 export function h(tag, props = {}, ...children) {
   const el = document.createElement(tag);

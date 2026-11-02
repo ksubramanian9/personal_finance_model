@@ -5,6 +5,7 @@ import { h, mount } from './dom.js';
 import { renderPersonaPicker } from './screens/personaPicker.js';
 import { renderStageDecisions, renderStageResult } from './screens/stage.js';
 import { renderLifeSummary } from './screens/lifeSummary.js';
+import { createDisclosure } from './disclosure.js';
 
 const randomSeed = () => Math.floor(Math.random() * 9000) + 1000;
 
@@ -12,6 +13,8 @@ const randomSeed = () => Math.floor(Math.random() * 9000) + 1000;
 // `session` holds the player's setup: { personaId, retirementAge, seed }.
 export function createFlow(root, data, session) {
   let game = null; // { persona, state, stage, picks, startIdx }
+  const disclosure = createDisclosure(); // how much detail the player has asked for, for the whole session
+  const eventDefs = Object.fromEntries(data.params.events.map(e => [e.id, e]));
 
   const doneIds = () => Object.keys(game.state.choices);
 
@@ -72,8 +75,10 @@ export function createFlow(root, data, session) {
       stage,
       summary: stageSummary(game.state.history, game.startIdx),
       regimes: data.params.macro.regimes,
-      eventDefs: Object.fromEntries(data.params.events.map(e => [e.id, e])),
+      eventDefs,
       instruments: data.params.instruments,
+      disclosure,
+      years: game.state.history.slice(game.startIdx),
       doneIds: doneIds(),
       picked,
       nextStage: nextStage(data.stages, game.state),
@@ -88,6 +93,9 @@ export function createFlow(root, data, session) {
       session,
       stages: data.stages,
       decisions: data.decisions,
+      params: data.params,
+      eventDefs,
+      disclosure,
       onSameLuck: () => startGame(game.persona),
       onNewLuck: () => { session.seed = randomSeed(); startGame(game.persona); },
       onBack: showPicker,

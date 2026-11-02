@@ -28,6 +28,10 @@ class FakeElement {
   replaceChildren(...nodes) { this.children = []; this.append(...nodes); }
   get textContent() { return this.children.map(c => c.textContent).join(''); }
   set textContent(v) { this.children = [new FakeText(v)]; }
+  // Runs listeners for any event type (tests use this for pointer and key events).
+  dispatch(type, event = {}) {
+    for (const fn of this.listeners[type] ?? []) fn({ type, target: this, preventDefault() {}, ...event });
+  }
   click() {
     if (this.disabled) return;
     for (const fn of this.listeners.click ?? []) fn({ type: 'click', target: this });
@@ -38,6 +42,7 @@ export function installFakeDom() {
   if (typeof document !== 'undefined') return false;
   globalThis.document = {
     createElement: (tag) => new FakeElement(tag),
+    createElementNS: (ns, tag) => Object.assign(new FakeElement(tag), { namespace: ns }),
     createTextNode: (t) => new FakeText(t),
   };
   return true;
@@ -56,4 +61,5 @@ export function findAll(node, pred, out = []) {
 
 export const buttons = (root) => findAll(root, n => n.tagName === 'BUTTON');
 export const buttonWithText = (root, re) => buttons(root).find(b => re.test(b.textContent));
-export const hasClass = (n, cls) => n.className.split(/\s+/).includes(cls);
+// SVG elements keep their class as an attribute, HTML ones as className.
+export const hasClass = (n, cls) => (n.className || n.attrs.class || '').split(/\s+/).includes(cls);

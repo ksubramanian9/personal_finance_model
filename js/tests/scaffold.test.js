@@ -9,6 +9,11 @@ const goodTheme = {
     accent1: '#1', accent2: '#2', accent3: '#3', good: '#4', warn: '#5', bad: '#6',
   },
   sizes: { base: '1rem', hero: '3rem', radius: '1rem' },
+  chart: {
+    cash: '#c1', fd: '#c2', pf: '#c3', gold: '#c4', equity: '#c5', loans: '#c6', earned: '#c7', spent: '#c8',
+    surface: '#fff', grid: '#e', axis: '#a', muted: '#m', band: '#b',
+  },
+  provenance: { basis: 'test', confidence: 'low', asOf: 2026 },
 };
 
 const fakeFetch = (body, { ok = true, status = 200 } = {}) => async () => ({
@@ -79,4 +84,6 @@ test('applyTheme writes CSS custom properties', () => {
   assertEqual(props['--c-primary'], '#ff0');
   assertEqual(props['--s-hero'], '3rem');
   assertEqual(props['--f-display'], 'x');
+  assertEqual(props['--ch-equity'], '#c5');
+  assertEqual(props['--ch-grid'], '#e');
 });

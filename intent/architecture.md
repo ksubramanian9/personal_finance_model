@@ -2,7 +2,7 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
-**Status:** as of increment 5 (life events and cushions). Planned-but-unbuilt modules are listed at the bottom.
+**Status:** as of increment 6 (the "why": charts, bridge, tables, rupee toggle). Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
 
@@ -12,7 +12,7 @@ tests.html              browser test runner (imports js/tests/run.js)
 package.json            only marks files as ES modules and defines `npm test`
 
 data/                   all tunable numbers and content (JSON)
-  theme.json            colors, sizes, fonts -> CSS variables
+  theme.json            colors, sizes, fonts and chart colours -> CSS variables (--c-*, --s-*, --ch-*)
   engine.json           engine parameters (cash/debt rates, savings rate, starting allocation)
   macro.json            economy regimes (inflation, raise adjustment) and the transition matrix
   instruments.json      pf / equity / fd / gold: returns by regime, liquidity, provenance
@@ -36,6 +36,7 @@ js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ impor
   tick.js               tickYear (one year), runUntil
   stages.js             nextStage, stageEnd, currentOption, applyPicks, playStage
   summary.js            stageSummary (one stage) and decadeSummary (decade cards)
+  explain.js            bridge (why net worth moved), chart series, year rows, inflationOver; real or nominal
 
 js/ui/                  rendering and user input; may import data/ and engine/
   main.js               boot: load theme + data, create the flow, show landing
@@ -43,6 +44,9 @@ js/ui/                  rendering and user input; may import data/ and engine/
   dom.js                h(): element builder (textContent); mount(): safe replaceChildren
   format.js             formatINR (lakh/crore)
   eventText.js          describeEvent, describeCoping, fillTemplate: event wording
+  disclosure.js         createDisclosure: the level the player has asked for + real/nominal choice
+  charts.js             hand-drawn SVG: netWorthChart (stacked columns), cashflowChart (two lines), niceTicks, stackedDomain
+  whyPanel.js           whyPanel (bridge + named forces), yearTable (the table twin), moneyToggle, whyToggle
   screens/              one file per screen
     personaPicker.js
     stage.js            journey bar, one-question-at-a-time decisions, stage result
@@ -84,6 +88,10 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - **History**: `tickYear` appends one record per year (flows, return, net worth nominal and real). Charts and "why" panels read history; they never recompute.
 
 ## Conventions
+- **Disclosure is a small object, not a framework.** `createDisclosure()` (made once in `flow.js`) holds `level` (1 story, 2 why, 3 under the hood) and `real`. Only a tap raises the level (`open`), `close` returns to 1, and the level sticks for the session so later stage results and the end screen open the "why" by themselves once asked. Nominal vs real is a display transform only: `explain.js` computes both from the same history.
+- **The bridge is exact.** `bridge()` lines sum from start to end net worth in both rupee modes (tests check this over many lives). In today's rupees, flows use the price level at the start of their year and the extra "prices rising on what you hold" line makes it balance; nominal mode has no such line.
+- **Charts follow the dataviz skill**: a validated palette in fixed slot order (cash, fixed deposits, provident funds, gold, equity; loans neutral grey), columns at most 24px with a 4px rounded data end and 2px gaps, 2px lines, hairline grid, a legend always, one or two direct labels, a readout that follows hover, tap and the arrow keys, and a table twin for every chart. Chart colours live in `theme.json` under `chart`. The whole-life chart uses a linear scale, so early years are tiny; each decade's "Why?" draws its own chart on its own scale, and the hint says so.
+- **Stage-level "why"** (`whyToggle`) and the end-screen region share `whyPanel`, `yearTable` and `moneyToggle`.
 - **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance }`. Pass it to `createState` and `tickYear`; tests use the same loader.
 - **Money is nominal rupees inside the engine.** `priceIndex` (1.0 at start) converts to today's rupees. History carries `*Real` fields so the UI doesn't divide.
 - **`tickYear` is pure.** It `structuredClone`s the input state and returns a new one. Randomness comes only from `state.rng`.
@@ -111,6 +119,8 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 5. Add a test that loads the real file (see `engine.test.js`) and one that breaks it.
 
 **Add an engine step.** Put it in its own pure module under `js/engine/`, call it from `tickYear`, record its effect in the year's `history` record, and extend the balance-identity test in `engine.test.js` so the new flow is accounted for.
+
+**Add a chart.** Build it in `charts.js` from a series function in `engine/explain.js` (pure, tested), reuse `frame`, `interaction` and `figure` so it gets the grid, legend, readout, keyboard control and focus ring, and give it a table twin in `whyPanel.js`. Colours come from `--ch-*` variables; a new entity needs a slot added to `theme.json` and the palette validated (`validate_palette.js` in the dataviz skill).
 
 **Add a screen.** Create `js/ui/screens/<name>.js` exporting `render<Name>(root, ...)` that calls `mount(root, ...)`, and wire it into `flow.js`.
 
@@ -142,6 +152,7 @@ Tracked in [implementation-plan](implementation-plan.md). New modules expected: 
 - Term life insurance (planned alongside health in the intent) is not built: nothing in the game can kill the breadwinner yet. It belongs with the family work in increment 8.
 - Event odds, sizes and age/economy multipliers are game tuning (confidence low).
 - Equity and gold volatilities, the gold safe-haven pattern, FD rates and the regime shares are estimates (confidence low); see provenance in the data files.
-- The stage screens are tested through the fake DOM only; nobody has looked at them in a real browser yet.
+- Screens are tested through the fake DOM, plus a few headless-Edge screenshots of serialized snapshots during increment 6 (stage result with the "why" open, the end screen with a decade open). Nobody has yet clicked through the live page in a real browser.
+- Charts are light-theme only (the app has no dark mode). Chart text is SVG scaled to the container, so on a phone the axis labels become small; the readout and table carry the same facts in normal type.
 - The "fixed draws per step" convention above has no test yet.
 - Seeds from `?seed=` are used as given; there is no UI to type a seed yet (Level 3, increment 10).

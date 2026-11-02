@@ -8,3 +8,4 @@
 4. **Persistence in v1.** How much `localStorage` (resume a run? remember the seed?).
 5. **Life expectancy.** Distribution and whether it depends on persona/health choices.
 6. **Language.** English only, or Hinglish touches in the informal tone?
+7. **Dark theme.** The app and its charts are light-only. A dark theme needs the chart palette re-stepped and validated against a dark surface (the dataviz skill has the dark values).

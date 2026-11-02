@@ -26,6 +26,7 @@ export function applyTheme(theme, root) {
   const set = (name, value) => root.style.setProperty(name, value);
   for (const [k, v] of Object.entries(theme.colors)) set(`--c-${k}`, v);
   for (const [k, v] of Object.entries(theme.sizes)) set(`--s-${k}`, v);
+  for (const [k, v] of Object.entries(theme.chart)) set(`--ch-${k}`, v);
   set('--f-display', theme.fonts.display);
   set('--f-body', theme.fonts.body);
 }

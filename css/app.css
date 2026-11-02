@@ -337,6 +337,102 @@ h1, h2, h3 {
 .event-line { font-size: 1.05rem; }
 .event-line.coping { margin-top: 0.25rem; font-weight: 600; }
 
+/* ---- Level 2: why ---- */
+.btn.small { font-size: 1.05rem; padding: 0.45rem 1.3rem; box-shadow: 0 3px 0 var(--c-ink); }
+.why-toggle { margin: 1.25rem 0; }
+.why-region, .why-slot { margin-top: 1rem; }
+.why-region[hidden] { display: none; }
+.why-region h2 { text-align: center; font-size: 1.5rem; }
+.money-toggle { justify-content: center; margin: 0.5rem 0 1rem; }
+.money-toggle legend { text-align: center; font-size: 1.1rem; }
+
+.why-btn {
+  margin-top: 0.75rem;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.2rem 1rem;
+  background: var(--c-surface);
+  color: var(--c-ink);
+  border: 2px solid var(--c-ink);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.why-btn:hover { background: var(--c-primary); }
+.why-btn:focus-visible { outline: 4px solid var(--c-accent3); outline-offset: 3px; }
+.why-btn[aria-expanded="true"] { background: var(--c-primary); }
+.decade-card.open { box-shadow: 0 0 0 4px var(--accent); }
+
+.why-panel {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  background: var(--c-surface);
+  border: 3px solid var(--c-ink);
+  border-radius: var(--s-radius);
+}
+.why-panel h3 { font-size: 1.4rem; }
+.why-panel h4 { font-size: 1.05rem; margin: 1rem 0 0.25rem; color: var(--c-inkSoft); }
+.why-panel p { margin: 0.25rem 0; }
+.bridge-list, .forces ul { list-style: none; margin: 0; padding: 0; }
+.forces li { margin: 0.35rem 0; font-size: 1.05rem; }
+.bridge-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1.4fr) minmax(3rem, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.2rem 0;
+  font-size: 1.05rem;
+}
+.bridge-track { display: block; height: 0.6rem; }
+.bridge-bar { display: block; height: 100%; border-radius: 0.3rem; }
+.bridge-bar.up { background: var(--ch-earned); }
+.bridge-bar.down { background: var(--ch-spent); }
+.bridge-amount { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; white-space: nowrap; }
+
+/* ---- charts (marks and anatomy follow the dataviz specs) ---- */
+.chart {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--ch-surface);
+  border: 3px solid var(--c-ink);
+  border-radius: var(--s-radius);
+}
+.chart h3 { font-size: 1.4rem; margin-bottom: 0.1rem; }
+.chart .hint { margin-bottom: 0.5rem; }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; margin: 0 0 0.5rem; padding: 0; font-size: 1rem; }
+.legend li { display: flex; align-items: center; gap: 0.4rem; }
+.swatch { display: inline-block; width: 0.85rem; height: 0.85rem; border-radius: 0.2rem; flex: none; }
+.chart-frame { border-radius: 0.75rem; }
+.chart-frame:focus-visible { outline: 4px solid var(--c-accent3); outline-offset: 4px; }
+.chart-svg { display: block; width: 100%; max-width: 680px; height: auto; margin: 0 auto; touch-action: manipulation; }
+.chart-svg .grid { stroke: var(--ch-grid); stroke-width: 1; }
+.chart-svg .baseline { stroke: var(--ch-axis); stroke-width: 1; }
+.chart-svg .axis-label { fill: var(--c-inkSoft); font: 500 12px var(--f-body); }
+.chart-svg .end-label { fill: var(--c-ink); font: 600 12px var(--f-body); }
+.chart-svg .active-year { fill: var(--ch-grid); opacity: 0.7; }
+.chart-svg .line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chart-svg .end-dot { stroke: var(--ch-surface); stroke-width: 2; }
+.chart-svg .band { fill: var(--ch-band); }
+.chart-svg .band-slowdown { opacity: 0.12; }
+.chart-svg .band-crisis { opacity: 0.28; }
+.chart-svg .hit { cursor: pointer; }
+.chart-readout { margin-top: 0.5rem; min-height: 4.5rem; font-size: 1.05rem; }
+.chart-readout p { margin: 0; }
+.readout-head { font-weight: 700; }
+.readout-parts { list-style: none; display: flex; flex-wrap: wrap; gap: 0.1rem 1rem; margin: 0.2rem 0 0; padding: 0; }
+.readout-parts li { display: flex; align-items: center; gap: 0.35rem; }
+.readout-events { margin-top: 0.2rem; color: var(--c-inkSoft); }
+
+.table-wrap { overflow-x: auto; margin: 1rem 0; border: 3px solid var(--c-ink); border-radius: var(--s-radius); background: var(--c-surface); }
+.year-table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+.year-table caption { text-align: left; font-weight: 700; padding: 0.6rem 0.9rem 0.2rem; font-size: 1.05rem; }
+.year-table th, .year-table td { padding: 0.3rem 0.7rem; text-align: right; border-top: 1px solid var(--ch-grid); white-space: nowrap; }
+.year-table thead th { color: var(--c-inkSoft); font-weight: 600; }
+.year-table th:first-child, .year-table td:nth-child(2), .year-table td:last-child { text-align: left; }
+.year-table td { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) { .why-btn { transition: none; } }
+
 .picks-recap h2 { font-size: 1.4rem; }
 .picks-recap ul { margin: 0; padding-left: 1.25rem; }
 .picks-recap li { margin: 0.25rem 0; }
