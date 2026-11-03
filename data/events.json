@@ -74,10 +74,18 @@
       "amountReal": [200000, 3000000], "shape": 2,
       "taxable": true,
       "story": "A bonus or a lucky break brought in {amount}, before tax."
+    },
+    {
+      "id": "burnout", "kind": "burnout", "emoji": "🪫", "name": "Burnout",
+      "prob": { "fromEffort": 0.05 },
+      "regimeMult": { "boom": 1, "normal": 1, "slowdown": 1.2, "crisis": 1.5 },
+      "ageMult": [[35, 0.8], [45, 1], [100, 1.3]],
+      "monthsOut": [2, 8],
+      "story": "The long evenings caught up with you. You took {months} months off to recover, mostly unpaid."
     }
   ],
   "provenance": {
-    "basis": "Illustrative. Probabilities, sizes and the age and economy multipliers are game tuning meant to produce roughly one notable event every three years, not measured rates. Amounts are in today's rupees and grow with prices. Layoff chance comes from each persona. Insurance: employer cover of 3 lakh and a premium that rises 4% a year of age after 30 are rough guesses; the player-bought covers and premiums are in stages.json.",
+    "basis": "Illustrative. Probabilities, sizes and the age and economy multipliers are game tuning meant to produce roughly one notable event every three years, not measured rates. Amounts are in today's rupees and grow with prices. Layoff chance comes from each persona. Burnout comes last: a chance of 5% a year at full effort, scaling with the square of the effort level, so it is rare for a light learner and common for someone going all in; it costs the months of pay. Insurance: employer cover of 3 lakh and a premium that rises 4% a year of age after 30 are rough guesses; the player-bought covers and premiums are in stages.json.",
     "confidence": "low",
     "asOf": 2026
   }

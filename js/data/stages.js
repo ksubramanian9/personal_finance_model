@@ -6,7 +6,7 @@ import { ValidationError, schemas } from './validate.js';
 export const EFFECT_RANGES = {
   savingsRate: [0, 1],
   learningPct: [0, 0.5],
-  growthBoost: [0, 0.1],
+  effort: [0, 1],
   retirementAge: [50, 75],
   emergencyMonths: [0, 24],
   healthCover: [0, 1e8],

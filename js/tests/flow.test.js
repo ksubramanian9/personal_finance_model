@@ -498,8 +498,8 @@ test('the year table has real structure: a caption, column headers and row heade
 // ---- housing ----
 
 // Plays the early-career stage as the given persona and stops on the first question of the next stage.
-function toFamilyStage(personaIndex, savingsTitle) {
-  const g = newGame(4271);
+function toFamilyStage(personaIndex, savingsTitle, seed = 5) {
+  const g = newGame(seed) // a seed where the government officer can afford a flat at 32;
   begin(g, personaIndex);
   playStageScreen(g, { [qIndex(0, 'savings')]: savingsTitle });
   click(g.root, /^On to/);
@@ -512,7 +512,7 @@ const stepTo = (g, re) => {
 const homeCards = (root) => findAll(root, n => n.tagName === 'BUTTON' && hasClass(n, 'option-card'));
 
 test('the home question tells you what renting and buying cost, and closes buying until you can afford it', () => {
-  const g = toFamilyStage(0, /Save hard/); // Aarav cannot afford a metro flat at 32
+  const g = toFamilyStage(0, /Save hard/, 4271); // Aarav cannot afford a metro flat at 32 on this luck
   stepTo(g, /Is it time to buy a home\?/);
   const [rent, buy] = homeCards(g.root);
   assert(/Rent now: ₹/.test(rent.textContent), 'rent shown');
@@ -675,4 +675,31 @@ test('a retired life shows its pension and drift as lines in the story', () => {
   const buttons = whyButtons(g.root);
   buttons[buttons.length - 1].click(); // the last decade, in retirement
   assert(/Pay, pension and severance/.test(text(g.root)), 'pension is part of what came in');
+});
+
+// ---- skills and how it felt ----
+
+test('learning shows what it is adding to pay, and the end screen says how it felt', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g, { [qIndex(0, 'growth')]: /Go all in/ });
+  assert(/extra pay growth from your skills/.test(text(g.root)) && /% a year/.test(text(g.root)), 'skills stat');
+  assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words');
+  click(g.root, /^On to/);
+  const done = newGame(4271);
+  begin(done);
+  finish(done, Object.fromEntries(stages.map((_, i) => [i, { [qIndex(i, 'growth')]: /Go all in/ }])));
+  assert(/How it felt: /.test(text(done.root)), 'wellbeing line');
+  assert(!/undefined|null|NaN|false|\[object|Infinity/.test(text(done.root)), 'no stray words');
+});
+
+test('the coast option shows no skills stat and a calm "how it felt"', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g);
+  assert(!/extra pay growth from your skills/.test(text(g.root)));
+  const done = newGame(4271);
+  begin(done);
+  finish(done);
+  assert(/How it felt: a sustainable pace, with no burnout\./.test(text(done.root)), 'coasting is balanced');
 });

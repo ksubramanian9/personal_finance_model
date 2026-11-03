@@ -1,0 +1,34 @@
+{
+  "gainPerYear": 0.15,
+  "decayPct": 10,
+  "maxGrowthBoost": 0.03,
+  "regimeMult": {
+    "boom": 1.3,
+    "normal": 1,
+    "slowdown": 0.8,
+    "crisis": 0.6
+  },
+  "ageMult": [
+    [
+      35,
+      1
+    ],
+    [
+      45,
+      0.7
+    ],
+    [
+      52,
+      0.4
+    ],
+    [
+      100,
+      0.15
+    ]
+  ],
+  "provenance": {
+    "basis": "Illustrative game tuning, not data. Skills are a stock between 0 and 1. Each year of full effort closes 15% of the gap to the ceiling (so each step is smaller than the last), scaled by the economy (130% in a boom down to 60% in a crisis) and by age (full until 35, then 70%, 40%, and 15% after 52). The stock loses 10% a year if it is not topped up. A full stock adds up to 3 points to yearly pay growth, times the persona's skillPayoff (the IT persona 1.0, the government officer 0.4, since government pay follows tenure and scales rather than skill). Going all in carries a burnout risk (see events.json).",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

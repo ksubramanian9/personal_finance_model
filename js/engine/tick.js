@@ -215,6 +215,7 @@ export function tickYear(state, params) {
     taxIncome, taxInvest, // tax on pay and windfalls, and the extra tax investing brought (both are in expenses)
     rent: rentPaid, homeUpkeep, homeOutlay, // what housing cost (all in expenses)
     pension: pensionIncome, retired: s.retired,
+    effort: s.effort, capability: s.capability, growthBoost: s.growthBoost, // skills at the end of the year
     drift: s.livingCost * (1 - 1 / s.creepIndex), // the part of everyday costs that crept up with pay (inside expenses)
     spouseNet, childCost, weddingCost,      // a partner's pay after tax (income); children and the wedding (in expenses)
     family: [...(marriage ? ['married'] : []), ...(birth ? ['birth'] : [])],
@@ -244,6 +245,15 @@ export function tickYear(state, params) {
   // Raises never go negative.
   const raise = Math.max(0, s.salaryGrowth + s.growthBoost + s.cyclicality * (R.wageAdjPct / 100));
   const salaryBefore = s.salary;
+  // Skills: practice closes part of the gap to the ceiling (less each time, less in a crisis, less with age),
+  // and time wears them away. They set next year's extra pay growth.
+  const cap = params.capability;
+  if (!s.retired) {
+    const ageMult = (cap.ageMult.find(([maxAge]) => s.age <= maxAge) ?? cap.ageMult[cap.ageMult.length - 1])[1];
+    const gain = s.effort * cap.gainPerYear * cap.regimeMult[regime] * ageMult * (1 - s.capability);
+    s.capability = s.capability * (1 - cap.decayPct / 100) + gain;
+    s.growthBoost = cap.maxGrowthBoost * s.capability * s.career.skillPayoff;
+  }
   s.age += 1;
   s.year += 1;
   s.priceIndex = priceIndexEnd;

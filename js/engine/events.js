@@ -22,7 +22,8 @@ export function eventProbability(def, state, regime) {
   const { prob } = def;
   if (state.retired && (def.kind === 'jobLoss' || def.kind === 'payJump')) return 0; // no job left to lose or leave
   if (prob.requiresCareerPositive && !(state.career[prob.requiresCareerPositive] > 0)) return 0;
-  const base = prob.fromCareer ? (state.career[prob.fromCareer] ?? 0) : prob.base;
+  const base = prob.fromEffort !== undefined ? prob.fromEffort * state.effort ** 2
+    : prob.fromCareer ? (state.career[prob.fromCareer] ?? 0) : prob.base;
   const capability = clamp(1 + (def.capabilityEffect ?? 0) * state.growthBoost, 0.2, 3);
   return clamp(base * def.regimeMult[regime] * ageMult(def.ageMult, state.age) * capability, 0, 0.95);
 }
@@ -60,6 +61,14 @@ export function settleEvents(state, rolled, insurance, priceIndex) {
     out.severance = (state.salary / 12) * def.severanceMonths;
     out.payHit = lerp(def.payHitPct, loss.u2) / 100;
     out.records.push({ id: def.id, months, pct: out.payHit * 100, severanceReal: out.severance / priceIndex });
+  }
+
+  // Burnout: months off, mostly unpaid, but the job and its cover stay. A layoff in the same year takes precedence.
+  const burn = !loss && happened.find(r => r.def.kind === 'burnout');
+  if (burn) {
+    const months = lerp(burn.def.monthsOut, burn.u1);
+    out.salaryReceived = state.salary * (12 - months) / 12;
+    out.records.push({ id: burn.def.id, months });
   }
 
   // Cover left this year, shared by all medical events: employer first, then the player's policy.

@@ -72,7 +72,7 @@ export function checkInstruments(data, regimeIds, label) {
   return data;
 }
 
-const EVENT_KINDS = ['jobLoss', 'payJump', 'expense', 'windfall'];
+const EVENT_KINDS = ['jobLoss', 'payJump', 'expense', 'windfall', 'burnout'];
 const COVERS = ['employer', 'player'];
 const isRange = (r) => Array.isArray(r) && r.length === 2 && r.every(isNum) && r[0] >= 0 && r[0] <= r[1];
 
@@ -93,7 +93,8 @@ export function checkEvents(data, regimeIds, label) {
     const p = e.prob;
     if (!p || typeof p !== 'object') problems.push(`"${at}.prob" is missing`);
     else if (isNum(p.base)) { if (p.base < 0 || p.base > 1) problems.push(`"${at}.prob.base" should be a probability from 0 to 1`); }
-    else if (!isStr(p.fromCareer)) problems.push(`"${at}.prob" needs either "base" or "fromCareer"`);
+    else if (isNum(p.fromEffort)) { if (p.fromEffort < 0 || p.fromEffort > 1) problems.push(`"${at}.prob.fromEffort" should be a probability from 0 to 1`); }
+    else if (!isStr(p.fromCareer)) problems.push(`"${at}.prob" needs "base", "fromCareer" or "fromEffort"`);
 
     for (const r of regimeIds) {
       const m = e.regimeMult?.[r];
@@ -116,6 +117,7 @@ export function checkEvents(data, regimeIds, label) {
       if (!isNum(e.severanceMonths) || e.severanceMonths < 0) problems.push(`"${at}.severanceMonths" should be a number`);
       if (!isRange(e.payHitPct) || e.payHitPct[1] > 60) problems.push(`"${at}.payHitPct" should be [min, max] percent, at most 60`);
     }
+    if (e.kind === 'burnout' && (!isRange(e.monthsOut) || e.monthsOut[1] > 12)) problems.push(`"${at}.monthsOut" should be [min, max] months, at most 12`);
     if (e.kind === 'expense' || e.kind === 'windfall') {
       if (!isRange(e.amountReal)) problems.push(`"${at}.amountReal" should be [min, max] in today's rupees`);
       if (!isNum(e.shape) || e.shape < 0.5 || e.shape > 6) problems.push(`"${at}.shape" should be a number from 0.5 to 6 (1 = even, higher = mostly small, sometimes big)`);
@@ -254,6 +256,29 @@ export function checkRetirement(data, label) {
   return data;
 }
 
+export function checkCapability(data, regimeIds, label) {
+  const problems = [];
+  checkProvenance(data.provenance, '', problems);
+  if (!isNum(data.gainPerYear) || data.gainPerYear <= 0 || data.gainPerYear > 1) problems.push('"gainPerYear" should be above 0 and at most 1');
+  if (!isNum(data.decayPct) || data.decayPct < 0 || data.decayPct > 100) problems.push('"decayPct" should be a percentage');
+  if (!isNum(data.maxGrowthBoost) || data.maxGrowthBoost < 0 || data.maxGrowthBoost > 0.1) problems.push('"maxGrowthBoost" should be from 0 to 0.1 (10 points of yearly pay growth)');
+  for (const r of regimeIds) {
+    const m = data.regimeMult?.[r];
+    if (!isNum(m) || m < 0 || m > 3) problems.push(`"regimeMult.${r}" should be a number from 0 to 3`);
+  }
+  const bands = data.ageMult;
+  if (!Array.isArray(bands) || !bands.length) problems.push('"ageMult" should list [maxAge, multiplier] bands');
+  else {
+    bands.forEach((b, j) => {
+      if (!Array.isArray(b) || !isNum(b[0]) || !isNum(b[1]) || b[1] < 0) problems.push(`"ageMult[${j}]" should be [maxAge, multiplier]`);
+      else if (j > 0 && isNum(bands[j - 1][0]) && b[0] <= bands[j - 1][0]) problems.push('"ageMult" ages should go up');
+    });
+    if (!(bands[bands.length - 1]?.[0] >= 100)) problems.push('"ageMult" should end with a band up to age 100 or more');
+  }
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
 export function checkEngine(e, instrumentIds, label) {
   const problems = [];
   if (e.savingsRate < 0 || e.savingsRate > 1) problems.push('"savingsRate" should be between 0 and 1');
@@ -271,7 +296,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family, retirement }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family, retirement, capability }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -294,5 +319,7 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
     await loadJSON('data/family.json', opts(schemas.family, 'family.json')), 'family.json');
   const retirement = checkRetirement(
     await loadJSON('data/retirement.json', opts(schemas.retirement, 'retirement.json')), 'retirement.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement };
+  const capability = checkCapability(
+    await loadJSON('data/capability.json', opts(schemas.capability, 'capability.json')), macro.order, 'capability.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement, capability };
 }

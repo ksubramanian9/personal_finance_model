@@ -38,6 +38,7 @@ export function createState(persona, params, { seed, retirementAge }) {
       jobSwitchJumpPct: persona.career.jobSwitchJumpPct,
       employerHealthCover: persona.career.employerHealthCover,
       pension: persona.career.pension,
+      skillPayoff: persona.career.skillPayoff,
     },
 
     // balances
@@ -73,7 +74,9 @@ export function createState(persona, params, { seed, retirementAge }) {
     healthCover: 0,     // cover the player bought, in today's rupees a year
     healthPremium: 0,   // its yearly premium at age 30, in today's rupees
     learningPct: 0,   // share of salary spent on getting better at work
-    growthBoost: 0,   // extra yearly salary growth that buys
+    effort: 0,        // 0 to 1: how much free time goes into getting better (set by a choice)
+    capability: 0,    // skills, 0 to 1: builds with effort, fades without it
+    growthBoost: 0,   // extra yearly salary growth the skills buy (worked out from capability each year)
     choices: {},      // stageId -> { decisionId: optionId }
     history: [],
   };

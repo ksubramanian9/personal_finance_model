@@ -192,6 +192,7 @@ export function renderStageResult(root, ctx) {
     h('div', { class: 'stats' },
       stat('earning a year by the end, before tax', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),
+      s.skillBoostPct >= 0.05 && stat('extra pay growth from your skills', `${s.skillBoostPct.toFixed(1)}% a year`),
       s.taxReal > 0 && stat('paid in tax', formatINR(s.taxReal)),
       s.spouseReal > 0 && stat("your partner's pay, after tax", formatINR(s.spouseReal)),
       s.childrenReal > 0 && stat('spent on children', formatINR(s.childrenReal)),

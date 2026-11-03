@@ -344,27 +344,27 @@
           "blurb": "Do the job well. No extra courses or effort.",
           "effects": {
             "learningPct": 0,
-            "growthBoost": 0
+            "effort": 0
           }
         },
         {
           "id": "light",
           "emoji": "📚",
           "title": "Keep learning",
-          "blurb": "Some courses and mentors. Costs about 2% of your pay.",
+          "blurb": "Some courses and mentors, a few evenings a week. About 2% of your pay.",
           "effects": {
             "learningPct": 0.02,
-            "growthBoost": 0.01
+            "effort": 0.4
           }
         },
         {
           "id": "serious",
           "emoji": "🚀",
           "title": "Go all in",
-          "blurb": "Certifications, side projects, long evenings. Costs about 6% of your pay.",
+          "blurb": "Certifications, side projects, long evenings. About 6% of your pay, and real risk of burnout.",
           "effects": {
             "learningPct": 0.06,
-            "growthBoost": 0.025
+            "effort": 1
           }
         }
       ]
@@ -618,7 +618,7 @@
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json). Marriage, wedding size, the partner's work and children are asked only when they apply (see onlyIf in engine/stages.js). Wedding sizes are game presets of 5, 15 and 40 lakh in today's rupees; see family.json for the household and child cost assumptions. Retirement spending levels (100%, 75% and 55% of the last working year's everyday costs) are game presets; see retirement.json for pensions, how long life lasts and what changes at retirement.",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and how much effort each learning level takes (see capability.json for what skills do to pay and how they fade). Not drawn from data. The three-track capability model is for v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json). Marriage, wedding size, the partner's work and children are asked only when they apply (see onlyIf in engine/stages.js). Wedding sizes are game presets of 5, 15 and 40 lakh in today's rupees; see family.json for the household and child cost assumptions. Retirement spending levels (100%, 75% and 55% of the last working year's everyday costs) are game presets; see retirement.json for pensions, how long life lasts and what changes at retirement.",
     "confidence": "low",
     "asOf": 2025
   }

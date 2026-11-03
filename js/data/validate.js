@@ -63,6 +63,10 @@ export const schemas = {
     events: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  capability: {
+    gainPerYear: 'number', decayPct: 'number', maxGrowthBoost: 'number', regimeMult: 'object', ageMult: 'array',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   retirement: {
     lifespan: 'object', pension: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
@@ -97,7 +101,7 @@ export const schemas = {
     obligations: { parentsSupportMonthly: 'number', siblingSupportMonthly: 'number' },
     career: {
       salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number', cyclicality: 'number',
-      pension: 'boolean', employerHealthCover: 'boolean',
+      pension: 'boolean', employerHealthCover: 'boolean', skillPayoff: 'number',
     },
     biases: { lifestyleCreep: 'number', panicSell: 'number', overConservatism: 'number' },
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

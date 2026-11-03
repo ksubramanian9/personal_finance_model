@@ -237,7 +237,7 @@ test('a renter pays rent every year, and rent follows prices', () => {
 // ---- selling as a last resort ----
 
 function stretched(livingCost, salary = null) {
-  const s = fresh(aarav, 11);
+  const s = fresh(aarav, 12);
   s.cash = 3e7;
   s.buyHome = 1;
   let t = tickYear(s, params);       // buy, then

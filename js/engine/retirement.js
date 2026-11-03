@@ -10,6 +10,8 @@ export function retire(s, params) {
   s.salary = 0;
   s.learningPct = 0;
   s.growthBoost = 0;
+  s.effort = 0;
+  s.capability = 0;
   s.support = 0;
   s.livingCost *= s.retireSpendPct;
 }

@@ -24,6 +24,7 @@ export function stageSummary(history, startIdx) {
       cost: (kind === 'married' ? y.weddingCost : 0) / y.priceIndexStart,
       count: y.childrenCount,
     }))),
+    skillBoostPct: last.growthBoost * 100, // extra yearly pay growth the skills were buying at the end
     rentReal: years.reduce((sum, y) => sum + y.rent / y.priceIndexStart, 0),
     homeValueEndReal: last.homeValue / last.priceIndexEnd,
     homeLoanEndReal: last.homeLoan / last.priceIndexEnd,

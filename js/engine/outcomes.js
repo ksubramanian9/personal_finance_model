@@ -29,6 +29,11 @@ export function outcome(state) {
   const coverYears = yearlyGap > 0 ? spendable / yearlyGap : Infinity;
   const real = (amount, y) => amount / y.priceIndexEnd;
 
+  // How it felt: years of all-in effort and burnouts. A light signal, not a score.
+  const hardYears = working.filter(y => y.effort >= 0.9).length;
+  const burnouts = history.reduce((n, y) => n + y.events.filter(e => e.id === 'burnout').length, 0);
+  const wellbeing = burnouts >= 2 ? 'burntOut' : (burnouts === 1 || hardYears >= working.length / 2) ? 'stretched' : 'balanced';
+
   const borrowedYears = working.filter(y => y.borrowed > 1).length;
   const steady = borrowedYears <= 1 && !soldHome;
 
@@ -48,5 +53,6 @@ export function outcome(state) {
     netWorthAtEndReal: endYear ? endYear.netWorthReal : 0,
     spendableAtEndReal: endYear ? real(endYear.cash + sumHoldings(endYear), endYear) : 0,
     resilience: { steady, borrowedYears, soldHome: soldHome !== undefined },
+    wellbeing: { signal: wellbeing, hardYears, burnouts, workingYears: working.length },
   };
 }

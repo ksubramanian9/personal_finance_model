@@ -4,7 +4,7 @@ import { homeOffer } from './housing.js';
 // Effect keys a choice may set on the state. Anything else is ignored by design
 // (data/stages.js rejects unknown keys when the file loads).
 // "alloc.<id>" keys live in state.alloc.<id>; the rest are top-level state fields.
-const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome',
+const SETTABLE = ['savingsRate', 'learningPct', 'effort', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome',
   'marryAge', 'weddingReal', 'spousePct', 'childPlan', 'retireSpendPct'];
 const ALLOC = 'alloc.';
 

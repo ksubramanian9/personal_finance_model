@@ -30,9 +30,9 @@ const happens = (id, u1 = 0.5, u2 = 0.5) => ({ def: def(id), occurred: true, u1,
 
 // ---- events.json ----
 
-test('events.json loads: 8 events, every kind has what it needs', () => {
-  assertEqual(params.events.length, 8);
-  assertEqual(params.events.map(e => e.id), ['job_loss', 'job_offer', 'medical_self', 'parent_health', 'big_repair', 'relative_loan', 'family_wedding', 'windfall']);
+test('events.json loads: 9 events, every kind has what it needs', () => {
+  assertEqual(params.events.length, 9);
+  assertEqual(params.events.map(e => e.id), ['job_loss', 'job_offer', 'medical_self', 'parent_health', 'big_repair', 'relative_loan', 'family_wedding', 'windfall', 'burnout']);
   assert(params.insurance.employerCoverReal > 0, 'employer cover');
 });
 

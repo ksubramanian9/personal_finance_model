@@ -29,6 +29,7 @@
     "jobSwitchJumpPct": 30,
     "layoffRisk": 0.045,
     "cyclicality": 1,
+    "skillPayoff": 1,
     "pension": false,
     "employerHealthCover": true
   },

@@ -44,6 +44,14 @@ function coverLine(o) {
   return `When you stopped, your savings could pay your living costs (after any pension) for about ${years} ${years === 1 ? 'year' : 'years'}. You needed ${o.retiredYears}.`;
 }
 
+function wellbeingLine(w) {
+  if (w.signal === 'burntOut') return `How it felt: burnout caught up with you ${w.burnouts} times. ${w.hardYears} of your ${w.workingYears} working years were all-in.`;
+  if (w.signal === 'stretched') return `How it felt: stretched. ${w.hardYears} of your ${w.workingYears} working years were all-in${w.burnouts === 1 ? ', and you hit burnout once' : ''}.`;
+  return w.hardYears > 0
+    ? `How it felt: a sustainable pace. Just ${w.hardYears} of your ${w.workingYears} working years were all-in, and no burnout.`
+    : 'How it felt: a sustainable pace, with no burnout.';
+}
+
 function verdictCard(o) {
   const notes = [];
   if (o.resilience.borrowedYears > 1) notes.push(`You borrowed to cover bills in ${o.resilience.borrowedYears} of your working years.`);
@@ -57,6 +65,7 @@ function verdictCard(o) {
       o.pensionReal > 0 && stat('pension a year', formatINR(o.pensionReal)),
       stat('your life ended at', String(o.deathAge)),
       stat('left at the end', formatINR(o.netWorthAtEndReal))),
+    h('p', { class: 'hint', text: wellbeingLine(o.wellbeing) }),
     h('p', { class: 'hint', text: o.resilience.steady ? 'A steady ride: you rarely had to borrow, and never had to sell your home.' : 'A shaky ride in places.' }),
     notes.map(t => h('p', { class: 'hint', text: t })),
     h('p', { class: 'hint', text: "Savings count cash and investments, including provident funds once you stop working. The home you live in is not counted as spendable. All amounts are in today's rupees." }));
