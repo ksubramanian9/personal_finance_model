@@ -9,8 +9,9 @@
 // The order the story is told in. Each id is a line in the net-worth bridge.
 export const BRIDGE_ORDER = [
   'income', 'windfalls',                                  // what came in
-  'living', 'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', // what went out
-  'growth', 'cashInterest', 'loanInterest',               // what the money earned (or cost)
+  'living', 'rent', 'homeUpkeep', 'homeInterest', 'homeBuying', 'homeSelling', // everyday life and housing
+  'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', // the rest of what went out
+  'growth', 'homeGrowth', 'cashInterest', 'loanInterest', // what the money earned (or cost)
   'inflation',                                            // only in today's rupees
 ];
 
@@ -28,13 +29,23 @@ export function bridge(years, { real }) {
 
   for (const y of years) {
     const k = real ? 1 / y.priceIndexStart : 1;
-    const livingAndSupport = y.expenses - y.learning - y.premium - y.eventCost - y.taxIncome - y.taxInvest;
+    const sellingCost = y.homeSale ? y.homeSale.sellingCost : 0;
+    const buyingCosts = y.homeBought ? y.homeBought.oneOff : 0;
+    // Housing money that is not a loss: the down payment and the loan's principal become (or repay) the home itself.
+    const livingAndSupport = y.expenses - y.learning - y.premium - y.eventCost - y.taxIncome - y.taxInvest
+      - y.rent - y.homeUpkeep - y.emi - y.homeOutlay - sellingCost;
     items.income += y.income * k;
     items.windfalls += y.extraIncome * k;
     items.living -= livingAndSupport * k;
     items.learning -= y.learning * k;
     items.premiums -= y.premium * k;
     items.unplanned -= y.eventCost * k;
+    items.rent -= y.rent * k;
+    items.homeUpkeep -= y.homeUpkeep * k;
+    items.homeInterest -= y.homeInterest * k;
+    items.homeBuying -= buyingCosts * k;
+    items.homeSelling -= sellingCost * k;
+    items.homeGrowth += y.homeGain * k;
     items.incomeTax -= y.taxIncome * k;
     items.investTax -= y.taxInvest * k;
     items.lifestyle -= y.consumed * k;
@@ -91,7 +102,8 @@ export function netWorthSeries(history, instruments, { real }) {
     const k = real ? 1 / y.priceIndexEnd : 1;
     const parts = { cash: y.cash * k };
     for (const inst of instruments) parts[inst.id] = y.holdings[inst.id] * k;
-    return { age: y.age, year: y.year, parts, loans: y.debt * k, net: (real ? y.netWorthReal : y.netWorth) };
+    parts.home = y.homeValue * k;
+    return { age: y.age, year: y.year, parts, loans: (y.debt + y.homeLoan) * k, net: (real ? y.netWorthReal : y.netWorth) };
   });
 }
 

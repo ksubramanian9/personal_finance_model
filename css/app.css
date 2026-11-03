@@ -455,3 +455,8 @@ h1, h2, h3 {
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
 }
+
+/* A choice that cannot be taken yet (for example a home you cannot afford) */
+.option-card.unavailable { opacity: 0.6; cursor: not-allowed; }
+.option-card.unavailable:hover { transform: none; box-shadow: none; }
+.option-extra { font-size: 0.95rem; color: var(--c-inkSoft); text-align: left; }

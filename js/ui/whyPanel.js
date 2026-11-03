@@ -8,6 +8,11 @@ export const BRIDGE_GROUPS = [
   { title: 'What came in', lines: [['income', 'Salary and severance'], ['windfalls', 'Windfalls']] },
   { title: 'What went out', lines: [
     ['living', 'Everyday life and family support'],
+    ['rent', 'Rent'],
+    ['homeUpkeep', 'Home upkeep and property tax'],
+    ['homeInterest', 'Interest on the home loan'],
+    ['homeBuying', 'Buying costs (stamp duty, registration, fees)'],
+    ['homeSelling', 'Selling costs'],
     ['learning', 'Courses and upskilling'],
     ['premiums', 'Health insurance premiums'],
     ['unplanned', 'Surprise costs, after insurance'],
@@ -17,6 +22,7 @@ export const BRIDGE_GROUPS = [
   ] },
   { title: 'What your money did', lines: [
     ['growth', 'Investment growth'],
+    ['homeGrowth', "Your home's price change"],
     ['cashInterest', 'Interest on cash'],
     ['loanInterest', 'Interest on loans'],
   ] },

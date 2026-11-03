@@ -3,6 +3,7 @@ import { nextRegime } from './macro.js';
 import { rollEvents, settleEvents } from './events.js';
 import { netWorth } from './state.js';
 import { computeTax, buyLot, sellLots, cloneLots } from './tax.js';
+import { buyHome, payLoanYear, saleProceeds } from './housing.js';
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 
@@ -11,23 +12,31 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 // Randomness: exactly 1 uniform draw (the economy) plus 1 normal draw per instrument, in the
 // order instruments.json lists them, whatever the player holds. So the same seed gives the same
 // economy and the same market returns however the player invests. Life events draw from their
-// own stream (state.rngEvents), 3 numbers per event, with the same guarantee.
+// own stream (state.rngEvents), 3 numbers per event, with the same guarantee. Home prices use no
+// random numbers: they follow the economy's regime.
 //
 // Order within the year:
+//   0. a home chosen at the stage start is bought (down payment and one-off costs go out now)
 //   1. the economy moves to this year's regime; every instrument gets its return for that regime
-//   2. holdings and cash earn; debt accrues interest
+//   2. holdings and cash earn; debt accrues interest; homes change in price
 //   3. life events happen (layoff, hospital bill, windfall...); insurance pays what it covers;
-//      tax is worked out on pay, windfalls and interest
+//      tax is worked out on pay, windfalls and interest; rent or the home's instalment and upkeep
 //   4. debt is paid down from income, up to a share of income left after expenses
 //   5. surplus is split into saved (first topping up the emergency fund in cash, the rest spread
 //      over instruments by the player's allocation) and consumed; a deficit is drawn from cash,
-//      then liquid instruments in drawOrder (provident funds are locked in, never sold), then
-//      borrowed. Tax on gains from selling is added to the shortfall
-//   5. salary, costs and prices roll forward to next year (raises follow the economy)
+//      then liquid instruments in drawOrder (provident funds are locked in, never sold), then, if
+//      borrowing would swamp the player, the home; then borrowed. Tax on gains from selling is
+//      added to the shortfall
+//   6. salary, costs and prices roll forward to next year (raises follow the economy)
 export function tickYear(state, params) {
   const s = structuredClone(state);
   const netWorthStart = netWorth(s);
   const priceIndexStart = s.priceIndex;
+
+  // 0. buying a home
+  let purchase = null;
+  if (s.buyHome && !s.home) purchase = buyHome(s, params);
+  s.buyHome = 0;
 
   // 1. the economy and market returns
   const regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
@@ -55,6 +64,19 @@ export function tickYear(state, params) {
   s.debt += debtInterest;
   interest += cashInterest;
 
+  const priceGrowth = params.housing.priceGrowthPct[regime] / 100;
+  s.homePrice *= 1 + priceGrowth;
+  let homeGain = 0;
+  let homeUpkeep = 0;
+  let loanYear = { interest: 0, principal: 0, paid: 0 };
+  if (s.home) {
+    homeUpkeep = (s.home.value * params.housing.upkeepPct) / 100;
+    homeGain = s.home.value * priceGrowth;
+    s.home.value += homeGain;
+    loanYear = payLoanYear(s.home);
+  }
+  const rentPaid = s.rent;
+
   // 3. life events, then the tax on this year's pay and interest (tax on gains from selling comes later)
   const ev = settleEvents(s, rollEvents(s, params.events, regime), params.insurance, priceIndexStart);
   const income = ev.salaryReceived + ev.severance;
@@ -65,7 +87,9 @@ export function tickYear(state, params) {
   const baseTax = computeTax(params.tax, taxBasis);
   let taxIncome = baseTax.incomeTax;
   let taxInvest = baseTax.investTax;
-  let expenses = s.livingCost + s.support + learning + premium + ev.eventCost + baseTax.total;
+  const homeOutlay = purchase ? purchase.outlay : 0;
+  let expenses = s.livingCost + s.support + rentPaid + homeUpkeep + loanYear.paid + homeOutlay
+    + learning + premium + ev.eventCost + baseTax.total;
 
   // 4-5. debt, saving
   const debtPaid = Math.min(s.debt, Math.max(0, income + extraIncome - expenses) * params.debtPaydownShare);
@@ -77,11 +101,13 @@ export function tickYear(state, params) {
   let consumed = 0;
   let borrowed = 0;
   let fromCash = 0;
+  let homeSale = null;
+  let homeToCash = 0; // what is left of a home's sale once the gap is covered
   const sold = {};
   if (surplus >= 0) {
     saved = surplus * s.savingsRate;
     consumed = surplus - saved;
-    const fundTarget = (s.emergencyMonths * (s.livingCost + s.support)) / 12;
+    const fundTarget = (s.emergencyMonths * (s.livingCost + s.support + rentPaid + homeUpkeep + loanYear.paid)) / 12;
     toCash = Math.min(saved, Math.max(0, fundTarget - s.cash));
     s.cash += toCash;
     for (const inst of params.instruments) {
@@ -95,7 +121,7 @@ export function tickYear(state, params) {
     const sellOrder = params.instruments.filter(i => i.liquid).sort((a, b) => a.drawOrder - b.drawOrder);
     const plan = (raise) => {
       let need = raise;
-      const p = { fromCash: Math.min(s.cash, need), sold: {}, holdings: { ...s.holdings }, lots: cloneLots(s.lots), gains: {} };
+      const p = { fromCash: Math.min(s.cash, need), sold: {}, holdings: { ...s.holdings }, lots: cloneLots(s.lots), gains: {}, sellsHome: false, homeCash: 0 };
       need -= p.fromCash;
       for (const inst of sellOrder) {
         const take = Math.min(p.holdings[inst.id], need);
@@ -105,7 +131,22 @@ export function tickYear(state, params) {
         need -= take;
         p.sold[inst.id] = take;
       }
-      p.borrowed = need;
+      // A home is the last thing to go, and only when borrowing the rest would swamp the player.
+      if (need > 1e-9 && s.home) {
+        const sale = saleProceeds(s.home, params);
+        const swamped = s.debt + need > (params.housing.forcedSaleDebtMonths * s.salary) / 12;
+        if (swamped && sale.net > 0) {
+          const held = s.year - s.home.boughtYear;
+          const longTerm = held >= params.tax.property.longTermYears;
+          p.gains.home = { st: longTerm ? 0 : sale.gain, lt: longTerm ? sale.gain : 0 };
+          p.sellsHome = true;
+          p.homeCash = sale.net;
+          p.sale = sale;
+          need -= sale.net;
+        }
+      }
+      p.borrowed = Math.max(0, need);
+      p.toCash = Math.max(0, -need); // what is left of the home's proceeds once the gap is covered
       return p;
     };
     let extra = 0;
@@ -121,18 +162,25 @@ export function tickYear(state, params) {
     fromCash = p.fromCash;
     Object.assign(sold, p.sold);
     borrowed = p.borrowed;
-    s.cash -= fromCash;
+    homeToCash = p.toCash;
+    s.cash += homeToCash - fromCash;
     s.holdings = p.holdings;
     s.lots = p.lots;
     s.debt += borrowed;
+    if (p.sellsHome) {
+      homeSale = { value: s.home.value, sellingCost: p.sale.sellingCost, loanRepaid: s.home.loan, tax: Math.max(0, withSale.total - baseTax.total) };
+      s.home = null;
+    }
     taxIncome = withSale.incomeTax;
     taxInvest = withSale.investTax;
     expenses += withSale.total - baseTax.total;
+    if (homeSale) expenses += homeSale.sellingCost; // the cost of selling is part of what went out
   }
 
-  // 5. roll forward
+  // 6. roll forward
   const inflation = R.inflationPct / 100;
   const priceIndexEnd = priceIndexStart * (1 + inflation);
+  if (homeSale) s.rent = s.rentReal * priceIndexEnd; // back to renting at the going rate
   const nw = netWorth(s);
 
   s.history.push({
@@ -143,9 +191,13 @@ export function tickYear(state, params) {
     returns,
     income, extraIncome, expenses, learning, premium, eventCost: ev.eventCost, insurancePaid: ev.insurancePaid,
     taxIncome, taxInvest, // tax on pay and windfalls, and the extra tax investing brought (both are in expenses)
+    rent: rentPaid, homeUpkeep, homeOutlay, // what housing cost (all in expenses)
+    emi: loanYear.paid, homeInterest: loanYear.interest, homePrincipal: loanYear.principal,
+    homeGain, homeValue: s.home ? s.home.value : 0, homeLoan: s.home ? s.home.loan : 0,
+    homeBought: purchase, homeSale,
     debtPaid, debtInterest, saved, toCash, consumed, borrowed,
     events: ev.records.map(r => ({ ...r, age: s.age, year: s.year })),
-    coping: { fromCash, sold, borrowed }, // how a shortfall was met
+    coping: { fromCash, sold, borrowed, soldHome: homeSale !== null }, // how a shortfall was met
     investGain, cashInterest,
     holdings: { ...s.holdings },
     cash: s.cash,
@@ -172,6 +224,7 @@ export function tickYear(state, params) {
   if (ev.payJump) s.salary *= 1 + ev.payJump; // the offer you took
   s.livingCost *= 1 + inflation;
   s.support *= 1 + inflation;
+  if (s.rent > 0 && !homeSale) s.rent *= 1 + inflation; // rent follows prices
   return s;
 }
 

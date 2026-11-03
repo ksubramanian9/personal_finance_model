@@ -1,5 +1,5 @@
 import { createState } from '../engine/state.js';
-import { nextStage, playStage } from '../engine/stages.js';
+import { nextStage, playStage, askedDecisions } from '../engine/stages.js';
 import { stageSummary } from '../engine/summary.js';
 import { h, mount } from './dom.js';
 import { renderPersonaPicker } from './screens/personaPicker.js';
@@ -56,6 +56,7 @@ export function createFlow(root, data, session) {
       stage,
       decisions: data.decisions,
       state: game.state,
+      params: data.params,
       picks: game.picks,
       isFirst: game.state.history.length === 0,
       doneIds: doneIds(),
@@ -65,7 +66,7 @@ export function createFlow(root, data, session) {
 
   function playCurrentStage() {
     const { stage } = game;
-    const picked = stage.decisions.map(ref => {
+    const picked = askedDecisions(stage, game.state).map(ref => {
       const o = data.decisions[ref.id].options.find(x => x.id === game.picks[ref.id]);
       return { emoji: o.emoji, title: o.title };
     });

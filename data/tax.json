@@ -65,6 +65,17 @@
       }
     }
   },
+  "property": {
+    "longTermYears": 2,
+    "longTermRatePct": 12.5,
+    "shortTermRatePct": "slab",
+    "exemptionPerYear": 0,
+    "provenance": {
+      "basis": "Selling a home: gains after more than 24 months are taxed at 12.5% without indexation (the rate for long-term assets other than shares, per secondary sources); sooner, at your slab rate. Only relevant when the game sells your home as a last resort. Exemptions for reinvesting in another home, and the older indexation option for homes bought before July 2024, are ignored.",
+      "confidence": "medium",
+      "asOf": 2026
+    }
+  },
   "provenance": {
     "basis": "Illustrative, rounded and simplified: the amount you pay is worked out once a year from your pay, interest and the gains you realised. Tax on gains you have not yet sold is not counted, so net worth before retirement is before that tax.",
     "confidence": "medium",

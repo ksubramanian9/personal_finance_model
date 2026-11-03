@@ -5,8 +5,10 @@ import { gainsIds } from './tax.js';
 // All money is nominal rupees. `priceIndex` converts to today's rupees (1 at the start).
 // `params` is what loadParams() returns (engine.json plus macro and instruments).
 export function createState(persona, params, { seed, retirementAge }) {
+  const tier = params.housing.cityTiers[persona.profile.cityTier];
+  if (!tier) throw new Error(`housing.json has no city tier ${persona.profile.cityTier} (needed by ${persona.id})`);
   return {
-    version: 4,
+    version: 5,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,
@@ -20,6 +22,8 @@ export function createState(persona, params, { seed, retirementAge }) {
     // annual flows, nominal, for the year about to be played
     salary: persona.money.startingSalary,
     livingCost: persona.money.monthlyExpenses * 12,
+    rentReal: persona.money.monthlyRent * 12, // rent in today's rupees, for when the player goes back to renting
+    rent: persona.money.monthlyRent * 12,     // this year's rent, nominal; 0 while the player owns a home
     support: (persona.obligations.parentsSupportMonthly + persona.obligations.siblingSupportMonthly) * 12,
     salaryGrowth: persona.career.salaryGrowthPct / 100,
     cyclicality: persona.career.cyclicality, // how much the economy moves this job's raises
@@ -35,6 +39,9 @@ export function createState(persona, params, { seed, retirementAge }) {
     // what each taxed-on-sale holding cost and when it was bought (see tax.js)
     lots: Object.fromEntries(gainsIds(params.tax).map(id => [id, []])),
     debt: persona.money.startingDebt,
+    homePrice: tier.homePrice, // what a typical apartment in this city costs now (nominal)
+    home: null,                // the player's home, once bought (see housing.js)
+    buyHome: 0,                // 1 = buy at the start of the next year (set by a choice)
 
     priceIndex: 1,
     savingsRate: params.savingsRate,
@@ -54,5 +61,6 @@ export function totalInvested(state) {
 }
 
 export function netWorth(state) {
-  return state.cash + totalInvested(state) - state.debt;
+  const home = state.home ? state.home.value - state.home.loan : 0;
+  return state.cash + totalInvested(state) + home - state.debt;
 }

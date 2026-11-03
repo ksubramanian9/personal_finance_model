@@ -485,3 +485,74 @@ test('the year table has real structure: a caption, column headers and row heade
   assert(findAll(t, n => n.tagName === 'TH' && n.attrs.scope === 'col').length === 7, 'seven column headers');
   assert(findAll(t, n => n.tagName === 'TH' && n.attrs.scope === 'row').length >= 8, 'a row header per year');
 });
+
+// ---- housing ----
+
+// Plays the early-career stage as the given persona and stops on the first question of the next stage.
+function toFamilyStage(personaIndex, savingsTitle) {
+  const g = newGame(4271);
+  begin(g, personaIndex);
+  playStageScreen(g, { [qIndex(0, 'savings')]: savingsTitle });
+  click(g.root, /^On to/);
+  return g;
+}
+const stepTo = (g, re) => {
+  for (let i = 0; i < 12 && !re.test(text(g.root)); i++) click(g.root, /^Next$/);
+  assert(re.test(text(g.root)), `never reached ${re}`);
+};
+const homeCards = (root) => findAll(root, n => n.tagName === 'BUTTON' && hasClass(n, 'option-card'));
+
+test('the home question tells you what renting and buying cost, and closes buying until you can afford it', () => {
+  const g = toFamilyStage(0, /Save hard/); // Aarav cannot afford a metro flat at 32
+  stepTo(g, /Is it time to buy a home\?/);
+  const [rent, buy] = homeCards(g.root);
+  assert(/Rent now: ₹/.test(rent.textContent), 'rent shown');
+  assert(/Home price ₹/.test(buy.textContent) && /a month for 20 years/.test(buy.textContent), 'price and instalment shown');
+  assert(buy.disabled === true, 'buying is closed');
+  assert(/Not yet: you are ₹[^ ]+( \w+)? short/.test(buy.textContent), `shortfall shown: ${buy.textContent}`);
+  assert(rent.attrs['aria-pressed'] === 'true', 'renting is the standing pick');
+});
+
+test('when you can afford it, buying opens; the result shows the purchase and the home', () => {
+  const g = toFamilyStage(1, /Save hard/); // Meera: a tier-2 flat is within reach
+  stepTo(g, /Is it time to buy a home\?/);
+  const [, buy] = homeCards(g.root);
+  assert(!buy.disabled && !/Not yet/.test(buy.textContent), 'buying is open');
+  buy.click();
+  while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
+  click(g.root, /^Play these/);
+  assert(/You bought a home/.test(text(g.root)), 'purchase card');
+  assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words on the purchase result');
+  assert(/your home is worth/.test(text(g.root)) && /still owed on it/.test(text(g.root)), 'home stats');
+  // and the next stage no longer asks
+  click(g.root, /^On to/);
+  assert(!/Still renting\?/.test(text(g.root)) && !/Is it time to buy a home\?/.test(text(g.root)), 'not asked again');
+  const peak = stages.find(s => s.id === 'peak');
+  assert(new RegExp(`Question 1 of ${peak.decisions.length - 1}`).test(text(g.root)), `one question fewer: ${text(g.root).slice(0, 300)}`);
+});
+
+test('keeping on renting asks again next stage, and the rent shows in the results', () => {
+  const g = toFamilyStage(1, /Save hard/);
+  while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
+  click(g.root, /^Play these/);
+  assert(/paid in rent/.test(text(g.root)), 'rent stat');
+  assert(!/You bought a home/.test(text(g.root)));
+  click(g.root, /^On to/);
+  stepTo(g, /Still renting\?/);
+});
+
+test('the bridge and the chart show housing once there is a home', () => {
+  const g = toFamilyStage(1, /Save hard/);
+  stepTo(g, /Is it time to buy a home\?/);
+  homeCards(g.root)[1].click();
+  while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
+  click(g.root, /^Play these/);
+  while (buttonWithText(g.root, /^On to/)) { click(g.root, /^On to/); playStageScreen(g); }
+  click(g.root, /^See the whole story/);
+  whyButtons(g.root)[2].click(); // the 40s: a home owner by now
+  const lines = findAll(g.root, n => hasClass(n, 'bridge-row')).map(r => r.attrs['data-line']);
+  for (const id of ['homeInterest', 'homeUpkeep', 'homeGrowth']) assert(lines.includes(id), `${id} line: ${lines}`);
+  assert(/Interest on the home loan/.test(text(g.root)) && /Your home's price change/.test(text(g.root)), 'plain labels');
+  assert(findAll(g.root, n => hasClass(n, 'seg-home')).length > 0, 'the home is drawn on the chart');
+  assert(/Your home/.test(text(g.root)), 'and named in the legend');
+});

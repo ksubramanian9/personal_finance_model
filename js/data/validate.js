@@ -63,6 +63,12 @@ export const schemas = {
     events: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  housing: {
+    cityTiers: 'object', priceGrowthPct: 'object', loan: 'object',
+    oneOffCostPct: 'number', upkeepPct: 'number', sellingCostPct: 'number',
+    affordabilityBuffer: 'number', forcedSaleDebtMonths: 'number',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   tax: {
     incomeTax: 'object', instruments: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
@@ -79,7 +85,7 @@ export const schemas = {
     id: 'string', firstName: 'string', name: 'string', emoji: 'string', accent: 'string',
     tagline: 'string', story: 'string',
     profile: { startAge: 'number', city: 'string', cityTier: 'number', education: 'string', job: 'string' },
-    money: { startingSalary: 'number', startingSavings: 'number', startingDebt: 'number', monthlyExpenses: 'number' },
+    money: { startingSalary: 'number', startingSavings: 'number', startingDebt: 'number', monthlyExpenses: 'number', monthlyRent: 'number' },
     obligations: { parentsSupportMonthly: 'number', siblingSupportMonthly: 'number' },
     career: {
       salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number', cyclicality: 'number',
@@ -98,7 +104,7 @@ export const schemas = {
     },
     sizes: { base: 'string', hero: 'string', radius: 'string' },
     chart: {
-      cash: 'string', fd: 'string', pf: 'string', gold: 'string', equity: 'string', loans: 'string',
+      cash: 'string', fd: 'string', pf: 'string', gold: 'string', equity: 'string', home: 'string', loans: 'string',
       earned: 'string', spent: 'string', surface: 'string', grid: 'string', axis: 'string', muted: 'string', band: 'string',
     },
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

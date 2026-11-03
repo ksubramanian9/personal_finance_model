@@ -20,7 +20,7 @@ const personas = await loadPersonas({ fetchImpl });
 const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
 const regimes = params.macro.regimes;
 const eventDefs = Object.fromEntries(params.events.map(e => [e.id, e]));
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', retire: 'at60' };
 
 function life(persona, seed, picks = base) {
   let s = createState(persona, params, { seed, retirementAge: 60 });
@@ -98,9 +98,9 @@ test('net worth chart: structure, legend, readout and accessibility hooks', () =
 });
 
 test('net worth chart: stack order is fixed and each entity keeps its colour', () => {
-  assertEqual(STACK_ORDER, ['cash', 'fd', 'pf', 'gold', 'equity']);
+  assertEqual(STACK_ORDER, ['cash', 'fd', 'pf', 'gold', 'equity', 'home']);
   const fig = decade();
-  for (const id of STACK_ORDER) {
+  for (const id of STACK_ORDER.filter(x => x !== 'home')) { // no home yet in this life
     const segs = byClass(fig, `seg-${id}`);
     assert(segs.length > 0, `${id} drawn`);
     assert(segs.every(s => attr(s, 'style') === `fill: var(--ch-${id})`), `${id} colour`);

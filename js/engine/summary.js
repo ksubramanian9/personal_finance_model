@@ -15,9 +15,19 @@ export function stageSummary(history, startIdx) {
     learningReal: years.reduce((sum, y) => sum + y.learningReal, 0),
     economy: years.map(y => ({ age: y.age, year: y.year, regime: y.regime })),
     taxReal: years.reduce((sum, y) => sum + (y.taxIncome + y.taxInvest) / y.priceIndexStart, 0),
+    rentReal: years.reduce((sum, y) => sum + y.rent / y.priceIndexStart, 0),
+    homeValueEndReal: last.homeValue / last.priceIndexEnd,
+    homeLoanEndReal: last.homeLoan / last.priceIndexEnd,
+    // buying or selling a home, in today's rupees
+    homeMoves: years.filter(y => y.homeBought || y.homeSale).map(y => {
+      const k = 1 / y.priceIndexStart;
+      return y.homeBought
+        ? { kind: 'bought', age: y.age, price: y.homeBought.price * k, paidNow: y.homeBought.outlay * k, loan: (y.homeBought.price - y.homeBought.down) * k }
+        : { kind: 'sold', age: y.age, value: y.homeSale.value * k, sellingCost: y.homeSale.sellingCost * k, loanRepaid: y.homeSale.loanRepaid * k, tax: y.homeSale.tax * k };
+    }),
     premiumsReal: years.reduce((sum, y) => sum + y.premium / y.priceIndexStart, 0),
     // Years in which something happened, with how any shortfall was met, in today's rupees.
-    eventYears: years.filter(y => y.events.length).map(y => ({
+    eventYears: years.filter(y => y.events.length || y.homeSale).map(y => ({
       age: y.age,
       year: y.year,
       events: y.events,
@@ -25,6 +35,7 @@ export function stageSummary(history, startIdx) {
         fromCash: y.coping.fromCash / y.priceIndexStart,
         sold: Object.fromEntries(Object.entries(y.coping.sold).map(([id, v]) => [id, v / y.priceIndexStart])),
         borrowed: y.coping.borrowed / y.priceIndexStart,
+        soldHome: y.coping.soldHome,
       },
     })),
   };

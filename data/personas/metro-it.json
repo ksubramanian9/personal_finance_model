@@ -17,7 +17,8 @@
     "startingSalary": 800000,
     "startingSavings": 50000,
     "startingDebt": 400000,
-    "monthlyExpenses": 30000
+    "monthlyExpenses": 15000,
+    "monthlyRent": 15000
   },
   "obligations": {
     "parentsSupportMonthly": 10000,

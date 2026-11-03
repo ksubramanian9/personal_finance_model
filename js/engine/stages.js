@@ -1,13 +1,20 @@
 import { runUntil } from './tick.js';
+import { homeOffer } from './housing.js';
 
 // Effect keys a choice may set on the state. Anything else is ignored by design
 // (data/stages.js rejects unknown keys when the file loads).
 // "alloc.<id>" keys live in state.alloc.<id>; the rest are top-level state fields.
-const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium'];
+const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome'];
 const ALLOC = 'alloc.';
 
 function readEffect(state, key) {
   return key.startsWith(ALLOC) ? state.alloc[key.slice(ALLOC.length)] : state[key];
+}
+
+// The decisions this stage actually asks right now. A decision marked "onlyIf": "renting" is skipped
+// once the player owns a home.
+export function askedDecisions(stage, state) {
+  return stage.decisions.filter(ref => ref.onlyIf !== 'renting' || !state.home);
 }
 
 export function stageEnd(stage, state) {
@@ -29,10 +36,12 @@ export function currentOption(decision, state) {
 }
 
 // `picks` maps decisionId -> optionId for every decision the stage asks.
-// Returns a new state; the input is untouched.
-export function applyPicks(state, stage, decisions, picks) {
+// Returns a new state; the input is untouched. Pass `params` to also check that a home the player
+// wants to buy is affordable.
+export function applyPicks(state, stage, decisions, picks, params = null) {
   const s = structuredClone(state);
-  for (const ref of stage.decisions) {
+  const asked = askedDecisions(stage, state);
+  for (const ref of asked) {
     const decision = decisions[ref.id];
     const option = decision.options.find(o => o.id === picks[ref.id]);
     if (!option) throw new Error(`No valid pick for "${ref.id}" in stage "${stage.id}"`);
@@ -42,15 +51,18 @@ export function applyPicks(state, stage, decisions, picks) {
       if (k === 'retirementAge' && v <= s.age) {
         throw new Error(`Cannot retire at ${v}: already ${s.age}`);
       }
+      if (k === 'buyHome' && v === 1 && params && !homeOffer(state, params).affordable) {
+        throw new Error('Cannot buy a home yet: not enough cash and savings, or already own one');
+      }
       s[k] = v;
     }
   }
-  s.choices[stage.id] = Object.fromEntries(stage.decisions.map(ref => [ref.id, picks[ref.id]]));
+  s.choices[stage.id] = Object.fromEntries(asked.map(ref => [ref.id, picks[ref.id]]));
   return s;
 }
 
 // Applies the picks, then plays the years of this stage.
 export function playStage(state, params, stage, decisions, picks) {
-  const s = applyPicks(state, stage, decisions, picks);
+  const s = applyPicks(state, stage, decisions, picks, params);
   return runUntil(s, params, stageEnd(stage, s));
 }

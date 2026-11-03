@@ -29,6 +29,7 @@
     "pf": "#1baf7a",
     "gold": "#eda100",
     "equity": "#e87ba4",
+    "home": "#008300",
     "loans": "#898781",
     "earned": "#2a78d6",
     "spent": "#eb6834",
@@ -39,7 +40,7 @@
     "band": "#52514e"
   },
   "provenance": {
-    "basis": "Chart colours are the first five slots of the dataviz skill reference palette in fixed order (blue, orange, aqua, yellow, magenta), validated with its script against a white card: CVD adjacent dE 9.1, normal-vision 19.6. Aqua, yellow and magenta sit below 3:1 on white, so every chart ships a legend, a readout and a year-by-year table. Entities keep their colour everywhere: cash blue, fixed deposits orange, provident funds aqua, gold yellow, equity magenta. Loans are neutral grey (they hang below the axis).",
+    "basis": "Chart colours are the first six slots of the dataviz skill reference palette in fixed order (blue, orange, aqua, yellow, magenta, green), validated with its script against a white card: CVD adjacent dE 9.1, normal-vision 19.6 (the sixth slot, green, was added for the home and changes neither number). Aqua, yellow and magenta sit below 3:1 on white, so every chart ships a legend, a readout and a year-by-year table. Entities keep their colour everywhere: cash blue, fixed deposits orange, provident funds aqua, gold yellow, equity magenta, home green. Loans are neutral grey (they hang below the axis).",
     "confidence": "high",
     "asOf": 2026
   }

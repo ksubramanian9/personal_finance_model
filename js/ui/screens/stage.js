@@ -1,6 +1,8 @@
 import { h, mount } from '../dom.js';
 import { formatINR } from '../format.js';
-import { currentOption, stageEnd } from '../../engine/stages.js';
+import { currentOption, stageEnd, askedDecisions } from '../../engine/stages.js';
+import { homeOffer } from '../../engine/housing.js';
+import { describeOffer } from '../housingText.js';
 import { describeEvent, describeCoping } from '../eventText.js';
 import { whyToggle } from '../whyPanel.js';
 
@@ -18,41 +20,46 @@ export function journeyBar(stages, currentId, doneIds) {
 // Where this stage will end once the player's picks are applied (a pick can move the retirement age).
 function projectedEnd(stage, state, decisions, picks) {
   let retirementAge = state.retirementAge;
-  for (const ref of stage.decisions) {
+  for (const ref of askedDecisions(stage, state)) {
     const o = decisions[ref.id].options.find(x => x.id === picks[ref.id]);
     if (o && 'retirementAge' in o.effects) retirementAge = o.effects.retirementAge;
   }
   return stageEnd(stage, { retirementAge });
 }
 
-function optionCard(option, selected, isCurrent, onPick) {
+function optionCard(option, selected, isCurrent, onPick, { extras = [], disabled = false } = {}) {
   return h('button', {
     type: 'button',
-    class: `option-card${selected ? ' selected' : ''}`,
+    class: `option-card${selected ? ' selected' : ''}${disabled ? ' unavailable' : ''}`,
     'aria-pressed': String(selected),
+    disabled,
     onClick: onPick,
   },
     h('span', { class: 'option-emoji', 'aria-hidden': 'true', text: option.emoji }),
     h('span', { class: 'option-title', text: option.title }),
     h('span', { class: 'option-blurb', text: option.blurb }),
+    extras.map(t => h('span', { class: 'option-extra', text: t })),
     isCurrent && h('span', { class: 'option-tag', text: 'what you do now' }));
 }
 
 // One decision at a time. ctx is mutated: ctx.step and ctx.picks.
-// ctx: { persona, stages, stage, decisions, state, picks, step, isFirst, doneIds, onPlay }
+// ctx: { persona, stages, stage, decisions, state, params, picks, step, isFirst, doneIds, onPlay }
 export function renderStageDecisions(root, ctx) {
   const { stage, decisions, state, picks, stages } = ctx;
   ctx.step ??= 0;
   const redraw = () => renderStageDecisions(root, ctx);
 
-  const ref = stage.decisions[ctx.step];
+  const refs = askedDecisions(stage, state);
+  const ref = refs[ctx.step];
   const decision = decisions[ref.id];
   const current = currentOption(decision, state);
   if (!picks[ref.id] && current) picks[ref.id] = current.id;
 
-  const isLastStep = ctx.step === stage.decisions.length - 1;
+  const isLastStep = ctx.step === refs.length - 1;
   const from = state.age;
   const to = projectedEnd(stage, state, decisions, picks);
+  const offer = ref.id === 'home' ? homeOffer(state, ctx.params) : null;
+  const offerText = offer ? describeOffer(offer, state.priceIndex) : null;
   const yearsLabel = `age ${from} to ${to}`;
 
   mount(root,
@@ -61,13 +68,14 @@ export function renderStageDecisions(root, ctx) {
       h('p', { class: 'eyebrow', text: `${stage.emoji} ${stage.name} · ${yearsLabel}` }),
       ctx.step === 0 && h('p', { class: 'stage-intro', text: stage.intro }),
       h('h1', { text: ref.question || decision.question }),
-      h('p', { class: 'step-count', text: `Question ${ctx.step + 1} of ${stage.decisions.length}` })),
+      h('p', { class: 'step-count', text: `Question ${ctx.step + 1} of ${refs.length}` })),
     h('div', { class: 'option-grid', role: 'group', 'aria-label': decision.title },
       decision.options.map(o => optionCard(
         o,
         picks[ref.id] === o.id,
         !ctx.isFirst && current?.id === o.id,
-        () => { picks[ref.id] = o.id; redraw(); }))),
+        () => { picks[ref.id] = o.id; redraw(); },
+        offer ? { extras: o.effects.buyHome ? offerText.buy : [offerText.rent], disabled: o.effects.buyHome === 1 && !offer.affordable } : {}))),
     h('div', { class: 'actions inline' },
       ctx.step > 0 && h('button', {
         class: 'btn secondary', type: 'button', text: 'Back',
@@ -101,9 +109,22 @@ function economyStrip(economy, regimes) {
     h('p', { class: 'hint', text: `${summary}.` }));
 }
 
+// Buying or selling a home, as cards in the same style as life events.
+function homeMoveCards(moves) {
+  return moves.map(m => h('li', { class: 'event-card kind-home' },
+    h('span', { class: 'event-emoji', 'aria-hidden': 'true', text: m.kind === 'bought' ? '🏠' : '🔑' }),
+    h('div', { class: 'event-body' },
+      h('p', { class: 'event-title' },
+        h('strong', { text: m.kind === 'bought' ? 'You bought a home' : 'You sold your home' }),
+        h('span', { class: 'event-age', text: ` · age ${m.age}` })),
+      m.kind === 'bought'
+        ? h('p', { class: 'event-line', text: `It cost ${formatINR(m.price)}. You paid ${formatINR(m.paidNow)} up front for the down payment and buying costs, and took a loan of ${formatINR(m.loan)}.` })
+        : h('p', { class: 'event-line', text: `Money ran out, so the home went for ${formatINR(m.value)}. Selling costs were ${formatINR(m.sellingCost)}, ${formatINR(m.loanRepaid)} repaid the loan${m.tax > 0.5 ? ` and tax took ${formatINR(m.tax)}` : ''}. You rent again.` }))));
+}
+
 // What happened along the way, year by year, and how any shortfall was met.
-function eventsSection(eventYears, eventDefs, instruments) {
-  if (!eventYears.length) {
+function eventsSection(eventYears, eventDefs, instruments, homeMoves = []) {
+  if (!eventYears.length && !homeMoves.length) {
     return h('section', { class: 'events quiet' },
       h('h2', { text: 'What happened' }),
       h('p', { text: 'A quiet stretch. Nothing dramatic came your way.' }));
@@ -111,8 +132,10 @@ function eventsSection(eventYears, eventDefs, instruments) {
   return h('section', { class: 'events' },
     h('h2', { text: 'What happened' }),
     h('ul', { class: 'event-list' },
+      homeMoveCards(homeMoves),
       eventYears.flatMap(y => {
         const coping = describeCoping(y.coping, instruments);
+        if (!y.events.length) return [h('li', { class: 'event-card kind-home' }, h('div', { class: 'event-body' }, h('p', { class: 'event-line coping', text: coping })))];
         return y.events.map((rec, i) => {
           const def = eventDefs[rec.id];
           const lines = describeEvent(def, rec);
@@ -150,11 +173,14 @@ export function renderStageResult(root, ctx) {
       h('p', { class: 'headline', text: headline }),
       h('p', { class: 'hint', text: "All amounts are in today's rupees." })),
     economyStrip(s.economy, ctx.regimes),
-    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments),
+    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments, s.homeMoves),
     h('div', { class: 'stats' },
       stat('earning a year by the end, before tax', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),
       s.taxReal > 0 && stat('paid in tax', formatINR(s.taxReal)),
+      s.rentReal > 0 && stat('paid in rent', formatINR(s.rentReal)),
+      s.homeValueEndReal > 0 && stat('your home is worth', formatINR(s.homeValueEndReal)),
+      s.homeValueEndReal > 0 && s.homeLoanEndReal > 0 && stat('still owed on it', formatINR(s.homeLoanEndReal)),
       s.learningReal > 0 && stat('spent on getting better', formatINR(s.learningReal)),
       s.premiumsReal > 0 && stat('paid for health cover', formatINR(s.premiumsReal))),
     whyToggle({ disclosure: ctx.disclosure, years: ctx.years, regimes: ctx.regimes, eventDefs: ctx.eventDefs, title: `Age ${s.fromAge} to ${s.toAge}, in detail` }),

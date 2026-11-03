@@ -1,0 +1,43 @@
+{
+  "cityTiers": {
+    "1": {
+      "name": "Metro",
+      "homePrice": 8000000,
+      "provenance": {
+        "basis": "A typical two-bedroom apartment in a large metro such as Bengaluru, in today's rupees. A round illustrative number: no price per square foot was found in this pass.",
+        "confidence": "low",
+        "asOf": 2026
+      }
+    },
+    "2": {
+      "name": "Tier-2 city",
+      "homePrice": 4000000,
+      "provenance": {
+        "basis": "A typical two-bedroom apartment in a tier-2 city, in today's rupees. A round illustrative number, about half the metro price; not sourced.",
+        "confidence": "low",
+        "asOf": 2026
+      }
+    }
+  },
+  "priceGrowthPct": {
+    "boom": 8.5,
+    "normal": 5.5,
+    "slowdown": 3,
+    "crisis": -2
+  },
+  "loan": {
+    "sharePct": 80,
+    "years": 20,
+    "ratePct": 8.75
+  },
+  "oneOffCostPct": 8,
+  "upkeepPct": 1,
+  "sellingCostPct": 2,
+  "affordabilityBuffer": 1.1,
+  "forcedSaleDebtMonths": 12,
+  "provenance": {
+    "basis": "Price growth: the RBI's house price index for 18 cities rose 3.6% in the year to Q1 2026-27 (RBI release of 24 Aug 2026, via a press summary), and longer runs have been higher in booms; the four regime rates are tuned so the long-run mix is about 5.1% a year, roughly half a point above the 4.5% inflation average, and a crisis year dips. Prices follow the economy with no separate luck (the same regime as everything else). Loan: 80% of the price over 20 years; bank pages in 2026 quoted roughly 8.4% to 9.2% (lowest 8.40%, average 9.20% in one aggregator) while the RBI repo rate was 5.25%, so 8.75% fixed is a central pick (rates float in real life; here the rate is fixed). One-off costs of 8%: a worked Bengaluru example gave stamp duty, cess, surcharge and registration of about 7.6% of the price (registration rose from 1% to 2% in 2025, sources partly disagree); a little brokerage and legal cost is added and furnishing is ignored. Upkeep of 1% of the price a year (maintenance, property tax and repairs) and selling costs of 2% are estimates, not sourced. A forced sale happens only when the shortfall left after all other assets would take personal debt above 12 months of pay. You can start the purchase only if cash and sellable savings cover the down payment and one-off costs plus a 10% buffer for tax on sales.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

@@ -40,6 +40,7 @@ export function describeCoping(coping, instruments) {
   for (const inst of sellOrder) {
     if (coping.sold[inst.id] > 0) parts.push(`sold ${formatINR(coping.sold[inst.id])} of ${inst.name.toLowerCase()}`);
   }
+  if (coping.soldHome) parts.push('sold your home');
   if (coping.borrowed > 0) parts.push(`borrowed ${formatINR(coping.borrowed)}`);
   if (!parts.length) return null;
   const last = parts.pop();

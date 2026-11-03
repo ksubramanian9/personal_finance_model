@@ -11,6 +11,7 @@ export const EFFECT_RANGES = {
   emergencyMonths: [0, 24],
   healthCover: [0, 1e8],
   healthPremium: [0, 1e7],
+  buyHome: [0, 1],
 };
 const ALLOC = 'alloc.';
 const rangeFor = (k) => EFFECT_RANGES[k] ?? (k.startsWith(ALLOC) ? [0, 1] : undefined);
@@ -74,6 +75,7 @@ export function checkStages(data, label, instrumentIds = null) {
     if (!Array.isArray(s.decisions) || !s.decisions.length) problems.push(`"${at}.decisions" should list at least one decision`);
     else for (const ref of s.decisions) {
       if (!data.decisions[ref.id]) problems.push(`"${at}" uses unknown decision "${ref.id}"`);
+      if (ref.onlyIf !== undefined && ref.onlyIf !== 'renting') problems.push(`"${at}" decision "${ref.id}": "onlyIf" should be "renting"`);
     }
     const prev = data.stages[i - 1];
     if (prev && prev.toAge !== s.fromAge) problems.push(`"${at}" should start at age ${prev.toAge} where "${prev.id}" ends`);

@@ -148,6 +148,15 @@ export function checkTax(data, instrumentIds, label) {
     else if (i > 0 && s.above <= it.surcharge[i - 1].above) problems.push('"incomeTax.surcharge" tiers should go up');
   });
 
+  const prop = data.property;
+  if (!prop) problems.push('"property" is missing: say how a sold home is taxed');
+  else {
+    checkProvenance(prop.provenance, 'property', problems);
+    if (!isNum(prop.longTermYears) || prop.longTermYears < 0) problems.push('"property.longTermYears" should be a number of years');
+    if (!isNum(prop.longTermRatePct) || prop.longTermRatePct < 0 || prop.longTermRatePct > 100) problems.push('"property.longTermRatePct" should be a percentage');
+    if (prop.shortTermRatePct !== 'slab' && (!isNum(prop.shortTermRatePct) || prop.shortTermRatePct < 0 || prop.shortTermRatePct > 100)) problems.push('"property.shortTermRatePct" should be a percentage or "slab"');
+    if (!isNum(prop.exemptionPerYear) || prop.exemptionPerYear < 0) problems.push('"property.exemptionPerYear" should be a number of rupees');
+  }
   const rules = data.instruments;
   for (const id of instrumentIds) {
     const r = rules[id];
@@ -163,6 +172,34 @@ export function checkTax(data, instrumentIds, label) {
     }
   }
   for (const id of Object.keys(rules)) if (!instrumentIds.includes(id)) problems.push(`"instruments.${id}" is not a known instrument`);
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
+export function checkHousing(data, regimeIds, label) {
+  const problems = [];
+  checkProvenance(data.provenance, '', problems);
+  const tiers = data.cityTiers;
+  if (!tiers || !Object.keys(tiers).length) problems.push('"cityTiers" should list at least one tier');
+  else for (const [id, t] of Object.entries(tiers)) {
+    if (!isStr(t.name)) problems.push(`"cityTiers.${id}.name" is missing`);
+    if (!isNum(t.homePrice) || t.homePrice <= 0) problems.push(`"cityTiers.${id}.homePrice" should be a price in today's rupees`);
+    checkProvenance(t.provenance, `cityTiers.${id}`, problems);
+  }
+  for (const r of regimeIds) {
+    const g = data.priceGrowthPct?.[r];
+    if (!isNum(g) || g < -30 || g > 30) problems.push(`"priceGrowthPct.${r}" should be a percentage from -30 to 30`);
+  }
+  for (const r of Object.keys(data.priceGrowthPct ?? {})) if (!regimeIds.includes(r)) problems.push(`"priceGrowthPct.${r}" is not a known regime`);
+  const loan = data.loan ?? {};
+  if (!isNum(loan.sharePct) || loan.sharePct < 0 || loan.sharePct > 100) problems.push('"loan.sharePct" should be a percentage from 0 to 100');
+  if (!isNum(loan.years) || loan.years < 1 || loan.years > 40) problems.push('"loan.years" should be from 1 to 40');
+  if (!isNum(loan.ratePct) || loan.ratePct < 0 || loan.ratePct > 30) problems.push('"loan.ratePct" should be a percentage from 0 to 30');
+  for (const [f, max] of [['oneOffCostPct', 30], ['upkeepPct', 10], ['sellingCostPct', 20]]) {
+    if (!isNum(data[f]) || data[f] < 0 || data[f] > max) problems.push(`"${f}" should be a percentage from 0 to ${max}`);
+  }
+  if (!isNum(data.affordabilityBuffer) || data.affordabilityBuffer < 1 || data.affordabilityBuffer > 2) problems.push('"affordabilityBuffer" should be from 1 to 2');
+  if (!isNum(data.forcedSaleDebtMonths) || data.forcedSaleDebtMonths < 0) problems.push('"forcedSaleDebtMonths" should be a number of months');
   if (problems.length) throw new ValidationError(label, problems);
   return data;
 }
@@ -184,7 +221,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...} }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -200,5 +237,8 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
   const tax = checkTax(
     await loadJSON('data/tax.json', opts(schemas.tax, 'tax.json')),
     inst.instruments.map(i => i.id), 'tax.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax };
+  const housing = checkHousing(
+    await loadJSON('data/housing.json', opts(schemas.housing, 'housing.json')),
+    macro.order, 'housing.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing };
 }

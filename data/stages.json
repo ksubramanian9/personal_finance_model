@@ -75,6 +75,30 @@
         }
       ]
     },
+    "home": {
+      "title": "A home of your own",
+      "question": "Keep renting, or buy a home?",
+      "options": [
+        {
+          "id": "rent",
+          "emoji": "🔑",
+          "title": "Keep renting",
+          "blurb": "Light on cash and easy to move. Rent rises with prices and you own nothing at the end.",
+          "effects": {
+            "buyHome": 0
+          }
+        },
+        {
+          "id": "buy",
+          "emoji": "🏠",
+          "title": "Buy a home",
+          "blurb": "A 20-year loan for most of the price, an instalment that never pauses, and a home that tends to grow in value.",
+          "effects": {
+            "buyHome": 1
+          }
+        }
+      ]
+    },
     "emergency": {
       "title": "Emergency fund",
       "question": "How much cash will you keep for a rainy day?",
@@ -250,7 +274,7 @@
       "emoji": "🏡",
       "fromAge": 32,
       "toAge": 42,
-      "intro": "Life gets fuller and the bills get bigger. Family and a home arrive in a later version of this game.",
+      "intro": "Life gets fuller and the bills get bigger. A home of your own becomes possible, and the way your money works gets tested.",
       "decisions": [
         {
           "id": "savings",
@@ -259,6 +283,11 @@
         {
           "id": "invest",
           "question": "Where should the savings go from here?"
+        },
+        {
+          "id": "home",
+          "onlyIf": "renting",
+          "question": "You've been renting for years. Is it time to buy a home?"
         },
         {
           "id": "emergency",
@@ -288,6 +317,11 @@
         {
           "id": "invest",
           "question": "Your savings are bigger now. Where do they go?"
+        },
+        {
+          "id": "home",
+          "onlyIf": "renting",
+          "question": "Still renting? Buying now means paying a loan into your late 50s and beyond."
         },
         {
           "id": "growth",
@@ -327,7 +361,7 @@
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers.",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json).",
     "confidence": "low",
     "asOf": 2025
   }

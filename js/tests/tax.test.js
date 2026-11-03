@@ -194,7 +194,7 @@ test('tax on a sale is raised by selling a little more, so the books still balan
   const short = y.expenses + y.debtPaid - y.income - y.extraIncome;
   assert(near(raised, short, 1e-9), `raised ${raised} should cover the shortfall ${short}, tax included`);
   assert(y.taxInvest > 0, 'selling shares at a gain costs tax');
-  assert(near(y.expenses, y.learning + y.premium + y.eventCost + y.taxIncome + y.taxInvest + s.livingCost + s.support, 1e-9), 'tax is part of what went out');
+  assert(near(y.expenses, y.learning + y.premium + y.eventCost + y.taxIncome + y.taxInvest + s.livingCost + s.support + s.rent, 1e-9), 'tax is part of what went out');
 });
 
 test('buying shares each year records pieces that add up to the pool', () => {

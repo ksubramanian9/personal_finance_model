@@ -9,6 +9,7 @@
 //   interest (cash, FDs)         slab tax, every year as it builds up
 //   gains on equity and gold     only when sold: long-term at a flat rate (equity beyond a yearly
 //                                exemption), short-term at a flat rate or at the slab rate
+//   a home                       only when sold (the game does that as a last resort), on its own rule
 //   provident funds              not taxed
 // Then cess on the total.
 
@@ -54,10 +55,10 @@ export function computeTax(tax, { priceIndex, salary, windfall = 0, ordinary = 0
 
   let normal = pay + ordinary * k;
   let special = 0;
-  for (const id of gainsIds(tax)) {
+  for (const id of [...gainsIds(tax), 'home']) {
     const g = gains[id];
     if (!g) continue;
-    const rule = tax.instruments[id];
+    const rule = id === 'home' ? tax.property : tax.instruments[id];
     // A loss on the short side cancels long-side gains; a long-side loss cancels nothing else.
     let st = g.st * k;
     let lt = g.lt * k;

@@ -17,7 +17,7 @@ const BAR_MAX = 24;
 const RADIUS = 4;
 
 // Bottom to top: the safest and most liquid first, the riskiest on top.
-export const STACK_ORDER = ['cash', 'fd', 'pf', 'gold', 'equity'];
+export const STACK_ORDER = ['cash', 'fd', 'pf', 'gold', 'equity', 'home'];
 
 const r2 = (x) => Math.round(x * 100) / 100;
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -123,8 +123,8 @@ function figure({ title, hint, legend, plot, readout, onKey, label }) {
 // `title` is for a chart of one decade; `zoomHint` adds the reminder that early years look small
 // beside a lifetime peak (the scale is linear, so we say so instead of bending it).
 export function netWorthChart(rows, { instruments, real, title = 'What you owned', zoomHint = false }) {
-  const ids = STACK_ORDER.filter(id => id === 'cash' || instruments.some(i => i.id === id));
-  const label = (id) => (id === 'cash' ? 'Cash savings' : instruments.find(i => i.id === id).name);
+  const ids = STACK_ORDER.filter(id => id === 'cash' || (id === 'home' ? rows.some(r => r.parts.home > 0) : instruments.some(i => i.id === id)));
+  const label = (id) => (id === 'cash' ? 'Cash savings' : id === 'home' ? 'Your home' : instruments.find(i => i.id === id).name);
   const totalOf = (r) => ids.reduce((a, id) => a + r.parts[id], 0);
   const maxPos = Math.max(0, ...rows.map(totalOf));
   const maxLoan = Math.max(0, ...rows.map(r => r.loans));

@@ -10,7 +10,7 @@ const goodTheme = {
   },
   sizes: { base: '1rem', hero: '3rem', radius: '1rem' },
   chart: {
-    cash: '#c1', fd: '#c2', pf: '#c3', gold: '#c4', equity: '#c5', loans: '#c6', earned: '#c7', spent: '#c8',
+    cash: '#c1', fd: '#c2', pf: '#c3', gold: '#c4', equity: '#c5', home: '#c9', loans: '#c6', earned: '#c7', spent: '#c8',
     surface: '#fff', grid: '#e', axis: '#a', muted: '#m', band: '#b',
   },
   provenance: { basis: 'test', confidence: 'low', asOf: 2026 },
