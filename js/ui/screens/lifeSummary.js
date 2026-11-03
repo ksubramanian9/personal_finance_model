@@ -1,6 +1,7 @@
 import { h, mount } from '../dom.js';
 import { formatINR } from '../format.js';
 import { outcome } from '../../engine/outcomes.js';
+import { describeOverrides } from '../../data/overrides.js';
 import { decadeSummary } from '../../engine/summary.js';
 import { netWorthSeries, cashflowSeries } from '../../engine/explain.js';
 import { netWorthChart, cashflowChart } from '../charts.js';
@@ -24,6 +25,19 @@ function decadeCard(card, index, onWhy) {
     !card.retired && h('p', { class: 'small-line', text: `${formatINR(card.savedReal)} saved along the way` }),
     button);
   return { card, el, button, tone };
+}
+
+// Level 3: a life that used fixed weather or changed numbers says so, so it is not mistaken for a default one.
+function customBanner(state, params) {
+  const c = state.custom;
+  if (!c || (!c.scriptId && !Object.keys(c.overrides ?? {}).length)) return null;
+  const parts = [];
+  if (c.scriptId) { const s = params.macro.scripts[c.scriptId]; parts.push(`Economy: ${s.emoji} ${s.name}`); }
+  parts.push(...describeOverrides(c.overrides));
+  return h('section', { class: 'card custom-banner' },
+    h('p', { class: 'headline', text: 'This life used custom settings' }),
+    h('p', { text: parts.join(' · ') }),
+    h('p', { class: 'hint', text: 'It is not comparable with a default life.' }));
 }
 
 // "Could you stop working, and did the money last?" in words.
@@ -161,6 +175,7 @@ export function renderLifeSummary(root, ctx) {
     h('section', { class: 'hero compact' },
       h('h1', { text: `${persona.emoji} ${persona.name}` }),
       h('p', { text: `Age ${persona.profile.startAge} to ${state.age}. Here's the whole story.` })),
+    customBanner(state, params),
     verdictCard(result),
     h('div', { class: 'decade-grid' }, decadeEls.map(d => d.el)),
     h('section', { class: 'card' },

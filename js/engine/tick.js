@@ -66,7 +66,9 @@ export function tickYear(state, params) {
   s.pending = { spend: 0, income: 0, panicSell: false };
 
   // 1. the economy and market returns
-  const regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
+  let regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
+  const scripted = s.script?.find(r => s.age >= r.fromAge && s.age < r.toAge); // Level 3: fixed weather
+  if (scripted) regime = scripted.regime; // the draw above is still taken, so no other luck moves
   const R = params.macro.regimes[regime];
   s.regime = regime;
   const returns = {};

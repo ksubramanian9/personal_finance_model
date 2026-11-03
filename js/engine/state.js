@@ -2,12 +2,14 @@ import { createRng, nextNormal } from './rng.js';
 import { gainsIds } from './tax.js';
 
 // Bumped whenever the shape of the state changes, so a saved life from an older game is not resumed.
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 // The whole game in one plain, JSON-serializable object.
 // All money is nominal rupees. `priceIndex` converts to today's rupees (1 at the start).
 // `params` is what loadParams() returns (engine.json plus macro and instruments).
-export function createState(persona, params, { seed, retirementAge }) {
+// `custom` is Level 3: { scriptId, overrides } (the overrides are already applied to `params`; they are kept here so
+// the end screen can say the life was not a default one).
+export function createState(persona, params, { seed, retirementAge, custom = null }) {
   const tier = params.housing.cityTiers[persona.profile.cityTier];
   if (!tier) throw new Error(`housing.json has no city tier ${persona.profile.cityTier} (needed by ${persona.id})`);
   // How long this life lasts: its own random stream, so nothing else's luck moves.
@@ -25,6 +27,8 @@ export function createState(persona, params, { seed, retirementAge }) {
     rng: createRng(seed),                  // the economy and markets
     rngEvents: createRng(`${seed}:events`), // life events: a separate stream, so markets and events never shift each other
     rngNudges: createRng(`${seed}:nudges`), // instinct cards: likewise
+    script: custom?.scriptId ? params.macro.scripts[custom.scriptId].sequence : null, // fixed weather, or null for the dice
+    custom: custom ? { scriptId: custom.scriptId ?? null, overrides: custom.overrides ?? {} } : null,
     regime: params.macro.start, // last year's economy; the first tick draws this year's
 
     // annual flows, nominal, for the year about to be played

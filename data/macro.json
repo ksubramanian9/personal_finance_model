@@ -29,8 +29,37 @@
     "slowdown": { "boom": 0.05, "normal": 0.35, "slowdown": 0.42, "crisis": 0.18 },
     "crisis":   { "boom": 0.05, "normal": 0.35, "slowdown": 0.20, "crisis": 0.40 }
   },
+  "scripts": {
+    "smooth": {
+      "name": "A smooth ride", "emoji": "🌤️",
+      "blurb": "Steady weather all your life: no booms and no crashes.",
+      "sequence": [{ "fromAge": 22, "toAge": 100, "regime": "normal" }]
+    },
+    "crash30s": {
+      "name": "A crash in your 30s", "emoji": "⛈️",
+      "blurb": "A crisis at 33 and 34 and a slowdown after it. Ordinary luck before and after.",
+      "sequence": [
+        { "fromAge": 33, "toAge": 35, "regime": "crisis" },
+        { "fromAge": 35, "toAge": 37, "regime": "slowdown" }
+      ]
+    },
+    "lostDecade": {
+      "name": "A lost decade in your 40s", "emoji": "🌧️",
+      "blurb": "Ten sour years: slowdowns with a crisis in the middle. Ordinary luck around it.",
+      "sequence": [
+        { "fromAge": 40, "toAge": 44, "regime": "slowdown" },
+        { "fromAge": 44, "toAge": 46, "regime": "crisis" },
+        { "fromAge": 46, "toAge": 50, "regime": "slowdown" }
+      ]
+    },
+    "lateCrash": {
+      "name": "A crash just before you retire", "emoji": "📉",
+      "blurb": "A crisis at 58 and 59, just as retirement at 60 comes into view. Ordinary luck before it.",
+      "sequence": [{ "fromAge": 58, "toAge": 60, "regime": "crisis" }]
+    }
+  },
   "provenance": {
-    "basis": "Illustrative four-state economy, tuned so the long-run mix is about 23% boom, 50% steady, 18% slowdown, 10% crisis. Inflation per regime averages about 4.5% across the mix (boom 5.1, steady 4.3, slowdown 3.8, crisis 5.3), so prices rise about 5.3 times over 38 years. It was 5.2% until the November 2026 review: that matched the 2012-2026 CPI average of about 5.6% but looked high for a 60-year view. 4.5% sits between the RBI's 4% target (band 2-6%) and the 4.9% average of the targeting era; recent years were lower (RBI put FY2025-26 near 2.1%) and FY2026-27 is projected near 5%. Sources are secondary summaries (RBI, Trading Economics, press), not checked against MoSPI. Crises last about 1.7 years on average. wageAdjPct is the extra raise (in percentage points) a fully cyclical job gets that year, averaging about zero across the mix.",
+    "basis": "Illustrative four-state economy, tuned so the long-run mix is about 23% boom, 50% steady, 18% slowdown, 10% crisis. Inflation per regime averages about 4.5% across the mix (boom 5.1, steady 4.3, slowdown 3.8, crisis 5.3), so prices rise about 5.3 times over 38 years. It was 5.2% until the November 2026 review: that matched the 2012-2026 CPI average of about 5.6% but looked high for a 60-year view. 4.5% sits between the RBI's 4% target (band 2-6%) and the 4.9% average of the targeting era; recent years were lower (RBI put FY2025-26 near 2.1%) and FY2026-27 is projected near 5%. Sources are secondary summaries (RBI, Trading Economics, press), not checked against MoSPI. Crises last about 1.7 years on average. The scripts are fixed weather for Level 3: they replace the random draw in the ages they cover (the draw is still taken, so nothing else moves) and are illustrative. wageAdjPct is the extra raise (in percentage points) a fully cyclical job gets that year, averaging about zero across the mix.",
     "confidence": "low",
     "asOf": 2026
   }

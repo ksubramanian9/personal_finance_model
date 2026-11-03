@@ -9,6 +9,9 @@ import { renderNudge } from './screens/nudge.js';
 import { renderLifeSummary } from './screens/lifeSummary.js';
 import { createDisclosure } from './disclosure.js';
 import { createNoStore } from './storage.js';
+import { advancedPanel } from './advanced.js';
+import { applyOverrides, normalizeOverrides } from '../data/overrides.js';
+import { collectSources } from '../data/provenance.js';
 
 const randomSeed = () => Math.floor(Math.random() * 9000) + 1000;
 
@@ -23,6 +26,8 @@ export function createFlow(root, data, session, store = createNoStore()) {
     onChange: (d) => store.saveSettings({ ...store.loadSettings(), level: d.level, real: d.real }),
   }); // how much detail the player has asked for, remembered between visits
   const eventDefs = Object.fromEntries(data.params.events.map(e => [e.id, e]));
+  const entries = collectSources({ ...data.params.sources, ...(data.sources ?? {}) }); // for the Level 3 data browser
+  const gameParams = () => (game?.params ?? data.params); // the params this life uses (Level 3 may have changed some)
 
   const doneIds = () => Object.keys(game.state.choices);
 
@@ -35,7 +40,8 @@ export function createFlow(root, data, session, store = createNoStore()) {
     const ok = persona && life.state && life.state.version === STATE_VERSION && life.state.personaId === persona.id
       && Array.isArray(life.state.history) && ['decisions', 'card', 'result'].includes(life.phase)
       && (life.phase === 'decisions' || stage)
-      && (life.phase !== 'card' || (life.card && data.params.nudges.cards[life.card.id]));
+      && (life.phase !== 'card' || (life.card && data.params.nudges.cards[life.card.id]))
+      && (!life.state.custom?.scriptId || data.params.macro.scripts?.[life.state.custom.scriptId]);
     if (!ok) { store.clearLife(); return null; }
     return { life, persona, stage };
   }
@@ -54,7 +60,10 @@ export function createFlow(root, data, session, store = createNoStore()) {
     session.seed = life.seed;
     session.retirementAge = life.retirementAge;
     session.personaId = persona.id;
-    game = { persona, state: life.state, stage, picks: life.picks ?? {}, startIdx: life.startIdx ?? 0, picked: life.picked ?? [], endAge: life.endAge };
+    const custom = life.state.custom ?? { scriptId: null, overrides: {} };
+    session.script = custom.scriptId;
+    session.overrides = custom.overrides;
+    game = { persona, params: applyOverrides(data.params, custom.overrides), state: life.state, stage, picks: life.picks ?? {}, startIdx: life.startIdx ?? 0, picked: life.picked ?? [], endAge: life.endAge };
     if (life.phase === 'card') showCard(life.card);
     else if (life.phase === 'result') showResult();
     else enterNextStage();
@@ -79,15 +88,22 @@ export function createFlow(root, data, session, store = createNoStore()) {
 
   function showPicker() {
     game = null;
-    renderPersonaPicker(root, data.personas, session, startGame);
+    renderPersonaPicker(root, data.personas, session, startGame, () => advancedPanel({
+      session, params: data.params, entries, randomSeed,
+      onReset: showPicker,
+    }));
   }
 
   // A fresh life for this persona with the session's seed and retirement age.
   function startGame(persona) {
     store.saveSettings({ ...store.loadSettings(), personaId: persona.id, retirementAge: session.retirementAge });
+    // Level 3: this life may use fixed weather and a few changed numbers.
+    const custom = { scriptId: session.script ?? null, overrides: normalizeOverrides(session.overrides) };
+    const params = applyOverrides(data.params, custom.overrides);
     game = {
       persona,
-      state: createState(persona, data.params, { seed: session.seed, retirementAge: session.retirementAge }),
+      params,
+      state: createState(persona, params, { seed: session.seed, retirementAge: session.retirementAge, custom: custom.scriptId || Object.keys(custom.overrides).length ? custom : null }),
       stage: null, picks: {}, startIdx: 0,
     };
     enterNextStage();
@@ -105,7 +121,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
       stage,
       decisions: data.decisions,
       state: game.state,
-      params: data.params,
+      params: gameParams(),
       picks: game.picks,
       isFirst: game.state.history.length === 0,
       doneIds: doneIds(),
@@ -121,7 +137,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
       const o = data.decisions[ref.id].options.find(x => x.id === game.picks[ref.id]);
       return { emoji: o.emoji, title: o.title };
     });
-    const begun = beginStage(game.state, data.params, stage, data.decisions, game.picks);
+    const begun = beginStage(game.state, gameParams(), stage, data.decisions, game.picks);
     game.state = begun.state;
     game.endAge = begun.endAge;
     advance();
@@ -129,7 +145,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
 
   function advance() {
     const { stage } = game;
-    const r = continueStage(game.state, data.params, stage, game.endAge);
+    const r = continueStage(game.state, gameParams(), stage, game.endAge);
     game.state = r.state;
     if (r.card) showCard(r.card);
     else showResult();
@@ -138,9 +154,9 @@ export function createFlow(root, data, session, store = createNoStore()) {
   function showCard(card) {
     const { stage } = game;
     renderNudge(root, {
-      persona: game.persona, stages: data.stages, stage, card, def: data.params.nudges.cards[card.id],
+      persona: game.persona, stages: data.stages, stage, card, def: gameParams().nudges.cards[card.id],
       state: game.state, doneIds: doneIds().filter(id => id !== stage.id), // this stage is still being played
-      onChoose: (choice) => { game.state = answerNudge(game.state, data.params, stage, card, choice); advance(); },
+      onChoose: (choice) => { game.state = answerNudge(game.state, gameParams(), stage, card, choice); advance(); },
     });
     persist('card', card);
   }
@@ -151,10 +167,10 @@ export function createFlow(root, data, session, store = createNoStore()) {
       stages: data.stages,
       stage,
       summary: stageSummary(game.state.history, game.startIdx, game.state.nudgeLog.filter(l => l.stageId === stage.id)),
-      regimes: data.params.macro.regimes,
+      regimes: gameParams().macro.regimes,
       eventDefs,
-      cardDefs: data.params.nudges.cards,
-      instruments: data.params.instruments,
+      cardDefs: gameParams().nudges.cards,
+      instruments: gameParams().instruments,
       disclosure,
       years: game.state.history.slice(game.startIdx),
       doneIds: doneIds(),
@@ -168,14 +184,14 @@ export function createFlow(root, data, session, store = createNoStore()) {
   function showLifeSummary() {
     store.clearLife(); // a finished life is not kept
     // The rest of life: the retirement years, until the end.
-    if (game.state.age < game.state.deathAge) game.state = playRetirement(game.state, data.params);
+    if (game.state.age < game.state.deathAge) game.state = playRetirement(game.state, gameParams());
     renderLifeSummary(root, {
       persona: game.persona,
       state: game.state,
       session,
       stages: data.stages,
       decisions: data.decisions,
-      params: data.params,
+      params: gameParams(),
       eventDefs,
       disclosure,
       onSameLuck: () => startGame(game.persona),

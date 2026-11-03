@@ -913,3 +913,96 @@ test('the level of detail, the rupee mode and the last persona are remembered', 
   const next = revisit(storage);
   assertEqual([next.flow.disclosure.level, next.flow.disclosure.real], [2, false]);
 });
+
+// ---- Level 3: under the hood ----
+
+const byId = (root, id) => findAll(root, n => n.attrs.id === id)[0];
+const setValue = (el, value) => { el.value = value; el.dispatch('change'); };
+const chooseScript = (root, id) => {
+  const radio = findAll(root, n => n.tagName === 'INPUT' && n.attrs.name === 'economy-script' && n.attrs.value === id)[0];
+  assert(radio, `no economy option ${id}`);
+  radio.checked = true;
+  radio.dispatch('change');
+};
+const toPicker = (g) => { click(g.root, /Let's start|Start a new life/); findAll(g.root, n => hasClass(n, 'persona-card'))[0].click(); };
+
+test('the picker has an Advanced panel with a seed, economy scripts, a few numbers and the data browser', () => {
+  const g = newGame(4271);
+  toPicker(g);
+  const t = text(g.root);
+  assert(/Advanced: under the hood/.test(t) && /The economy/.test(t) && /A few numbers you can change/.test(t), 'sections');
+  assert(byId(g.root, 'seed-input') && byId(g.root, 'override-inflationShiftPct') && byId(g.root, 'override-tax'), 'fields');
+  const options = findAll(g.root, n => n.tagName === 'INPUT' && n.attrs.name === 'economy-script');
+  assertEqual(options.length, 5); // random weather plus four scripts
+  assert(/A crash just before you retire/.test(t));
+  assert(/Where the numbers come from \(\d+ sources\)/.test(t));
+  assert(/macro\.json/.test(t) && /low confidence · 2026/.test(t), 'sources with confidence and year');
+  assert(!/undefined|null|NaN|false|\[object/.test(t), 'no stray words');
+});
+
+test('a typed seed is the seed of the life; "Random seed" replaces it', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  toPicker(g);
+  setValue(byId(g.root, 'seed-input'), 'my-lucky-seed');
+  assertEqual(g.session.seed, 'my-lucky-seed');
+  click(g.root, /Begin this life/);
+  assertEqual(createStore(storage).loadLife().state.seed, 'my-lucky-seed');
+  const h2 = newGame(4271);
+  toPicker(h2);
+  click(h2.root, /Random seed/);
+  assert(h2.session.seed !== 4271 && String(byId(h2.root, 'seed-input').value) === String(h2.session.seed), 'a new seed shown');
+});
+
+test('an economy script gives the weather it promises, and the end screen says the life was custom', () => {
+  const g = newGame(4271);
+  toPicker(g);
+  chooseScript(g.root, 'smooth');
+  click(g.root, /Begin this life/);
+  playStageScreen(g);
+  assert(/10 steady\./.test(text(g.root)) && !/boom|crisis|slowdown/i.test(text(findAll(g.root, n => hasClass(n, 'economy'))[0])), 'only steady years');
+  while (buttonWithText(g.root, /^On to/)) { click(g.root, /^On to/); playStageScreen(g); }
+  click(g.root, /^See the whole story/);
+  assert(/This life used custom settings/.test(text(g.root)) && /A smooth ride/.test(text(g.root)), 'banner');
+  const plain = newGame(4271);
+  begin(plain);
+  finish(plain);
+  assert(!/custom settings/.test(text(plain.root)), 'no banner on a default life');
+});
+
+test('changed numbers apply to the life and show on the banner; Reset to defaults clears them', () => {
+  const g = newGame(4271);
+  toPicker(g);
+  setValue(byId(g.root, 'override-inflationShiftPct'), '2');
+  const box = byId(g.root, 'override-tax');
+  box.checked = true;
+  box.dispatch('change');
+  assertEqual(g.session.overrides, { inflationShiftPct: 2, taxOn: false });
+  click(g.root, /Begin this life/);
+  finish(g);
+  assert(/Inflation \+2 points a year/.test(text(g.root)) && /No tax/.test(text(g.root)), 'banner lists the changes');
+
+  const r = newGame(4271);
+  toPicker(r);
+  setValue(byId(r.root, 'override-inflationShiftPct'), '2');
+  chooseScript(r.root, 'lostDecade');
+  click(r.root, /Reset to defaults/);
+  assertEqual([r.session.script, r.session.overrides], [null, {}]);
+  assert(!/This life used custom/.test(text(r.root)));
+});
+
+test('a custom life resumes as a custom life', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  toPicker(g);
+  chooseScript(g.root, 'smooth');
+  setValue(byId(g.root, 'override-equityShiftPct'), '-3');
+  click(g.root, /Begin this life/);
+  playStageScreen(g);
+  const v = revisit(storage);
+  click(v.root, /Continue/);
+  assertEqual([v.session.script, v.session.overrides], ['smooth', { equityShiftPct: -3 }]);
+  click(v.root, /^On to/);
+  playStageScreen(v);
+  assert(/10 steady\./.test(text(v.root)), 'still steady weather after resuming');
+});

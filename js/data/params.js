@@ -37,6 +37,16 @@ export function checkMacro(m, label) {
     for (const to of Object.keys(row)) if (!ids.includes(to)) problems.push(`"transitions.${id}.${to}" is not a known regime`);
   }
   for (const id of Object.keys(m.regimes)) if (!ids.includes(id)) problems.push(`"regimes.${id}" is not listed in "order"`);
+  for (const [sid, sc] of Object.entries(m.scripts ?? {})) {
+    const at = `scripts.${sid}`;
+    for (const f of ['name', 'emoji', 'blurb']) if (!isStr(sc[f])) problems.push(`"${at}.${f}" is missing`);
+    if (!Array.isArray(sc.sequence) || !sc.sequence.length) { problems.push(`"${at}.sequence" should list at least one stretch`); continue; }
+    sc.sequence.forEach((r, i) => {
+      if (!isNum(r.fromAge) || !isNum(r.toAge) || r.toAge <= r.fromAge) problems.push(`"${at}.sequence[${i}]" should have fromAge below toAge`);
+      else if (i > 0 && isNum(sc.sequence[i - 1].toAge) && r.fromAge < sc.sequence[i - 1].toAge) problems.push(`"${at}.sequence[${i}]" overlaps the one before it`);
+      if (!ids.includes(r.regime)) problems.push(`"${at}.sequence[${i}].regime" "${r.regime}" is not a known regime`);
+    });
+  }
   if (problems.length) throw new ValidationError(label, problems);
   return m;
 }
@@ -359,5 +369,7 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
     await loadJSON('data/capability.json', opts(schemas.capability, 'capability.json')), macro.order, 'capability.json');
   const nudges = checkNudges(
     await loadJSON('data/nudges.json', opts(schemas.nudges, 'nudges.json')), 'nudges.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement, capability, nudges };
+  // The files as loaded, for the Level 3 data browser (each carries its own provenance).
+  const sources = { 'engine.json': engine, 'macro.json': macro, 'instruments.json': inst, 'events.json': ev, 'tax.json': tax, 'housing.json': housing, 'family.json': family, 'retirement.json': retirement, 'capability.json': capability, 'nudges.json': nudges };
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement, capability, nudges, sources };
 }

@@ -48,9 +48,9 @@ function retirementChoice(selectedAge, onChange) {
 }
 
 // Renders the picker into `root`. `session` is mutated: { personaId, retirementAge }.
-export function renderPersonaPicker(root, personas, session, onContinue) {
+export function renderPersonaPicker(root, personas, session, onContinue, advanced = null) {
   if (!session.retirementAge) session.retirementAge = DEFAULT_RETIREMENT_AGE;
-  const redraw = () => renderPersonaPicker(root, personas, session, onContinue);
+  const redraw = () => renderPersonaPicker(root, personas, session, onContinue, advanced);
   const chosen = personas.find(p => p.id === session.personaId);
 
   mount(root,
@@ -65,5 +65,6 @@ export function renderPersonaPicker(root, personas, session, onContinue) {
     chosen && startingLine(chosen),
     chosen && retirementChoice(session.retirementAge, age => { session.retirementAge = age; }),
     chosen && h('div', { class: 'actions' },
-      h('button', { class: 'btn', type: 'button', onClick: () => onContinue(chosen, session), text: 'Begin this life' })));
+      h('button', { class: 'btn', type: 'button', onClick: () => onContinue(chosen, session), text: 'Begin this life' })),
+    advanced && advanced());
 }

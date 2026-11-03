@@ -25,7 +25,10 @@ async function boot() {
     }
     const params = await loadParams();
     const personas = await loadPersonas();
-    const { stages, decisions } = await loadStages({ instrumentIds: params.instruments.map(i => i.id) });
+    const stagesData = await loadStages({ instrumentIds: params.instruments.map(i => i.id) });
+    const { stages, decisions } = stagesData;
+    // Files the Level 3 data browser lists besides the params (each carries its own provenance).
+    const sources = { 'stages.json': stagesData, ...Object.fromEntries(personas.map(p => [`personas/${p.id}.json`, p])) };
 
     const store = browserStore();
     const saved = store.loadSettings();
@@ -34,7 +37,7 @@ async function boot() {
       retirementAge: [55, 60, 65].includes(saved.retirementAge) ? saved.retirementAge : 60,
       seed: null,
     };
-    const flow = createFlow(app, { personas, params, stages, decisions }, session, store);
+    const flow = createFlow(app, { personas, params, stages, decisions, sources }, session, store);
     // ?seed=4271 replays a run; otherwise every run gets fresh luck.
     session.seed = new URLSearchParams(location.search).get('seed') ?? flow.randomSeed();
     flow.showLanding();

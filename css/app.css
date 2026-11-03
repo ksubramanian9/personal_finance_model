@@ -474,3 +474,25 @@ h1, h2, h3 {
 .option-card.nudge-follow { border-style: dashed; }
 .event-card.kind-instinct.followed { border-left-color: var(--c-warn); }
 .event-card.kind-instinct.resisted { border-left-color: var(--c-good); }
+
+/* Level 3: under the hood */
+.hood { margin-top: 2rem; text-align: left; }
+.hood > summary { cursor: pointer; font-weight: 700; }
+.hood-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.75rem 0; }
+.hood input[type="text"], .hood input[type="number"] {
+  font: inherit; padding: 0.4rem 0.6rem; border: 2px solid var(--c-ink); border-radius: 0.6rem; background: var(--c-surface); color: var(--c-ink);
+}
+.hood input[type="number"] { width: 6rem; }
+.overrides { border: 2px dashed var(--c-inkSoft); border-radius: 1rem; margin: 1rem 0; padding: 0.75rem 1rem; }
+.override-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0.4rem 0; }
+.override-label { min-width: 9rem; font-weight: 600; }
+.data-browser { margin-top: 1.25rem; }
+.source-file { margin: 0.5rem 0 0.5rem 0.5rem; }
+.source { margin: 0.35rem 0 0.35rem 1rem; }
+.source summary { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; cursor: pointer; }
+.source-path { font-family: ui-monospace, monospace; font-size: 0.95rem; }
+.source-tag { font-size: 0.85rem; padding: 0.1rem 0.5rem; border-radius: 999px; border: 2px solid var(--c-ink); }
+.source-tag.conf-low { border-style: dashed; }
+.source-basis { max-width: 60rem; }
+.source-numbers { max-height: 14rem; overflow: auto; font-size: 0.85rem; background: var(--c-surface); border: 1px solid var(--c-inkSoft); border-radius: 0.5rem; padding: 0.5rem; white-space: pre-wrap; }
+.custom-banner { border-left: 12px solid var(--c-warn); }
