@@ -2,7 +2,7 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
-**Status:** as of increment 8, part 1 (housing). Family, the second part of increment 8, is next. Planned-but-unbuilt modules are listed at the bottom.
+**Status:** as of increment 8 (housing and family). Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
 
@@ -17,6 +17,7 @@ data/                   all tunable numbers and content (JSON)
   macro.json            economy regimes (inflation, raise adjustment) and the transition matrix
   instruments.json      pf / equity / fd / gold: returns by regime, liquidity, provenance
   events.json           life events (odds, size, who covers them, whether a windfall is taxable) and insurance constants
+  family.json           what a household and children cost, by age band and city tier
   housing.json          home price by city tier and by economy, the loan, one-off and upkeep costs, forced-sale rule
   tax.json              income-tax slabs, rebate, cess, surcharge; how each instrument is taxed (exempt / interest / capitalGains)
   stages.json           decision library (options + effects) and the ordered life stages
@@ -28,12 +29,13 @@ js/data/                load + validate; no DOM, no engine
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks
   stages.js             loadStages + checkStages (ranges, contiguity, same-effects rule, allocation sums)
-  params.js             loadParams: engine + macro + instruments + events + tax + housing, with cross-file checks
+  params.js             loadParams: engine + macro + instruments + events + tax + housing + family, with cross-file checks
 
 js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ imports
   rng.js                seeded mulberry32; generator is a plain {s} object
   macro.js              nextRegime, stationaryDistribution
   events.js             rollEvents (draws) and settleEvents (money effects, insurance)
+  family.js             marry, birthDue, childCosts, spouseGross
   housing.js            homeOffer (price, costs, affordability), buyHome, payLoanYear, saleProceeds
   tax.js                computeTax (income tax + capital gains, split into pay and investing), cost-basis lots (buyLot, sellLots)
   state.js              createState, netWorth, totalInvested
@@ -99,7 +101,9 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - **Stage-level "why"** (`whyToggle`) and the end-screen region share `whyPanel`, `yearTable` and `moneyToggle`.
 - **Tax** (`engine/tax.js`, rules in `tax.json`). Worked out once a year in today's rupees (slabs and the exemption rise with prices) and scaled back. Salary, taxable windfalls and interest (cash, fixed deposits) are taxed that year; shares and gold only when sold. `state.lots[id]` keeps, for each taxed-on-sale holding, the pieces bought: `{ year, cost, share }`, oldest sold first, so the holding period picks long- or short-term. Tax on a sale makes the shortfall bigger, so `tickYear` re-plans the sale until the tax stops changing (a few rounds). `history` records `taxIncome` (pay and windfalls) and `taxInvest` (the extra tax investing brought); both are inside `expenses`, and the bridge shows them as two lines. A pool that exists without lots (a test that sets `holdings` directly) is treated as bought at its current value.
 - **Housing** (`engine/housing.js`, rules in `housing.json`). `state.rent` is this year's rent (0 while owning) and `state.rentReal` is what it returns to after a sale. `state.homePrice` is what a typical flat in the persona's city tier costs now; it compounds by the year's regime and uses no random draws. `state.home` is `{ value, cost, boughtYear, loan, payment, yearsLeft, ratePct }` or null. A choice with effect `buyHome: 1` sets `state.buyHome`, and `tickYear` buys at the start of that year (down payment and one-off costs are an expense funded like any shortfall; the home and loan appear on the balance sheet). `applyPicks` (given `params`) refuses a purchase that is not affordable. Net worth counts the home less its loan. In the year it is paid, the instalment is an expense; the bridge shows only its interest, because the principal becomes the home. A forced sale is the last step of the deficit plan (see "Order within the year" in `tick.js`) and joins the same tax-and-resell loop. A stage decision marked `"onlyIf": "renting"` is dropped by `askedDecisions` once the player owns.
-- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance, tax }`. Pass it to `createState` and `tickYear`; tests use the same loader.
+- **Family** (`engine/family.js`, rules in `family.json`). The player's choices set plans on the state: `marryAge`, `weddingReal`, `spousePct`, `childPlan`. `tickYear` carries them out at the start of the year (step 0b): marry when the age is reached (a household uplift on `livingCost`, `rent` and `rentReal`, and a wedding bill), and a birth when due. `state.spouse` is `{ year }` or null; `state.children` holds birth years; `state.educationIndex` compounds the education premium. Each year a partner's pay is `salary × spousePct`, taxed on its own, and the net is added to the year's inflow (`spouseNet`); children cost `childCost` and the wedding `weddingCost`, both inside `expenses`. No random numbers are used. In the bridge: `spouse` on the income side, `children` and `wedding` among the costs.
+- **Conditional decisions.** A stage's decision entry can carry `"onlyIf"`: a name or list of names from `CONDITIONS` in `engine/stages.js` (renting, single, married, childless, marriagePlanned, marriedOrPlanned). `askedDecisions(stage, state, picks)` returns what is asked now; the UI, `applyPicks` and the recap all use it, so the number of questions can change as the player answers. Add a condition by adding it to `CONDITIONS` there and to the allowed list in `js/data/stages.js`.
+- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance, tax, housing, family }`. Pass it to `createState` and `tickYear`; tests use the same loader.
 - **Money is nominal rupees inside the engine.** `priceIndex` (1.0 at start) converts to today's rupees. History carries `*Real` fields so the UI doesn't divide.
 - **Inflation compounds year by year.** Each year's rate comes from that year's regime in `macro.json` (long-run mix about 4.5%: prices about 5.3 times after 38 years, about 16 times after 63). `priceIndexEnd = priceIndexStart × (1 + inflation)`, and next year's start is this year's end; a test checks the index against the year-by-year product. Living costs, support and event amounts grow with it; so do tax slabs.
 - **Pay growth is nominal and tied to the inflation assumption.** `salaryGrowthPct` in a persona is pay growth before inflation. If you change the inflation levels in `macro.json`, move persona pay growth by the same amount or you change real pay growth (decision 37). Asset returns in `instruments.json` are nominal and sourced separately, so they do not move.
@@ -151,13 +155,14 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - Data tests load the real files and also feed deliberately broken ones to check error messages.
 
 ## Planned but not built yet
-Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/family.js`, `nudges.js`, `outcomes.js`. (`income.js` and `assets.js` from the original plan were folded into `tick.js` and `macro.js`.)
+Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/nudges.js`, `outcomes.js`. (`income.js` and `assets.js` from the original plan were folded into `tick.js` and `macro.js`.)
 
 ## Known loose ends
 - No retirement (drawdown) stage yet; the run ends at the retirement age. Arrives with the outcomes work in increment 9.
 - "Go all in" on learning is still the best choice for every persona and seed tried. Diminishing returns and decay come with increment 9.
 - Even with events, a long horizon makes volatility mostly harmless: a bolder mix has about the same bad-luck outcome (p10) as a safe one but a higher median. Cushions show up mainly in how often a life has to borrow (Aarav: 46 of 300 lives with no cushion, 27 with a 6-month fund and strong cover; Meera: 21 and 5), not in median wealth. Insurance costs a little median wealth. The v2 debrief should surface this.
-- Outcomes are still optimistic: no family yet. Tax trimmed seed 4271's final net worth by about 7% (Aarav) and 2% (Meera): Aarav pays roughly a tenth of his lifetime pay in tax (real terms), Meera about 1%.
+- Outcomes are less optimistic now (tax, a home, a family), but the game cannot cut spending: when costs exceed income it borrows. A single-income household with two children (for example the government officer with a partner at home) can borrow for decades and end below zero. The v2 debrief should say why and what would have helped (a second income, fewer children, a cheaper wedding).
+- Term life insurance, and the death or disability of the earner, are still not built; they need the life-expectancy decision (open question 5) in increment 9. Tax trimmed seed 4271's final net worth by about 7% (Aarav) and 2% (Meera): Aarav pays roughly a tenth of his lifetime pay in tax (real terms), Meera about 1%.
 - With inflation at 4.5% and asset returns unchanged, real returns on investments are about 0.7 points higher than when inflation was 5.2%, so real wealth at 60 rose (seed 4271, Aarav: about ₹25 crore to about ₹29 crore in today's rupees) while nominal figures fell. Real pay growth was kept the same by lowering nominal pay growth with it.
 - Net worth before retirement is before tax on gains not yet sold (a lump of up to 12.5% of the gains), and the free-limit rebate means early careers pay nothing. Losses are not carried forward; surcharge has no marginal relief; only the new regime exists.
 - Term life insurance (planned alongside health in the intent) is not built: nothing in the game can kill the breadwinner yet. It belongs with the family work in increment 8.

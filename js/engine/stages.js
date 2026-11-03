@@ -4,17 +4,28 @@ import { homeOffer } from './housing.js';
 // Effect keys a choice may set on the state. Anything else is ignored by design
 // (data/stages.js rejects unknown keys when the file loads).
 // "alloc.<id>" keys live in state.alloc.<id>; the rest are top-level state fields.
-const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome'];
+const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome',
+  'marryAge', 'weddingReal', 'spousePct', 'childPlan'];
 const ALLOC = 'alloc.';
 
 function readEffect(state, key) {
   return key.startsWith(ALLOC) ? state.alloc[key.slice(ALLOC.length)] : state[key];
 }
 
-// The decisions this stage actually asks right now. A decision marked "onlyIf": "renting" is skipped
-// once the player owns a home.
-export function askedDecisions(stage, state) {
-  return stage.decisions.filter(ref => ref.onlyIf !== 'renting' || !state.home);
+// When a decision is worth asking. A stage's decision can carry "onlyIf": a condition name or a list of
+// them, all of which must hold. `picks` is what the player has chosen so far in this stage.
+export const CONDITIONS = {
+  renting: (s) => !s.home,
+  single: (s) => !s.spouse,
+  married: (s) => s.spouse !== null,
+  childless: (s) => s.children.length === 0 && s.childPlan === 0,
+  marriagePlanned: (s, picks) => ['marry', 'marryLater'].some(id => picks[id] && picks[id] !== 'single'),
+  marriedOrPlanned: (s, picks) => s.spouse !== null || CONDITIONS.marriagePlanned(s, picks),
+};
+
+// The decisions this stage actually asks right now, given the state and the picks made so far.
+export function askedDecisions(stage, state, picks = {}) {
+  return stage.decisions.filter(ref => [].concat(ref.onlyIf ?? []).every(name => CONDITIONS[name](state, picks)));
 }
 
 export function stageEnd(stage, state) {
@@ -40,7 +51,7 @@ export function currentOption(decision, state) {
 // wants to buy is affordable.
 export function applyPicks(state, stage, decisions, picks, params = null) {
   const s = structuredClone(state);
-  const asked = askedDecisions(stage, state);
+  const asked = askedDecisions(stage, state, picks);
   for (const ref of asked) {
     const decision = decisions[ref.id];
     const option = decision.options.find(o => o.id === picks[ref.id]);

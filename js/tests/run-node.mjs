@@ -8,6 +8,7 @@ import './macro.test.js';
 import './events.test.js';
 import './tax.test.js';
 import './housing.test.js';
+import './family.test.js';
 import './explain.test.js';
 import './charts.test.js';
 import './stages.test.js';

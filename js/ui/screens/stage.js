@@ -20,7 +20,7 @@ export function journeyBar(stages, currentId, doneIds) {
 // Where this stage will end once the player's picks are applied (a pick can move the retirement age).
 function projectedEnd(stage, state, decisions, picks) {
   let retirementAge = state.retirementAge;
-  for (const ref of askedDecisions(stage, state)) {
+  for (const ref of askedDecisions(stage, state, picks)) {
     const o = decisions[ref.id].options.find(x => x.id === picks[ref.id]);
     if (o && 'retirementAge' in o.effects) retirementAge = o.effects.retirementAge;
   }
@@ -49,7 +49,8 @@ export function renderStageDecisions(root, ctx) {
   ctx.step ??= 0;
   const redraw = () => renderStageDecisions(root, ctx);
 
-  const refs = askedDecisions(stage, state);
+  const refs = askedDecisions(stage, state, picks);
+  if (ctx.step >= refs.length) ctx.step = refs.length - 1; // a changed answer can shorten the list
   const ref = refs[ctx.step];
   const decision = decisions[ref.id];
   const current = currentOption(decision, state);
@@ -109,6 +110,19 @@ function economyStrip(economy, regimes) {
     h('p', { class: 'hint', text: `${summary}.` }));
 }
 
+// Marriage and births, as cards in the same style as life events.
+function familyMoveCards(moves) {
+  return moves.map(m => h('li', { class: 'event-card kind-family' },
+    h('span', { class: 'event-emoji', 'aria-hidden': 'true', text: m.kind === 'married' ? '\u{1F492}' : '\u{1F476}' }),
+    h('div', { class: 'event-body' },
+      h('p', { class: 'event-title' },
+        h('strong', { text: m.kind === 'married' ? 'You got married' : (m.count > 1 ? 'A second child arrived' : 'A child arrived') }),
+        h('span', { class: 'event-age', text: ` \u00B7 age ${m.age}` })),
+      h('p', { class: 'event-line', text: m.kind === 'married'
+        ? `The wedding cost ${formatINR(m.cost)}. Everyday costs are higher with two of you.`
+        : 'Costs start with the birth and rise through school and college.' }))));
+}
+
 // Buying or selling a home, as cards in the same style as life events.
 function homeMoveCards(moves) {
   return moves.map(m => h('li', { class: 'event-card kind-home' },
@@ -123,8 +137,8 @@ function homeMoveCards(moves) {
 }
 
 // What happened along the way, year by year, and how any shortfall was met.
-function eventsSection(eventYears, eventDefs, instruments, homeMoves = []) {
-  if (!eventYears.length && !homeMoves.length) {
+function eventsSection(eventYears, eventDefs, instruments, homeMoves = [], familyMoves = []) {
+  if (!eventYears.length && !homeMoves.length && !familyMoves.length) {
     return h('section', { class: 'events quiet' },
       h('h2', { text: 'What happened' }),
       h('p', { text: 'A quiet stretch. Nothing dramatic came your way.' }));
@@ -132,6 +146,7 @@ function eventsSection(eventYears, eventDefs, instruments, homeMoves = []) {
   return h('section', { class: 'events' },
     h('h2', { text: 'What happened' }),
     h('ul', { class: 'event-list' },
+      familyMoveCards(familyMoves),
       homeMoveCards(homeMoves),
       eventYears.flatMap(y => {
         const coping = describeCoping(y.coping, instruments);
@@ -173,11 +188,13 @@ export function renderStageResult(root, ctx) {
       h('p', { class: 'headline', text: headline }),
       h('p', { class: 'hint', text: "All amounts are in today's rupees." })),
     economyStrip(s.economy, ctx.regimes),
-    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments, s.homeMoves),
+    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments, s.homeMoves, s.familyMoves),
     h('div', { class: 'stats' },
       stat('earning a year by the end, before tax', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),
       s.taxReal > 0 && stat('paid in tax', formatINR(s.taxReal)),
+      s.spouseReal > 0 && stat("your partner's pay, after tax", formatINR(s.spouseReal)),
+      s.childrenReal > 0 && stat('spent on children', formatINR(s.childrenReal)),
       s.rentReal > 0 && stat('paid in rent', formatINR(s.rentReal)),
       s.homeValueEndReal > 0 && stat('your home is worth', formatINR(s.homeValueEndReal)),
       s.homeValueEndReal > 0 && s.homeLoanEndReal > 0 && stat('still owed on it', formatINR(s.homeLoanEndReal)),

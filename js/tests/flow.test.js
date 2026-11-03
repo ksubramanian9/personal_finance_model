@@ -22,8 +22,10 @@ function newGame(seed = 4271, retirementAge = 60) {
 }
 
 // Where a decision sits in a stage's list of questions (0-based), so tests survive new questions.
-const qIndex = (stageIdx, decisionId) => stages[stageIdx].decisions.findIndex(d => d.id === decisionId);
-const N0 = stages[0].decisions.length;
+// The questions a single, renting, childless player (the default path) is actually asked in a stage.
+const visibleRefs = (stage) => stage.decisions.filter(r => [].concat(r.onlyIf ?? []).every(c => ['single', 'renting', 'childless'].includes(c)));
+const qIndex = (stageIdx, decisionId) => visibleRefs(stages[stageIdx]).findIndex(d => d.id === decisionId);
+const N0 = visibleRefs(stages[0]).length;
 const NLAST = stages[stages.length - 1].decisions.length;
 
 const text = (root) => root.textContent;
@@ -130,6 +132,7 @@ test('later stages tag the option you are already doing', () => {
   begin(g);
   playStageScreen(g, { 0: /Save hard/ });
   click(g.root, /^On to/);
+  stepTo(g, /Life is getting busier/); // past the marriage question
   const tagged = findAll(g.root, n => hasClass(n, 'option-card') && /what you do now/.test(n.textContent));
   assertEqual(tagged.length, 1);
   assert(/Save hard/.test(tagged[0].textContent), 'the tag should sit on the previous pick');
@@ -528,7 +531,7 @@ test('when you can afford it, buying opens; the result shows the purchase and th
   click(g.root, /^On to/);
   assert(!/Still renting\?/.test(text(g.root)) && !/Is it time to buy a home\?/.test(text(g.root)), 'not asked again');
   const peak = stages.find(s => s.id === 'peak');
-  assert(new RegExp(`Question 1 of ${peak.decisions.length - 1}`).test(text(g.root)), `one question fewer: ${text(g.root).slice(0, 300)}`);
+  assert(new RegExp(`Question 1 of ${visibleRefs(peak).length - 1}`).test(text(g.root)), `one question fewer: ${text(g.root).slice(0, 300)}`);
 });
 
 test('keeping on renting asks again next stage, and the rent shows in the results', () => {
@@ -555,4 +558,72 @@ test('the bridge and the chart show housing once there is a home', () => {
   assert(/Interest on the home loan/.test(text(g.root)) && /Your home's price change/.test(text(g.root)), 'plain labels');
   assert(findAll(g.root, n => hasClass(n, 'seg-home')).length > 0, 'the home is drawn on the chart');
   assert(/Your home/.test(text(g.root)), 'and named in the legend');
+});
+
+// ---- family ----
+
+test('choosing a marriage age opens the wedding and partner questions; choosing "Not yet" closes them', () => {
+  const g = newGame(4271);
+  begin(g);
+  stepTo(g, /Is marriage on the cards/);
+  assert(new RegExp(`Question ${N0} of ${N0}`).test(text(g.root)), 'last question while single');
+  assert(buttonWithText(g.root, /^Play these/), 'ready to play');
+  pickCard(g.root, /Around 27/);
+  assert(new RegExp(`Question ${N0} of ${N0 + 2}`).test(text(g.root)), 'two more questions');
+  click(g.root, /^Next$/);
+  assert(/What kind of wedding will it be\?/.test(text(g.root)) && /About ₹15 lakh/.test(text(g.root)), 'wedding sizes in today\'s money');
+  pickCard(g.root, /Small and simple/);
+  click(g.root, /^Next$/);
+  assert(/Will your partner work\?/.test(text(g.root)), 'partner question');
+  pickCard(g.root, /Works part-time/);
+  assert(buttonWithText(g.root, /^Play these/), 'now ready to play');
+  click(g.root, /^Back$/);
+  click(g.root, /^Back$/);
+  pickCard(g.root, /Not yet/);
+  assert(new RegExp(`Question ${N0} of ${N0}`).test(text(g.root)), 'back to none');
+  assert(buttonWithText(g.root, /^Play these/), 'play directly');
+});
+
+test('a wedding and then children show up in the stage results, and as lines in the story', () => {
+  const g = newGame(4271);
+  begin(g, 1); // Meera
+  stepTo(g, /Is marriage on the cards/);
+  pickCard(g.root, /Around 27/);
+  click(g.root, /^Next$/);
+  pickCard(g.root, /Small and simple/);
+  click(g.root, /^Next$/);
+  pickCard(g.root, /Works full-time/);
+  click(g.root, /^Play these/);
+  assert(/You got married/.test(text(g.root)), 'wedding card');
+  assert(/The wedding cost ₹[^ ]+( \w+)?\./.test(text(g.root)), 'with its bill');
+  assert(/your partner's pay, after tax/.test(text(g.root)), 'partner pay stat');
+  assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words');
+  click(g.root, /^On to/);
+  stepTo(g, /Will you have children\?/);
+  pickCard(g.root, /Two children/);
+  while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
+  click(g.root, /^Play these/);
+  assert(/A child arrived/.test(text(g.root)) && /A second child arrived/.test(text(g.root)), 'two births');
+  assert(/spent on children/.test(text(g.root)), 'children stat');
+  assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words');
+  while (buttonWithText(g.root, /^On to/)) { click(g.root, /^On to/); playStageScreen(g); }
+  click(g.root, /^See the whole story/);
+  whyButtons(g.root)[2].click();
+  const lines = findAll(g.root, n => hasClass(n, 'bridge-row')).map(r => r.attrs['data-line']);
+  for (const id of ['spouse', 'children']) assert(lines.includes(id), `${id} line: ${lines}`);
+  assert(/Children: birth, school and college/.test(text(g.root)) && /Your partner's pay, after their tax/.test(text(g.root)), 'plain labels');
+});
+
+test('a married player is not asked about marriage again, and the choices recap lists what was asked', () => {
+  const g = newGame(4271);
+  begin(g, 1);
+  stepTo(g, /Is marriage on the cards/);
+  pickCard(g.root, /Around 27/);
+  click(g.root, /^Next$/);
+  pickCard(g.root, /Small and simple/);
+  click(g.root, /^Next$/);
+  pickCard(g.root, /Works part-time/);
+  click(g.root, /^Play these/);
+  click(g.root, /^On to/);
+  assert(!/Still single/.test(text(g.root)), 'no marriage question now');
 });

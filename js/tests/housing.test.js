@@ -19,7 +19,7 @@ const meera = personas.find(p => p.id === 'govt-psu');
 const H = params.housing;
 const near = (a, b, tol = 1e-9) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
 const fresh = (persona = aarav, seed = 4271) => createState(persona, params, { seed, retirementAge: 60 });
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
 
 // A life that buys at 22 with plenty of money, then runs to `toAge`.
 function owner(persona = aarav, seed = 1, toAge = 40) {

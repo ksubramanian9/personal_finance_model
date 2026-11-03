@@ -8,7 +8,7 @@ export function createState(persona, params, { seed, retirementAge }) {
   const tier = params.housing.cityTiers[persona.profile.cityTier];
   if (!tier) throw new Error(`housing.json has no city tier ${persona.profile.cityTier} (needed by ${persona.id})`);
   return {
-    version: 5,
+    version: 6,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,
@@ -39,9 +39,19 @@ export function createState(persona, params, { seed, retirementAge }) {
     // what each taxed-on-sale holding cost and when it was bought (see tax.js)
     lots: Object.fromEntries(gainsIds(params.tax).map(id => [id, []])),
     debt: persona.money.startingDebt,
+    cityTier: persona.profile.cityTier, // scales what children cost
     homePrice: tier.homePrice, // what a typical apartment in this city costs now (nominal)
     home: null,                // the player's home, once bought (see housing.js)
     buyHome: 0,                // 1 = buy at the start of the next year (set by a choice)
+
+    // family (see family.js)
+    spouse: null,        // { year } once married
+    marryAge: 0,         // the age the player plans to marry at; 0 = no plan
+    weddingReal: 0,      // the wedding bill in today's rupees
+    spousePct: 0,        // the partner's pay as a share of the player's
+    childPlan: 0,        // how many children the couple will have
+    children: [],        // the year each child was born
+    educationIndex: 1,   // how much dearer school and college are than general prices
 
     priceIndex: 1,
     savingsRate: params.savingsRate,

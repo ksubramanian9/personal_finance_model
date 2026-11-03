@@ -204,6 +204,35 @@ export function checkHousing(data, regimeIds, label) {
   return data;
 }
 
+export function checkFamily(data, label) {
+  const problems = [];
+  checkProvenance(data.provenance, '', problems);
+  const m = data.marriage ?? {};
+  checkProvenance(m.provenance, 'marriage', problems);
+  if (!isNum(m.livingCostMultiplier) || m.livingCostMultiplier < 1 || m.livingCostMultiplier > 3) problems.push('"marriage.livingCostMultiplier" should be from 1 to 3');
+  if (!isNum(m.rentMultiplier) || m.rentMultiplier < 1 || m.rentMultiplier > 3) problems.push('"marriage.rentMultiplier" should be from 1 to 3');
+  const c = data.children ?? {};
+  checkProvenance(c.provenance, 'children', problems);
+  if (!isNum(c.firstBirthAfterMarriageYears) || c.firstBirthAfterMarriageYears < 0) problems.push('"children.firstBirthAfterMarriageYears" should be a number of years');
+  if (!isNum(c.gapYears) || c.gapYears < 1) problems.push('"children.gapYears" should be at least 1');
+  if (!isNum(c.educationPremiumPct) || c.educationPremiumPct < 0 || c.educationPremiumPct > 15) problems.push('"children.educationPremiumPct" should be from 0 to 15');
+  const scale = c.costScaleByTier;
+  if (!scale || typeof scale !== 'object') problems.push('"children.costScaleByTier" should give a share for each city tier');
+  else for (const [tier, v] of Object.entries(scale)) if (!isNum(v) || v <= 0 || v > 3) problems.push(`"children.costScaleByTier.${tier}" should be a number above 0 and up to 3`);
+  const bands = c.costBands;
+  if (!Array.isArray(bands) || !bands.length) problems.push('"children.costBands" should list the cost of each age band');
+  else bands.forEach((b, i) => {
+    const at = `children.costBands[${i}]`;
+    if (!isNum(b.upToAge) || b.upToAge < 0) problems.push(`"${at}.upToAge" should be an age`);
+    else if (i > 0 && isNum(bands[i - 1].upToAge) && b.upToAge <= bands[i - 1].upToAge) problems.push('"children.costBands" ages should go up');
+    if (!isNum(b.costReal) || b.costReal < 0) problems.push(`"${at}.costReal" should be a yearly cost in today's rupees`);
+    if (typeof b.education !== 'boolean') problems.push(`"${at}.education" should be true or false`);
+    if (!isStr(b.label)) problems.push(`"${at}.label" is missing`);
+  });
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
 export function checkEngine(e, instrumentIds, label) {
   const problems = [];
   if (e.savingsRate < 0 || e.savingsRate > 1) problems.push('"savingsRate" should be between 0 and 1');
@@ -221,7 +250,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -240,5 +269,7 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
   const housing = checkHousing(
     await loadJSON('data/housing.json', opts(schemas.housing, 'housing.json')),
     macro.order, 'housing.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing };
+  const family = checkFamily(
+    await loadJSON('data/family.json', opts(schemas.family, 'family.json')), 'family.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family };
 }

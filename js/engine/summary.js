@@ -15,6 +15,15 @@ export function stageSummary(history, startIdx) {
     learningReal: years.reduce((sum, y) => sum + y.learningReal, 0),
     economy: years.map(y => ({ age: y.age, year: y.year, regime: y.regime })),
     taxReal: years.reduce((sum, y) => sum + (y.taxIncome + y.taxInvest) / y.priceIndexStart, 0),
+    childrenReal: years.reduce((sum, y) => sum + y.childCost / y.priceIndexStart, 0),
+    spouseReal: years.reduce((sum, y) => sum + y.spouseNet / y.priceIndexStart, 0),
+    weddingReal: years.reduce((sum, y) => sum + y.weddingCost / y.priceIndexStart, 0),
+    // marriage and births in this stretch
+    familyMoves: years.flatMap(y => y.family.map(kind => ({
+      kind, age: y.age,
+      cost: (kind === 'married' ? y.weddingCost : 0) / y.priceIndexStart,
+      count: y.childrenCount,
+    }))),
     rentReal: years.reduce((sum, y) => sum + y.rent / y.priceIndexStart, 0),
     homeValueEndReal: last.homeValue / last.priceIndexEnd,
     homeLoanEndReal: last.homeLoan / last.priceIndexEnd,

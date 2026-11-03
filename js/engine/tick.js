@@ -4,6 +4,7 @@ import { rollEvents, settleEvents } from './events.js';
 import { netWorth } from './state.js';
 import { computeTax, buyLot, sellLots, cloneLots } from './tax.js';
 import { buyHome, payLoanYear, saleProceeds } from './housing.js';
+import { marry, birthDue, childCosts, spouseGross } from './family.js';
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 
@@ -16,7 +17,8 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 // random numbers: they follow the economy's regime.
 //
 // Order within the year:
-//   0. a home chosen at the stage start is bought (down payment and one-off costs go out now)
+//   0. a home chosen at the stage start is bought (down payment and one-off costs go out now);
+//      a planned wedding or birth happens
 //   1. the economy moves to this year's regime; every instrument gets its return for that regime
 //   2. holdings and cash earn; debt accrues interest; homes change in price
 //   3. life events happen (layoff, hospital bill, windfall...); insurance pays what it covers;
@@ -37,6 +39,12 @@ export function tickYear(state, params) {
   let purchase = null;
   if (s.buyHome && !s.home) purchase = buyHome(s, params);
   s.buyHome = 0;
+
+  // 0b. family: the wedding and the births the player planned
+  let marriage = null;
+  let birth = false;
+  if (s.marryAge > 0 && !s.spouse && s.age >= s.marryAge) marriage = marry(s, params);
+  if (birthDue(s, params)) { s.children.push(s.year); birth = true; }
 
   // 1. the economy and market returns
   const regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
@@ -88,14 +96,20 @@ export function tickYear(state, params) {
   let taxIncome = baseTax.incomeTax;
   let taxInvest = baseTax.investTax;
   const homeOutlay = purchase ? purchase.outlay : 0;
+  const childCost = childCosts(s, params);
+  const weddingCost = marriage ? marriage.weddingCost : 0;
+  const partnerGross = spouseGross(s);
+  const partnerTax = partnerGross > 0 ? computeTax(params.tax, { priceIndex: priceIndexStart, salary: partnerGross }).total : 0;
+  const spouseNet = partnerGross - partnerTax; // their pay after their own tax
   let expenses = s.livingCost + s.support + rentPaid + homeUpkeep + loanYear.paid + homeOutlay
-    + learning + premium + ev.eventCost + baseTax.total;
+    + childCost + weddingCost + learning + premium + ev.eventCost + baseTax.total;
+  const inflow = income + extraIncome + spouseNet;
 
   // 4-5. debt, saving
-  const debtPaid = Math.min(s.debt, Math.max(0, income + extraIncome - expenses) * params.debtPaydownShare);
+  const debtPaid = Math.min(s.debt, Math.max(0, inflow - expenses) * params.debtPaydownShare);
   s.debt -= debtPaid;
 
-  const surplus = income + extraIncome - expenses - debtPaid;
+  const surplus = inflow - expenses - debtPaid;
   let saved = 0;
   let toCash = 0;
   let consumed = 0;
@@ -192,6 +206,9 @@ export function tickYear(state, params) {
     income, extraIncome, expenses, learning, premium, eventCost: ev.eventCost, insurancePaid: ev.insurancePaid,
     taxIncome, taxInvest, // tax on pay and windfalls, and the extra tax investing brought (both are in expenses)
     rent: rentPaid, homeUpkeep, homeOutlay, // what housing cost (all in expenses)
+    spouseNet, childCost, weddingCost,      // a partner's pay after tax (income); children and the wedding (in expenses)
+    family: [...(marriage ? ['married'] : []), ...(birth ? ['birth'] : [])],
+    married: s.spouse !== null, childrenCount: s.children.length,
     emi: loanYear.paid, homeInterest: loanYear.interest, homePrincipal: loanYear.principal,
     homeGain, homeValue: s.home ? s.home.value : 0, homeLoan: s.home ? s.home.loan : 0,
     homeBought: purchase, homeSale,
@@ -222,6 +239,7 @@ export function tickYear(state, params) {
   s.salary *= 1 + raise;
   if (ev.payHit) s.salary *= 1 - ev.payHit;   // the next job after a layoff pays less
   if (ev.payJump) s.salary *= 1 + ev.payJump; // the offer you took
+  s.educationIndex *= 1 + params.family.children.educationPremiumPct / 100;
   s.livingCost *= 1 + inflation;
   s.support *= 1 + inflation;
   if (s.rent > 0 && !homeSale) s.rent *= 1 + inflation; // rent follows prices

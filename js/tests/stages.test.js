@@ -18,7 +18,7 @@ const { decisions, stages } = data;
 
 const fresh = (persona = aarav, seed = 4271, retirementAge = 60) =>
   createState(persona, params, { seed, retirementAge });
-const balanced = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', retire: 'at60' };
+const balanced = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
 
 // Plays a whole life stage by stage with the same picks every time.
 function playLife(state, picks) {
@@ -129,7 +129,7 @@ test('playStage and applyPicks do not mutate their input', () => {
 
 test('picks are recorded in state.choices, by stage', () => {
   const s = playStage(fresh(), params, stages[0], decisions, { ...balanced, savings: 'frugal', growth: 'light' });
-  assertEqual(s.choices.early, { savings: 'frugal', invest: 'mixed', emergency: 'none', health: 'none', growth: 'light' });
+  assertEqual(s.choices.early, { savings: 'frugal', invest: 'mixed', emergency: 'none', health: 'none', growth: 'light', marry: 'single' });
 });
 
 test('a missing or unknown pick is refused', async () => {

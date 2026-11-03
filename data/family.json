@@ -1,0 +1,62 @@
+{
+  "marriage": {
+    "livingCostMultiplier": 1.4,
+    "rentMultiplier": 1.2,
+    "provenance": {
+      "basis": "A second adult adds about 40% to everyday costs (shared housing and bills, but more food, clothes and travel), and a couple rents a place about 20% larger. Round game numbers, not from data. A partner's own pay is a choice (stays home, part-time, full-time) taken as a share of your pay; their tax is worked out separately and only their pay after tax is counted.",
+      "confidence": "low",
+      "asOf": 2026
+    }
+  },
+  "children": {
+    "firstBirthAfterMarriageYears": 2,
+    "gapYears": 3,
+    "educationPremiumPct": 3,
+    "costBands": [
+      {
+        "upToAge": 0,
+        "costReal": 300000,
+        "education": false,
+        "label": "Birth and the first year"
+      },
+      {
+        "upToAge": 2,
+        "costReal": 100000,
+        "education": false,
+        "label": "Toddler years"
+      },
+      {
+        "upToAge": 5,
+        "costReal": 150000,
+        "education": true,
+        "label": "Playschool and early years"
+      },
+      {
+        "upToAge": 17,
+        "costReal": 200000,
+        "education": true,
+        "label": "School"
+      },
+      {
+        "upToAge": 21,
+        "costReal": 400000,
+        "education": true,
+        "label": "College"
+      }
+    ],
+    "provenance": {
+      "basis": "Yearly cost of a child in an urban middle-class family, in today's rupees for a metro: 3 lakh for the birth and first year (delivery 1 to 5 lakh plus baby costs; sources put the first year at 3 to 8 lakh), 1 lakh a year to age 2, 1.5 lakh a year for playschool and early years (an insurer's guide: 5 to 6.5 lakh for the first three years, playschool 60,000 to 1.5 lakh a year in a metro), 2 lakh a year for school and 4 lakh for college, adding to about 50 lakh by age 21 before fees outrun prices. In a tier-2 city everything is scaled to 65%. Published totals for the whole upbringing range from 50 lakh to over a crore (one blog: about 1.17 crore at 2022 prices for a middle to upper-middle family), so this is at the low end: it assumes a family that economises. A child is independent after 21. Playschool, school and college fees rise 3 points a year faster than general prices (about 7.5% a year in all): blog estimates of education inflation run from 8 to 12% and one insurer assumed 6%, so this is cautious. All from financial-services blogs and press summaries, not official data.",
+      "confidence": "low",
+      "asOf": 2026
+    },
+    "costScaleByTier": {
+      "1": 1,
+      "2": 0.65
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative family model: marriage at a chosen age, one wedding bill, a household that costs more, an optional partner's pay, and up to two children arriving at fixed gaps. Wedding sizes are in stages.json (modest 5 lakh, typical 15 lakh, lavish 40 lakh in today's rupees; WedMeGood's 2025-26 survey put the average wedding at about 39.5 lakh, skewed by large and destination weddings, and a budget calculator gave 5 to 25 lakh for a middle-class family).",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

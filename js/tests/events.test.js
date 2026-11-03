@@ -18,7 +18,7 @@ const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: param
 const aarav = personas.find(p => p.id === 'metro-it');
 const meera = personas.find(p => p.id === 'govt-psu');
 const def = (id) => params.events.find(e => e.id === id);
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
 const fresh = (persona = aarav, seed = 4271) => createState(persona, params, { seed, retirementAge: 60 });
 const life = (persona, seed, picks = base, p = params) => {
   let s = applyPicks(createState(persona, p, { seed, retirementAge: 60 }), stages[0], decisions, picks);

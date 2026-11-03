@@ -8,8 +8,8 @@
 
 // The order the story is told in. Each id is a line in the net-worth bridge.
 export const BRIDGE_ORDER = [
-  'income', 'windfalls',                                  // what came in
-  'living', 'rent', 'homeUpkeep', 'homeInterest', 'homeBuying', 'homeSelling', // everyday life and housing
+  'income', 'windfalls', 'spouse',                         // what came in
+  'living', 'children', 'wedding', 'rent', 'homeUpkeep', 'homeInterest', 'homeBuying', 'homeSelling', // everyday life and housing
   'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', // the rest of what went out
   'growth', 'homeGrowth', 'cashInterest', 'loanInterest', // what the money earned (or cost)
   'inflation',                                            // only in today's rupees
@@ -33,9 +33,12 @@ export function bridge(years, { real }) {
     const buyingCosts = y.homeBought ? y.homeBought.oneOff : 0;
     // Housing money that is not a loss: the down payment and the loan's principal become (or repay) the home itself.
     const livingAndSupport = y.expenses - y.learning - y.premium - y.eventCost - y.taxIncome - y.taxInvest
-      - y.rent - y.homeUpkeep - y.emi - y.homeOutlay - sellingCost;
+      - y.rent - y.homeUpkeep - y.emi - y.homeOutlay - sellingCost - y.childCost - y.weddingCost;
     items.income += y.income * k;
     items.windfalls += y.extraIncome * k;
+    items.spouse += y.spouseNet * k;
+    items.children -= y.childCost * k;
+    items.wedding -= y.weddingCost * k;
     items.living -= livingAndSupport * k;
     items.learning -= y.learning * k;
     items.premiums -= y.premium * k;
@@ -116,7 +119,7 @@ export function cashflowSeries(history, { real }) {
     const k = real ? 1 / y.priceIndexStart : 1;
     return {
       age: y.age, year: y.year, regime: y.regime,
-      earned: (y.income + y.extraIncome) * k,
+      earned: (y.income + y.extraIncome + y.spouseNet) * k,
       spent: (y.expenses + y.consumed) * k,
       saved: y.saved * k,
       events: y.events.map(e => e.id),
@@ -130,7 +133,7 @@ export function yearRows(history, { real }) {
     const k = real ? 1 / y.priceIndexStart : 1;
     return {
       age: y.age, year: y.year, regime: y.regime,
-      earned: (y.income + y.extraIncome) * k,
+      earned: (y.income + y.extraIncome + y.spouseNet) * k,
       spent: (y.expenses + y.consumed) * k,
       saved: y.saved * k,
       netWorth: real ? y.netWorthReal : y.netWorth,

@@ -75,6 +75,171 @@
         }
       ]
     },
+    "marry": {
+      "title": "Marriage",
+      "question": "Is marriage on the cards in the next few years?",
+      "options": [
+        {
+          "id": "single",
+          "emoji": "🧍",
+          "title": "Not yet",
+          "blurb": "Career and savings first. You can decide again later.",
+          "effects": {
+            "marryAge": 0
+          }
+        },
+        {
+          "id": "at27",
+          "emoji": "💍",
+          "title": "Around 27",
+          "blurb": "An early start to family life.",
+          "effects": {
+            "marryAge": 27
+          }
+        },
+        {
+          "id": "at30",
+          "emoji": "💍",
+          "title": "Around 30",
+          "blurb": "A bit later and a bit more settled.",
+          "effects": {
+            "marryAge": 30
+          }
+        }
+      ]
+    },
+    "marryLater": {
+      "title": "Marriage",
+      "question": "Is marriage on the cards in the next few years?",
+      "options": [
+        {
+          "id": "single",
+          "emoji": "🧍",
+          "title": "Not planning to",
+          "blurb": "Stay single, at least for this stretch of life.",
+          "effects": {
+            "marryAge": 0
+          }
+        },
+        {
+          "id": "at34",
+          "emoji": "💍",
+          "title": "Around 34",
+          "blurb": "Later, with a career already built.",
+          "effects": {
+            "marryAge": 34
+          }
+        },
+        {
+          "id": "at38",
+          "emoji": "💍",
+          "title": "Around 38",
+          "blurb": "Much later. Fewer family years to plan for.",
+          "effects": {
+            "marryAge": 38
+          }
+        }
+      ]
+    },
+    "wedding": {
+      "title": "The wedding",
+      "question": "What kind of wedding?",
+      "options": [
+        {
+          "id": "modest",
+          "emoji": "🪔",
+          "title": "Small and simple",
+          "blurb": "Family and close friends. About ₹5 lakh in today's money.",
+          "effects": {
+            "weddingReal": 500000
+          }
+        },
+        {
+          "id": "typical",
+          "emoji": "🎊",
+          "title": "A proper celebration",
+          "blurb": "Both families, a good venue. About ₹15 lakh in today's money.",
+          "effects": {
+            "weddingReal": 1500000
+          }
+        },
+        {
+          "id": "lavish",
+          "emoji": "👑",
+          "title": "The big fat wedding",
+          "blurb": "Hundreds of guests, several days. About ₹40 lakh in today's money.",
+          "effects": {
+            "weddingReal": 4000000
+          }
+        }
+      ]
+    },
+    "partner": {
+      "title": "Your partner's work",
+      "question": "Will your partner work?",
+      "options": [
+        {
+          "id": "home",
+          "emoji": "🏡",
+          "title": "Looks after the home",
+          "blurb": "One income. Everyday costs are shared by two.",
+          "effects": {
+            "spousePct": 0
+          }
+        },
+        {
+          "id": "part",
+          "emoji": "💻",
+          "title": "Works part-time",
+          "blurb": "Earns about a third of what you do, after their own tax.",
+          "effects": {
+            "spousePct": 0.3
+          }
+        },
+        {
+          "id": "full",
+          "emoji": "💼",
+          "title": "Works full-time",
+          "blurb": "Earns about four-fifths of what you do, after their own tax.",
+          "effects": {
+            "spousePct": 0.8
+          }
+        }
+      ]
+    },
+    "children": {
+      "title": "Children",
+      "question": "Will you have children?",
+      "options": [
+        {
+          "id": "none",
+          "emoji": "🌿",
+          "title": "No children",
+          "blurb": "More room in the budget, a quieter home.",
+          "effects": {
+            "childPlan": 0
+          }
+        },
+        {
+          "id": "one",
+          "emoji": "👶",
+          "title": "One child",
+          "blurb": "About ₹30 to 50 lakh in today's money by age 21, and school and college fees rise faster than prices.",
+          "effects": {
+            "childPlan": 1
+          }
+        },
+        {
+          "id": "two",
+          "emoji": "👪",
+          "title": "Two children",
+          "blurb": "Double the cost, three years apart. Fees keep outrunning prices.",
+          "effects": {
+            "childPlan": 2
+          }
+        }
+      ]
+    },
     "home": {
       "title": "A home of your own",
       "question": "Keep renting, or buy a home?",
@@ -265,6 +430,27 @@
         },
         {
           "id": "growth"
+        },
+        {
+          "id": "marry",
+          "onlyIf": "single",
+          "question": "Is marriage on the cards in the next few years?"
+        },
+        {
+          "id": "wedding",
+          "onlyIf": [
+            "single",
+            "marriagePlanned"
+          ],
+          "question": "What kind of wedding will it be?"
+        },
+        {
+          "id": "partner",
+          "onlyIf": [
+            "single",
+            "marriagePlanned"
+          ],
+          "question": "Will your partner work?"
         }
       ]
     },
@@ -274,8 +460,34 @@
       "emoji": "🏡",
       "fromAge": 32,
       "toAge": 42,
-      "intro": "Life gets fuller and the bills get bigger. A home of your own becomes possible, and the way your money works gets tested.",
+      "intro": "Life gets fuller and the bills get bigger. Marriage, children and a home of your own all become possible, and each one changes the money.",
       "decisions": [
+        {
+          "id": "marryLater",
+          "onlyIf": "single",
+          "question": "Still single. Is marriage on the cards in the next few years?"
+        },
+        {
+          "id": "wedding",
+          "onlyIf": [
+            "single",
+            "marriagePlanned"
+          ],
+          "question": "What kind of wedding will it be?"
+        },
+        {
+          "id": "partner",
+          "onlyIf": [
+            "single",
+            "marriagePlanned"
+          ],
+          "question": "Will your partner work?"
+        },
+        {
+          "id": "children",
+          "onlyIf": "marriedOrPlanned",
+          "question": "Will you have children?"
+        },
         {
           "id": "savings",
           "question": "Life is getting busier. How will you handle money now?"
@@ -310,6 +522,14 @@
       "toAge": 52,
       "intro": "Your biggest earning years. What you do with them decides how the rest goes.",
       "decisions": [
+        {
+          "id": "children",
+          "onlyIf": [
+            "married",
+            "childless"
+          ],
+          "question": "Married and no children yet. Will you have a family?"
+        },
         {
           "id": "savings",
           "question": "You're earning the most you ever will. What's the plan?"
@@ -361,7 +581,7 @@
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json).",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json). Marriage, wedding size, the partner's work and children are asked only when they apply (see onlyIf in engine/stages.js). Wedding sizes are game presets of 5, 15 and 40 lakh in today's rupees; see family.json for the household and child cost assumptions.",
     "confidence": "low",
     "asOf": 2025
   }

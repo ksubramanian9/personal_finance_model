@@ -63,6 +63,10 @@ export const schemas = {
     events: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  family: {
+    marriage: 'object', children: 'object',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   housing: {
     cityTiers: 'object', priceGrowthPct: 'object', loan: 'object',
     oneOffCostPct: 'number', upkeepPct: 'number', sellingCostPct: 'number',

@@ -66,7 +66,7 @@ export function createFlow(root, data, session) {
 
   function playCurrentStage() {
     const { stage } = game;
-    const picked = askedDecisions(stage, game.state).map(ref => {
+    const picked = askedDecisions(stage, game.state, game.picks).map(ref => {
       const o = data.decisions[ref.id].options.find(x => x.id === game.picks[ref.id]);
       return { emoji: o.emoji, title: o.title };
     });
