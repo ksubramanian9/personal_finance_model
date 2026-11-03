@@ -75,6 +75,17 @@ test('landing -> picker -> first question for both personas', () => {
   }
 });
 
+test('names come from the persona files: renaming one changes every screen that shows it', () => {
+  const renamed = personas.map((p, i) => i === 0 ? { ...p, firstName: 'Zoya', name: 'Zoya Without A Comma' } : p);
+  const root = createRoot();
+  const flow = createFlow(root, { personas: renamed, params, stages, decisions }, { personaId: null, retirementAge: 60, seed: 1 });
+  flow.showLanding();
+  click(root, /Let's start/);
+  assert(/Zoya Without A Comma/.test(text(root)), 'full name on the card');
+  findAll(root, n => hasClass(n, 'persona-card'))[0].click();
+  assert(/Meet Zoya/.test(text(root)) &&!/Meet Zoya Without/.test(text(root)), 'first name in the greeting');
+});
+
 test('Begin is only offered once a persona is picked', () => {
   const g = newGame();
   click(g.root, /Let's start/);

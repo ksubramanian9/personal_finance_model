@@ -112,7 +112,7 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 
 ## Recipes
 
-**Add a persona.** Copy `data/personas/metro-it.json`, give it a unique `id`, edit, and add the filename to `data/personas/index.json`. `loadPersonas` validates it (schema in `validate.js`, ranges in `personas.js:checkPersona`) and a card appears. No code change.
+**Add a persona.** Copy `data/personas/metro-it.json`, give it a unique `id`, edit (`name` is the full title shown on cards and the end screen; `firstName` is used in sentences such as "Meet Aarav"), and add the filename to `data/personas/index.json`. `loadPersonas` validates it (schema in `validate.js`, ranges in `personas.js:checkPersona`) and a card appears. No code change.
 
 **Add a JSON data file.**
 1. Add the file under `data/`.

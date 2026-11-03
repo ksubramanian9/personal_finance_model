@@ -25,7 +25,7 @@ function stat(label, value) {
 function startingLine(p) {
   const support = p.obligations.parentsSupportMonthly + p.obligations.siblingSupportMonthly;
   return h('section', { class: `card starting-line accent-${p.accent}` },
-    h('h2', { text: `Meet ${p.name.split(',')[0]}` }),
+    h('h2', { text: `Meet ${p.firstName}` }),
     h('p', { text: p.story }),
     h('p', { class: 'where', text: `${p.profile.job} · ${p.profile.city} · age ${p.profile.startAge}` }),
     h('div', { class: 'stats' },

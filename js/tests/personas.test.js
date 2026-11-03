@@ -63,6 +63,14 @@ test('a broken persona file names the file and the missing field', async () => {
   await assertThrows(() => loadPersonas({ fetchImpl: memFetch(files) }), 'missing "money.startingSavings"');
 });
 
+test('every persona has a first name, and a file without one is rejected by name', async () => {
+  const base = await realFetch('data/personas/metro-it.json').then(r => r.json());
+  assert(typeof base.firstName === 'string' && base.firstName.length > 0, 'first name in the file');
+  delete base.firstName;
+  const files = { 'data/personas/index.json': { personas: ['bad.json'] }, 'data/personas/bad.json': base };
+  await assertThrows(() => loadPersonas({ fetchImpl: memFetch(files) }), 'missing "firstName"');
+});
+
 test('a listed but missing file gives a 404 message', async () => {
   const files = { 'data/personas/index.json': { personas: ['ghost.json'] } };
   await assertThrows(() => loadPersonas({ fetchImpl: memFetch(files) }), 'HTTP 404');

@@ -76,7 +76,7 @@ export const schemas = {
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
   persona: {
-    id: 'string', name: 'string', emoji: 'string', accent: 'string',
+    id: 'string', firstName: 'string', name: 'string', emoji: 'string', accent: 'string',
     tagline: 'string', story: 'string',
     profile: { startAge: 'number', city: 'string', cityTier: 'number', education: 'string', job: 'string' },
     money: { startingSalary: 'number', startingSavings: 'number', startingDebt: 'number', monthlyExpenses: 'number' },
