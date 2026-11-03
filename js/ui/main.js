@@ -5,6 +5,7 @@ import { loadParams } from '../data/params.js';
 import { schemas } from '../data/validate.js';
 import { h, mount } from './dom.js';
 import { createFlow } from './flow.js';
+import { browserStore } from './storage.js';
 
 const app = document.getElementById('app');
 
@@ -26,8 +27,14 @@ async function boot() {
     const personas = await loadPersonas();
     const { stages, decisions } = await loadStages({ instrumentIds: params.instruments.map(i => i.id) });
 
-    const session = { personaId: null, retirementAge: 60, seed: null };
-    const flow = createFlow(app, { personas, params, stages, decisions }, session);
+    const store = browserStore();
+    const saved = store.loadSettings();
+    const session = {
+      personaId: personas.some(p => p.id === saved.personaId) ? saved.personaId : null, // the last persona played
+      retirementAge: [55, 60, 65].includes(saved.retirementAge) ? saved.retirementAge : 60,
+      seed: null,
+    };
+    const flow = createFlow(app, { personas, params, stages, decisions }, session, store);
     // ?seed=4271 replays a run; otherwise every run gets fresh luck.
     session.seed = new URLSearchParams(location.search).get('seed') ?? flow.randomSeed();
     flow.showLanding();

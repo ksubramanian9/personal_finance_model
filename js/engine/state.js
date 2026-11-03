@@ -1,6 +1,9 @@
 import { createRng, nextNormal } from './rng.js';
 import { gainsIds } from './tax.js';
 
+// Bumped whenever the shape of the state changes, so a saved life from an older game is not resumed.
+export const STATE_VERSION = 8;
+
 // The whole game in one plain, JSON-serializable object.
 // All money is nominal rupees. `priceIndex` converts to today's rupees (1 at the start).
 // `params` is what loadParams() returns (engine.json plus macro and instruments).
@@ -12,7 +15,7 @@ export function createState(persona, params, { seed, retirementAge }) {
   const lifeZ = nextNormal(createRng(`${seed}:life`));
   const deathAge = Math.round(Math.min(L.maxAge, Math.max(L.minAge, L.meanAge + L.sdYears * lifeZ)));
   return {
-    version: 8,
+    version: STATE_VERSION,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,

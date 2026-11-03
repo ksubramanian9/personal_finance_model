@@ -2,6 +2,9 @@
 
 **Summary:** Three named levels. Each stands alone. Deeper content appears only on user action, except critical warnings. Look and feel: colorful, large informal fonts, theme in tokens.
 
+## Remembering between visits (as built, increment 10)
+The browser remembers, in `localStorage` under one key and on this device only: the level of detail and the rupee mode, the last persona and retirement age, and **a life in progress**. A life is saved when a stage's questions appear, when an instinct card appears and when a stage result appears, so the landing page can offer "Pick up where you left off: Arjun, age 42" (with "Forget my progress" and "Start a new life"). A resumed life carries on exactly as it would have: the saved state includes every random stream. A finished life is not kept, and a save from another version of the game, or a broken one, is dropped quietly. If storage is blocked or full the game works the same and remembers nothing.
+
 ## Levels
 **Level 1: Story (default)**
 One life stage at a time, one big question, 2-3 big friendly choice cards. After each stage a decade card with three numbers (net worth, "could you stop working?", a resilience color/emoji) and a one-line event headline. No tables, sliders or percentages. Includes the retirement-age choice, family choices and the occasional nudge card.

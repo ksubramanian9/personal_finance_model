@@ -5,6 +5,7 @@ import { loadParams } from '../data/params.js';
 import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
 import { getFetch } from './dataFetch.js';
+import { createStore } from '../ui/storage.js';
 
 installFakeDom();
 
@@ -13,12 +14,12 @@ const params = await loadParams({ fetchImpl });
 const personas = await loadPersonas({ fetchImpl });
 const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
 
-function newGame(seed = 4271, retirementAge = 60) {
+function newGame(seed = 4271, retirementAge = 60, store) {
   const root = createRoot();
   const session = { personaId: null, retirementAge, seed };
-  const flow = createFlow(root, { personas, params, stages, decisions }, session);
+  const flow = createFlow(root, { personas, params, stages, decisions }, session, store);
   flow.showLanding();
-  return { root, session, flow };
+  return { root, session, flow, store };
 }
 
 // Where a decision sits in a stage's list of questions (0-based), so tests survive new questions.
@@ -776,4 +777,139 @@ test('the end screen counts how often you followed your gut', () => {
   while (buttonWithText(h.root, /^On to/)) { click(h.root, /^On to/); playStageScreen(h); }
   click(h.root, /^See the whole story/);
   assert(/followed your gut [1-9]/.test(text(h.root)) && /You sold your shares in a crash\./.test(text(h.root)), 'followed once or more');
+});
+
+// ---- remembering ----
+
+const memory = () => {
+  const data = new Map();
+  return { getItem: (k) => (data.has(k) ? data.get(k) : null), setItem: (k, v) => data.set(k, String(v)), removeItem: (k) => data.delete(k), data };
+};
+// A new visit: a fresh page over the same browser storage.
+const revisit = (storage, seed = 1) => newGame(seed, 60, createStore(storage));
+
+test('nothing to continue before a life has started; a started life is offered back', () => {
+  const storage = memory();
+  const first = newGame(4271, 60, createStore(storage));
+  assert(!buttonWithText(first.root, /Continue/), 'nothing yet');
+  begin(first);
+  const again = revisit(storage);
+  assert(/Pick up where you left off: Arjun, age 22/.test(text(again.root)), text(again.root).slice(0, 200));
+  assert(buttonWithText(again.root, /Start a new life/) && !buttonWithText(again.root, /Let's start/), 'the new-life button changes');
+});
+
+test('continuing returns to the question the stage is at, and the stage can be played on', () => {
+  const storage = memory();
+  const first = newGame(4271, 60, createStore(storage));
+  begin(first);
+  playStageScreen(first);
+  click(first.root, /^On to/);
+  const again = revisit(storage, 9999);
+  click(again.root, /Continue/);
+  assert(/Building a life/.test(text(again.root)) && /Question 1 of/.test(text(again.root)), 'the second stage');
+  assertEqual(again.session.seed, 4271); // the saved life's luck, not the new visit's
+  playStageScreen(again);
+  assert(/Here's how it went/.test(text(again.root)));
+});
+
+test('a closed tab at an instinct card resumes at that card, and the life finishes exactly as it would have', () => {
+  const finishAll = (g) => {
+    resolveNudges(g);
+    while (buttonWithText(g.root, /^(On to|See the whole story)/)) {
+      click(g.root, /^(On to|See the whole story)/);
+      if (/Could you stop working/.test(text(g.root))) break;
+      playStageScreen(g);
+    }
+    return text(g.root);
+  };
+  // the uninterrupted life
+  const straight = newGame(4271);
+  begin(straight);
+  playStageScreen(straight);
+  const expected = finishAll(straight);
+  // the same life, interrupted at the first card and resumed
+  const storage = memory();
+  const g1 = newGame(4271, 60, createStore(storage));
+  begin(g1);
+  playToCard(g1);
+  assert(/Markets are crashing/.test(text(g1.root)), 'at the card');
+  const g2 = revisit(storage);
+  click(g2.root, /Continue/);
+  assert(/Markets are crashing/.test(text(g2.root)), 'the same card again');
+  resolveNudges(g2);
+  const resumed = finishAll(g2);
+  assertEqual(resumed, expected);
+});
+
+test('a closed tab on a stage result resumes on the same result', () => {
+  const storage = memory();
+  const g1 = newGame(4271, 60, createStore(storage));
+  begin(g1);
+  playStageScreen(g1);
+  const before = text(g1.root);
+  const g2 = revisit(storage);
+  click(g2.root, /Continue/);
+  assertEqual(text(g2.root), before);
+});
+
+test('a finished life is not kept, and "Forget my progress" clears a saved one', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  begin(g);
+  for (let i = 0; i < stages.length; i++) { playStageScreen(g); click(g.root, /^(On to|See the whole story)/); }
+  assert(/Could you stop working/.test(text(g.root)));
+  assert(!buttonWithText(revisit(storage).root, /Continue/), 'a finished life is gone');
+
+  const h2 = newGame(4271, 60, createStore(storage));
+  begin(h2);
+  const v = revisit(storage);
+  click(v.root, /Forget my progress/);
+  assert(!buttonWithText(v.root, /Continue/) && buttonWithText(v.root, /Let's start/), 'forgotten');
+  assert(!buttonWithText(revisit(storage).root, /Continue/), 'and still forgotten next visit');
+});
+
+test('a save from another version of the game, or junk, is ignored without a fuss', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  begin(g);
+  const record = JSON.parse(storage.getItem('lifeSim.v1'));
+  record.life.state.version = 1;
+  storage.setItem('lifeSim.v1', JSON.stringify(record));
+  assert(!buttonWithText(revisit(storage).root, /Continue/), 'old state version');
+  storage.setItem('lifeSim.v1', '{not json');
+  assert(!buttonWithText(revisit(storage).root, /Continue/), 'junk');
+  const g3 = newGame(4271, 60, createStore(storage));
+  begin(g3);
+  const r3 = JSON.parse(storage.getItem('lifeSim.v1'));
+  r3.life.personaId = 'someone-who-left';
+  storage.setItem('lifeSim.v1', JSON.stringify(r3));
+  assert(!buttonWithText(revisit(storage).root, /Continue/), 'a persona that no longer exists');
+  assertEqual(createStore(storage).loadLife(), null, 'and the bad save was dropped');
+});
+
+test('storage that is blocked or full does not stop the game', () => {
+  const blocked = { getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); }, removeItem() { throw new Error('blocked'); } };
+  const g = newGame(4271, 60, createStore(blocked));
+  begin(g);
+  playStageScreen(g);
+  assert(/Here's how it went/.test(text(g.root)));
+  const full = { ...memory(), setItem() { throw new Error('quota'); } };
+  const h2 = newGame(4271, 60, createStore(full));
+  begin(h2);
+  playStageScreen(h2);
+  assert(/Here's how it went/.test(text(h2.root)));
+});
+
+test('the level of detail, the rupee mode and the last persona are remembered', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  begin(g, 1);
+  playStageScreen(g);
+  click(g.root, /^Why did it go this way\?$/);
+  chooseMoney(g.root, 'nominal');
+  assertEqual(g.flow.disclosure.level, 2);
+  const settings = createStore(storage).loadSettings();
+  assertEqual([settings.level, settings.real, settings.personaId, settings.retirementAge], [2, false, 'govt-psu', 60]);
+  const next = revisit(storage);
+  assertEqual([next.flow.disclosure.level, next.flow.disclosure.real], [2, false]);
 });
