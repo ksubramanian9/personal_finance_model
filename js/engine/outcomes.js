@@ -34,6 +34,17 @@ export function outcome(state) {
   const burnouts = history.reduce((n, y) => n + y.events.filter(e => e.id === 'burnout').length, 0);
   const wellbeing = burnouts >= 2 ? 'burntOut' : (burnouts === 1 || hardYears >= working.length / 2) ? 'stretched' : 'balanced';
 
+  // Instinct cards: how often the player followed their gut.
+  const log = state.nudgeLog ?? [];
+  const followed = log.filter(l => l.choice === 'follow');
+  const tips = followed.filter(l => l.id === 'tip');
+  const instincts = {
+    total: log.length, followed: followed.length, resisted: log.length - followed.length,
+    panicSold: followed.some(l => l.id === 'crash'),
+    tipsTaken: tips.length, tipsWon: tips.filter(l => l.win).length,
+    tipNetReal: tips.reduce((n, l) => n + (l.payout - l.stake) / l.priceIndex, 0),
+  };
+
   const borrowedYears = working.filter(y => y.borrowed > 1).length;
   const steady = borrowedYears <= 1 && !soldHome;
 
@@ -53,6 +64,7 @@ export function outcome(state) {
     netWorthAtEndReal: endYear ? endYear.netWorthReal : 0,
     spendableAtEndReal: endYear ? real(endYear.cash + sumHoldings(endYear), endYear) : 0,
     resilience: { steady, borrowedYears, soldHome: soldHome !== undefined },
+    instincts,
     wellbeing: { signal: wellbeing, hardYears, burnouts, workingYears: working.length },
   };
 }

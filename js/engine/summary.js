@@ -1,5 +1,6 @@
 // One stage's worth of years (history from `startIdx` on), in today's rupees.
-export function stageSummary(history, startIdx) {
+// `log` is the answers given at instinct cards in this stage (state.nudgeLog filtered to it).
+export function stageSummary(history, startIdx, log = []) {
   const years = history.slice(startIdx);
   if (!years.length) return null;
   const first = years[0];
@@ -25,6 +26,10 @@ export function stageSummary(history, startIdx) {
       count: y.childrenCount,
     }))),
     skillBoostPct: last.growthBoost * 100, // extra yearly pay growth the skills were buying at the end
+    instincts: log.map(l => {
+      const k = 1 / l.priceIndex;
+      return { id: l.id, age: l.age, choice: l.choice, value: (l.value ?? 0) * k, spend: (l.spend ?? 0) * k, pct: l.pct, stake: (l.stake ?? 0) * k, payout: (l.payout ?? 0) * k, win: l.win };
+    }),
     rentReal: years.reduce((sum, y) => sum + y.rent / y.priceIndexStart, 0),
     homeValueEndReal: last.homeValue / last.priceIndexEnd,
     homeLoanEndReal: last.homeLoan / last.priceIndexEnd,

@@ -19,6 +19,7 @@ export const BRIDGE_GROUPS = [
     ['learning', 'Courses and upskilling'],
     ['premiums', 'Health insurance premiums'],
     ['unplanned', 'Surprise costs, after insurance'],
+    ['instincts', 'Following your gut (festival splurges, hot tips)'],
     ['incomeTax', 'Income tax on pay and windfalls'],
     ['investTax', 'Tax on interest and on gains from selling'],
     ['lifestyle', 'Lifestyle spending (your money style)'],

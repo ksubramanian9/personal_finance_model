@@ -11,6 +11,7 @@ import './housing.test.js';
 import './family.test.js';
 import './retirement.test.js';
 import './capability.test.js';
+import './nudges.test.js';
 import './explain.test.js';
 import './charts.test.js';
 import './stages.test.js';

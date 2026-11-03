@@ -3,6 +3,7 @@ import { formatINR } from '../format.js';
 import { currentOption, stageEnd, askedDecisions } from '../../engine/stages.js';
 import { homeOffer } from '../../engine/housing.js';
 import { describeOffer } from '../housingText.js';
+import { describeAnswer } from '../nudgeText.js';
 import { describeEvent, describeCoping } from '../eventText.js';
 import { whyToggle } from '../whyPanel.js';
 
@@ -123,6 +124,18 @@ function familyMoveCards(moves) {
         : 'Costs start with the birth and rise through school and college.' }))));
 }
 
+// What the player did at instinct cards, in the same style as life events.
+function instinctCards(answers, cardDefs) {
+  return answers.map(a => {
+    const d = describeAnswer(cardDefs[a.id], a);
+    return h('li', { class: `event-card kind-instinct ${a.choice === 'follow' ? 'followed' : 'resisted'}` },
+      h('span', { class: 'event-emoji', 'aria-hidden': 'true', text: d.emoji }),
+      h('div', { class: 'event-body' },
+        h('p', { class: 'event-title' }, h('strong', { text: d.title }), h('span', { class: 'event-age', text: ` \u00B7 age ${a.age}` })),
+        h('p', { class: 'event-line', text: d.text })));
+  });
+}
+
 // Buying or selling a home, as cards in the same style as life events.
 function homeMoveCards(moves) {
   return moves.map(m => h('li', { class: 'event-card kind-home' },
@@ -137,8 +150,8 @@ function homeMoveCards(moves) {
 }
 
 // What happened along the way, year by year, and how any shortfall was met.
-function eventsSection(eventYears, eventDefs, instruments, homeMoves = [], familyMoves = []) {
-  if (!eventYears.length && !homeMoves.length && !familyMoves.length) {
+function eventsSection(eventYears, eventDefs, instruments, homeMoves = [], familyMoves = [], instincts = [], cardDefs = {}) {
+  if (!eventYears.length && !homeMoves.length && !familyMoves.length && !instincts.length) {
     return h('section', { class: 'events quiet' },
       h('h2', { text: 'What happened' }),
       h('p', { text: 'A quiet stretch. Nothing dramatic came your way.' }));
@@ -147,6 +160,7 @@ function eventsSection(eventYears, eventDefs, instruments, homeMoves = [], famil
     h('h2', { text: 'What happened' }),
     h('ul', { class: 'event-list' },
       familyMoveCards(familyMoves),
+      instinctCards(instincts, cardDefs),
       homeMoveCards(homeMoves),
       eventYears.flatMap(y => {
         const coping = describeCoping(y.coping, instruments);
@@ -188,7 +202,7 @@ export function renderStageResult(root, ctx) {
       h('p', { class: 'headline', text: headline }),
       h('p', { class: 'hint', text: "All amounts are in today's rupees." })),
     economyStrip(s.economy, ctx.regimes),
-    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments, s.homeMoves, s.familyMoves),
+    eventsSection(s.eventYears, ctx.eventDefs, ctx.instruments, s.homeMoves, s.familyMoves, s.instincts, ctx.cardDefs),
     h('div', { class: 'stats' },
       stat('earning a year by the end, before tax', formatINR(s.incomeEndReal)),
       stat('saved over these years', formatINR(s.savedReal)),

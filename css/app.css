@@ -467,3 +467,10 @@ h1, h2, h3 {
 .verdict-soldHome { border-left-color: var(--c-warn); }
 .verdict-ranOut { border-left-color: var(--c-bad); }
 .verdict-line { font-family: var(--font-display, inherit); font-size: 1.5rem; margin: 0.25rem 0 0.75rem; }
+
+/* Instinct cards */
+.nudge-story { font-size: 1.25rem; max-width: 40rem; margin-inline: auto; }
+.nudge-gut { font-style: italic; color: var(--c-inkSoft); }
+.option-card.nudge-follow { border-style: dashed; }
+.event-card.kind-instinct.followed { border-left-color: var(--c-warn); }
+.event-card.kind-instinct.resisted { border-left-color: var(--c-good); }

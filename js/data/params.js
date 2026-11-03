@@ -279,6 +279,42 @@ export function checkCapability(data, regimeIds, label) {
   return data;
 }
 
+export const NUDGE_CARDS = ['crash', 'raise', 'festival', 'tip'];
+
+export function checkNudges(data, label) {
+  const problems = [];
+  checkProvenance(data.provenance, '', problems);
+  if (!isNum(data.perStage) || data.perStage < 0 || data.perStage > 5) problems.push('"perStage" should be from 0 to 5');
+  if (!isNum(data.minStakeReal) || data.minStakeReal < 0) problems.push('"minStakeReal" should be a number of rupees');
+  for (const id of NUDGE_CARDS) {
+    const c = data.cards?.[id];
+    const at = `cards.${id}`;
+    if (!c) { problems.push(`"${at}" is missing`); continue; }
+    for (const f of ['emoji', 'title', 'story']) if (!isStr(c[f])) problems.push(`"${at}.${f}" is missing`);
+    if (!Array.isArray(c.gut) || c.gut.length !== 3 || c.gut.some(g => !isStr(g))) problems.push(`"${at}.gut" should be three lines, from calm to loud`);
+    for (const o of ['follow', 'resist']) if (!isStr(c[o]?.title) || !isStr(c[o]?.blurb)) problems.push(`"${at}.${o}" needs a title and a blurb`);
+    const b = c.bias;
+    if (!(isStr(b) || isStr(b?.inverse))) problems.push(`"${at}.bias" should name a persona trait, or { "inverse": trait }`);
+    if (c.firing?.always !== true) {
+      if (!isNum(c.firing?.baseProb) || c.firing.baseProb < 0 || c.firing.baseProb > 1) problems.push(`"${at}.firing.baseProb" should be a probability`);
+      if (!isNum(c.firing?.biasWeight) || c.firing.biasWeight < 0 || c.firing.biasWeight > 1) problems.push(`"${at}.firing.biasWeight" should be from 0 to 1`);
+    }
+  }
+  const e = data.cards?.raise?.effect;
+  if (!isNum(e?.upgradePct) || e.upgradePct < 0 || e.upgradePct > 1) problems.push('"cards.raise.effect.upgradePct" should be from 0 to 1');
+  const f = data.cards?.festival?.effect;
+  if (!isNum(f?.spendPctOfPay) || f.spendPctOfPay < 0 || f.spendPctOfPay > 1) problems.push('"cards.festival.effect.spendPctOfPay" should be from 0 to 1');
+  const t = data.cards?.tip?.effect;
+  if (!isNum(t?.stakeShare) || t.stakeShare <= 0 || t.stakeShare > 1) problems.push('"cards.tip.effect.stakeShare" should be above 0 and at most 1');
+  if (!isNum(t?.winProb) || t.winProb < 0 || t.winProb > 1) problems.push('"cards.tip.effect.winProb" should be a probability');
+  if (!isNum(t?.payoffMultiple) || t.payoffMultiple < 1) problems.push('"cards.tip.effect.payoffMultiple" should be at least 1');
+  const c0 = data.cards?.crash?.trigger;
+  if (!isNum(c0?.equityReturnBelow) || c0.equityReturnBelow >= 0) problems.push('"cards.crash.trigger.equityReturnBelow" should be a negative return such as -0.15');
+  if (!isNum(c0?.minEquityReal) || c0.minEquityReal < 0) problems.push('"cards.crash.trigger.minEquityReal" should be a number of rupees');
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
 export function checkEngine(e, instrumentIds, label) {
   const problems = [];
   if (e.savingsRate < 0 || e.savingsRate > 1) problems.push('"savingsRate" should be between 0 and 1');
@@ -296,7 +332,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family, retirement, capability }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family, retirement, capability, nudges }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -321,5 +357,7 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
     await loadJSON('data/retirement.json', opts(schemas.retirement, 'retirement.json')), 'retirement.json');
   const capability = checkCapability(
     await loadJSON('data/capability.json', opts(schemas.capability, 'capability.json')), macro.order, 'capability.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement, capability };
+  const nudges = checkNudges(
+    await loadJSON('data/nudges.json', opts(schemas.nudges, 'nudges.json')), 'nudges.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement, capability, nudges };
 }

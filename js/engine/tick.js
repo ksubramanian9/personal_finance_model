@@ -2,7 +2,8 @@ import { nextFloat, nextNormal } from './rng.js';
 import { nextRegime } from './macro.js';
 import { rollEvents, settleEvents } from './events.js';
 import { netWorth } from './state.js';
-import { computeTax, buyLot, sellLots, cloneLots } from './tax.js';
+import { computeTax, buyLot, sellLots, cloneLots, mergeGains } from './tax.js';
+import { rollNudges } from './nudges.js';
 import { buyHome, payLoanYear, saleProceeds } from './housing.js';
 import { marry, birthDue, childCosts, spouseGross } from './family.js';
 import { retire } from './retirement.js';
@@ -50,6 +51,20 @@ export function tickYear(state, params) {
   // 0c. the pay stops
   if (s.age >= s.retirementAge && !s.retired) retire(s, params);
 
+  // 0d. what the player decided at an instinct card last year (see nudges.js)
+  const preGains = {}; // gains realised by a panic sale, taxed this year
+  let panicSold = 0;
+  if (s.pending.panicSell && s.holdings.equity > 0) {
+    panicSold = s.holdings.equity;
+    preGains.equity = sellLots(s.lots.equity, panicSold, panicSold, s.year, params.tax.instruments.equity.longTermYears);
+    s.holdings.equity = 0;
+    s.lots.equity = [];
+    s.holdings.fd += panicSold; // the money waits in fixed deposits
+  }
+  const nudgeSpend = s.pending.spend;
+  const nudgeIncome = s.pending.income;
+  s.pending = { spend: 0, income: 0, panicSell: false };
+
   // 1. the economy and market returns
   const regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
   const R = params.macro.regimes[regime];
@@ -93,11 +108,11 @@ export function tickYear(state, params) {
   const ev = settleEvents(s, rollEvents(s, params.events, regime), params.insurance, priceIndexStart);
   const pensionIncome = s.pension;
   const income = ev.salaryReceived + ev.severance + pensionIncome;
-  const extraIncome = ev.extraIncome;
+  const extraIncome = ev.extraIncome + nudgeIncome; // a hot tip that paid off arrives as a windfall
   const learning = s.salary * s.learningPct;
   const premium = s.healthPremium * priceIndexStart * (1 + (params.insurance.premiumAgeLoadingPct / 100) * Math.max(0, s.age - 30));
-  const taxBasis = { priceIndex: priceIndexStart, salary: income, windfall: ev.taxableExtra, ordinary: interest };
-  const baseTax = computeTax(params.tax, taxBasis);
+  const taxBasis = { priceIndex: priceIndexStart, salary: income, windfall: ev.taxableExtra + nudgeIncome, ordinary: interest };
+  const baseTax = computeTax(params.tax, { ...taxBasis, gains: preGains });
   let taxIncome = baseTax.incomeTax;
   let taxInvest = baseTax.investTax;
   const homeOutlay = purchase ? purchase.outlay : 0;
@@ -107,7 +122,7 @@ export function tickYear(state, params) {
   const partnerTax = partnerGross > 0 ? computeTax(params.tax, { priceIndex: priceIndexStart, salary: partnerGross }).total : 0;
   const spouseNet = partnerGross - partnerTax; // their pay after their own tax
   let expenses = s.livingCost + s.support + rentPaid + homeUpkeep + loanYear.paid + homeOutlay
-    + childCost + weddingCost + learning + premium + ev.eventCost + baseTax.total;
+    + childCost + weddingCost + nudgeSpend + learning + premium + ev.eventCost + baseTax.total;
   const inflow = income + extraIncome + spouseNet;
 
   // 4-5. debt, saving
@@ -175,7 +190,7 @@ export function tickYear(state, params) {
     let p = plan(-surplus);
     let withSale = baseTax;
     for (let i = 0; i < 30; i++) {
-      withSale = computeTax(params.tax, { ...taxBasis, gains: p.gains });
+      withSale = computeTax(params.tax, { ...taxBasis, gains: mergeGains(preGains, p.gains) });
       const saleTax = Math.max(0, withSale.total - baseTax.total);
       if (Math.abs(saleTax - extra) < 1e-7) break;
       extra = saleTax;
@@ -205,6 +220,9 @@ export function tickYear(state, params) {
   if (homeSale) s.rent = s.rentReal * priceIndexEnd; // back to renting at the going rate
   const nw = netWorth(s);
 
+  // Instinct cards for next year, from what this year did (always four draws from their own stream).
+  const nudges = rollNudges(s, params, { equityReturn: returns.equity ?? 0, equityValue: s.holdings.equity, payJump: ev.payJump });
+
   s.history.push({
     age: s.age,
     year: s.year,
@@ -215,6 +233,7 @@ export function tickYear(state, params) {
     taxIncome, taxInvest, // tax on pay and windfalls, and the extra tax investing brought (both are in expenses)
     rent: rentPaid, homeUpkeep, homeOutlay, // what housing cost (all in expenses)
     pension: pensionIncome, retired: s.retired,
+    nudgeSpend, nudgeIncome, panicSold, nudges, // instinct cards: what the player's answers cost, and the cards on offer next
     effort: s.effort, capability: s.capability, growthBoost: s.growthBoost, // skills at the end of the year
     drift: s.livingCost * (1 - 1 / s.creepIndex), // the part of everyday costs that crept up with pay (inside expenses)
     spouseNet, childCost, weddingCost,      // a partner's pay after tax (income); children and the wedding (in expenses)

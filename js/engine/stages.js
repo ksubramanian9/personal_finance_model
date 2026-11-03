@@ -1,4 +1,5 @@
-import { runUntil } from './tick.js';
+import { runUntil, tickYear } from './tick.js';
+import { playUntilCard } from './nudges.js';
 import { homeOffer } from './housing.js';
 
 // Effect keys a choice may set on the state. Anything else is ignored by design
@@ -70,6 +71,17 @@ export function applyPicks(state, stage, decisions, picks, params = null) {
   }
   s.choices[stage.id] = Object.fromEntries(asked.map(ref => [ref.id, picks[ref.id]]));
   return s;
+}
+
+// Playing a stage with instinct cards: beginStage applies the picks, continueStage plays years until a
+// card should be shown (or the stage ends), and the caller answers it with answerNudge and continues.
+export function beginStage(state, params, stage, decisions, picks) {
+  const s = applyPicks(state, stage, decisions, picks, params);
+  return { state: s, endAge: stageEnd(stage, s) };
+}
+
+export function continueStage(state, params, stage, endAge) {
+  return playUntilCard(state, params, stage, endAge, tickYear);
 }
 
 // After the last stage: the years of retirement, until the end of life.

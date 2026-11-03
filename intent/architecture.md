@@ -2,7 +2,7 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
-**Status:** as of increment 9, parts 1 and 2 (the ending, lifestyle drift, a refined skills model with burnout). The instinct cards (nudges) are next. Planned-but-unbuilt modules are listed at the bottom.
+**Status:** as of increment 9 (the ending, lifestyle drift, the refined skills model, instinct cards). Increment 10 (Level 3 and polish) is next. Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
 
@@ -17,6 +17,7 @@ data/                   all tunable numbers and content (JSON)
   macro.json            economy regimes (inflation, raise adjustment) and the transition matrix
   instruments.json      pf / equity / fd / gold: returns by regime, liquidity, provenance
   events.json           life events (odds, size, who covers them, whether a windfall is taxable) and insurance constants
+  nudges.json           the four instinct cards: text, triggers, odds, effects, the per-stage limit
   capability.json       how skills build, fade and move pay
   retirement.json       how long a life lasts, the pension share, what changes at retirement
   family.json           what a household and children cost, by age band and city tier
@@ -31,12 +32,13 @@ js/data/                load + validate; no DOM, no engine
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks
   stages.js             loadStages + checkStages (ranges, contiguity, same-effects rule, allocation sums)
-  params.js             loadParams: engine + macro + instruments + events + tax + housing + family + retirement + capability, with cross-file checks
+  params.js             loadParams: engine + macro + instruments + events + tax + housing + family + retirement + capability + nudges, with cross-file checks
 
 js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ imports
   rng.js                seeded mulberry32; generator is a plain {s} object
   macro.js              nextRegime, stationaryDistribution
   events.js             rollEvents (draws) and settleEvents (money effects, insurance)
+  nudges.js             instinct cards: rollNudges, pickCard, answerNudge, playUntilCard
   retirement.js         retire: the day the pay stops
   outcomes.js           outcome: the verdict on a finished life
   family.js             marry, birthDue, childCosts, spouseGross
@@ -53,6 +55,7 @@ js/ui/                  rendering and user input; may import data/ and engine/
   flow.js               createFlow(root, data, session): screen-to-screen game flow
   dom.js                h(): element builder (textContent); mount(): safe replaceChildren
   format.js             formatINR (lakh/crore)
+  nudgeText.js          describeCard, answerFacts, describeAnswer: instinct-card wording
   housingText.js        describeOffer: the renting-versus-buying facts shown on the home question
   eventText.js          describeEvent, describeCoping, fillTemplate: event wording
   disclosure.js         createDisclosure: the level the player has asked for + real/nominal choice
@@ -60,6 +63,7 @@ js/ui/                  rendering and user input; may import data/ and engine/
   whyPanel.js           whyPanel (bridge + named forces), yearTable (the table twin), moneyToggle, whyToggle
   screens/              one file per screen
     personaPicker.js
+    nudge.js            a pause in the middle of a stage: one instinct card
     stage.js            journey bar, one-question-at-a-time decisions, stage result
     lifeSummary.js      end of run: decade cards, choices recap, replay buttons
 
@@ -108,9 +112,10 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - **Family** (`engine/family.js`, rules in `family.json`). The player's choices set plans on the state: `marryAge`, `weddingReal`, `spousePct`, `childPlan`. `tickYear` carries them out at the start of the year (step 0b): marry when the age is reached (a household uplift on `livingCost`, `rent` and `rentReal`, and a wedding bill), and a birth when due. `state.spouse` is `{ year }` or null; `state.children` holds birth years; `state.educationIndex` compounds the education premium. Each year a partner's pay is `salary × spousePct`, taxed on its own, and the net is added to the year's inflow (`spouseNet`); children cost `childCost` and the wedding `weddingCost`, both inside `expenses`. No random numbers are used. In the bridge: `spouse` on the income side, `children` and `wedding` among the costs.
 - **Conditional decisions.** A stage's decision entry can carry `"onlyIf"`: a name or list of names from `CONDITIONS` in `engine/stages.js` (renting, single, married, childless, marriagePlanned, marriedOrPlanned). `askedDecisions(stage, state, picks)` returns what is asked now; the UI, `applyPicks` and the recap all use it, so the number of questions can change as the player answers. Add a condition by adding it to `CONDITIONS` there and to the allowed list in `js/data/stages.js`.
 - **Retirement and the end of life** (`engine/retirement.js`, `engine/outcomes.js`, rules in `retirement.json`). `createState` draws `deathAge` from its own stream (`"<seed>:life"`; nothing else moves). `tickYear` calls `retire` the first year at or past `retirementAge`: salary, learning and support go to zero, `livingCost` becomes `retireSpendPct` of itself, and a persona with a pension gets one (a share of the last salary, linked to prices). While `state.retired`, job events have probability zero, the employer's health cover is gone and provident funds (`retiredDrawOrder`) join the sell order. `playRetirement` runs to `deathAge`; `flow.js` calls it before the end screen. `outcome(state)` reads the history: ran out = a retired year that had to borrow; sold the home = a retired year with a home sale; the cover figure is savings at retirement divided by the first retired year's bills less income. History records `retired`, `pension` and `drift`.
+- **Instinct cards** (`engine/nudges.js`, `nudges.json`). At the end of every year `tickYear` calls `rollNudges`, which always draws four numbers from `state.rngNudges` and returns the cards on offer (recorded in the year's history as `nudges`, dated with the age they would appear at). Nothing in the state changes because of them. An interactive stage is played with `beginStage` (applies the picks) and `continueStage` (plays years until `pickCard` says to show a card, or the stage ends); the UI shows the card and calls `answerNudge`, which returns a new state with the answer logged in `nudgeLog` and its effect queued in `state.pending` ({ spend, income, panicSell }) or, for a raise, applied to `livingCost` and `creepIndex` at once. The next `tickYear` carries out the queue: a panic sale moves the shares into fixed deposits (gains realised and taxed that year, merged with any sales to cover a shortfall by `mergeGains`), a spend is added to expenses (`nudgeSpend`, the bridge's "instincts" line) and a payout to windfalls (`nudgeIncome`). `playStage` ignores cards, which is the same as resisting all of them. `flow.js` drives the interactive version in `playCurrentStage` and `advance`.
 - **Skills and effort** (rules in `capability.json`). The "Invest in yourself" choice sets `learningPct` (money) and `effort` (0 to 1). Each working year `tickYear` updates `state.capability` (decay, then a gain that shrinks as the stock nears 1 and with age and the economy) and derives `growthBoost = maxGrowthBoost × capability × career.skillPayoff`, which is added to the next year's raise and shifts event odds through `capabilityEffect`. A `burnout` event kind takes its chance from `effort²` (`prob.fromEffort`) and costs months of pay. Retiring zeroes effort, skills and the boost. History records `effort`, `capability` and `growthBoost`.
 - **Lifestyle drift.** After each year's pay rise, `livingCost` grows by inflation and by `lifestyleCreep` (a persona bias) times the real pay growth, and never falls; `creepIndex` tracks the cumulative effect so the extra spending (`drift`, inside `expenses`) can be shown on its own line.
-- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance, tax, housing, family, retirement, capability }`. Pass it to `createState` and `tickYear`; tests use the same loader.
+- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance, tax, housing, family, retirement, capability, nudges }`. Pass it to `createState` and `tickYear`; tests use the same loader.
 - **Money is nominal rupees inside the engine.** `priceIndex` (1.0 at start) converts to today's rupees. History carries `*Real` fields so the UI doesn't divide.
 - **Inflation compounds year by year.** Each year's rate comes from that year's regime in `macro.json` (long-run mix about 4.5%: prices about 5.3 times after 38 years, about 16 times after 63). `priceIndexEnd = priceIndexStart × (1 + inflation)`, and next year's start is this year's end; a test checks the index against the year-by-year product. Living costs, support and event amounts grow with it; so do tax slabs.
 - **Pay growth is nominal and tied to the inflation assumption.** `salaryGrowthPct` in a persona is pay growth before inflation. If you change the inflation levels in `macro.json`, move persona pay growth by the same amount or you change real pay growth (decision 37). Asset returns in `instruments.json` are nominal and sourced separately, so they do not move.
@@ -165,6 +170,7 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/nudges.js`, `outcomes.js`. (`income.js` and `assets.js` from the original plan were folded into `tick.js` and `macro.js`.)
 
 ## Known loose ends
+- Instinct cards: resisting is free (no stress cost), the crash card relies on the instrument id "equity", and there are only four cards.
 - Skills are one stock, not three tracks; no effort or budget sliders; burnout does not wipe out skills; there is no link between effort and family time.
 - Even with events, a long horizon makes volatility mostly harmless: a bolder mix has about the same bad-luck outcome (p10) as a safe one but a higher median. Cushions show up mainly in how often a life has to borrow (Aarav: 46 of 300 lives with no cushion, 27 with a 6-month fund and strong cover; Meera: 21 and 5), not in median wealth. Insurance costs a little median wealth. The v2 debrief should surface this.
 - Outcomes are less optimistic now (tax, a home, a family), but the game cannot cut spending: when costs exceed income it borrows. A single-income household with two children (for example the government officer with a partner at home) can borrow for decades and end below zero. The v2 debrief should say why and what would have helped (a second income, fewer children, a cheaper wedding).

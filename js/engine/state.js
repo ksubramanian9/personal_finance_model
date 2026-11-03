@@ -12,7 +12,7 @@ export function createState(persona, params, { seed, retirementAge }) {
   const lifeZ = nextNormal(createRng(`${seed}:life`));
   const deathAge = Math.round(Math.min(L.maxAge, Math.max(L.minAge, L.meanAge + L.sdYears * lifeZ)));
   return {
-    version: 7,
+    version: 8,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,
@@ -21,6 +21,7 @@ export function createState(persona, params, { seed, retirementAge }) {
     year: params.startYear,
     rng: createRng(seed),                  // the economy and markets
     rngEvents: createRng(`${seed}:events`), // life events: a separate stream, so markets and events never shift each other
+    rngNudges: createRng(`${seed}:nudges`), // instinct cards: likewise
     regime: params.macro.start, // last year's economy; the first tick draws this year's
 
     // annual flows, nominal, for the year about to be played
@@ -28,6 +29,7 @@ export function createState(persona, params, { seed, retirementAge }) {
     livingCost: persona.money.monthlyExpenses * 12,
     rentReal: persona.money.monthlyRent * 12, // rent in today's rupees, for when the player goes back to renting
     rent: persona.money.monthlyRent * 12,     // this year's rent, nominal; 0 while the player owns a home
+    biases: { ...persona.biases },                  // panicSell, lifestyleCreep, overConservatism: how strongly instincts pull
     lifestyleCreep: persona.biases.lifestyleCreep, // how much of a real pay rise turns into spending
     creepIndex: 1,                                  // how much dearer a lifestyle has become through that drift
     support: (persona.obligations.parentsSupportMonthly + persona.obligations.siblingSupportMonthly) * 12,
@@ -51,6 +53,11 @@ export function createState(persona, params, { seed, retirementAge }) {
     homePrice: tier.homePrice, // what a typical apartment in this city costs now (nominal)
     home: null,                // the player's home, once bought (see housing.js)
     buyHome: 0,                // 1 = buy at the start of the next year (set by a choice)
+
+    // instinct cards (see nudges.js)
+    pending: { spend: 0, income: 0, panicSell: false }, // what the player chose at a card, carried out next year
+    nudgeLog: [],        // every answer: { id, age, choice, ... }
+    nudgeCounts: {},     // cards shown so far, by stage id
 
     // the end of working life and of life (see retirement.js)
     deathAge,            // hidden from the player until the end

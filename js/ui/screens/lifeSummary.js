@@ -52,6 +52,14 @@ function wellbeingLine(w) {
     : 'How it felt: a sustainable pace, with no burnout.';
 }
 
+function instinctLine(i) {
+  if (!i.total) return null;
+  const parts = [`You faced ${i.total} instinct ${i.total === 1 ? 'card' : 'cards'}: you followed your gut ${i.followed} ${i.followed === 1 ? 'time' : 'times'} and resisted ${i.resisted}.`];
+  if (i.panicSold) parts.push('You sold your shares in a crash.');
+  if (i.tipsTaken) parts.push(`Of ${i.tipsTaken} hot ${i.tipsTaken === 1 ? 'tip' : 'tips'} you took, ${i.tipsWon} paid off (${i.tipNetReal >= 0 ? 'up' : 'down'} ${formatINR(Math.abs(i.tipNetReal))} overall).`);
+  return parts.join(' ');
+}
+
 function verdictCard(o) {
   const notes = [];
   if (o.resilience.borrowedYears > 1) notes.push(`You borrowed to cover bills in ${o.resilience.borrowedYears} of your working years.`);
@@ -66,6 +74,7 @@ function verdictCard(o) {
       stat('your life ended at', String(o.deathAge)),
       stat('left at the end', formatINR(o.netWorthAtEndReal))),
     h('p', { class: 'hint', text: wellbeingLine(o.wellbeing) }),
+    instinctLine(o.instincts) && h('p', { class: 'hint', text: instinctLine(o.instincts) }),
     h('p', { class: 'hint', text: o.resilience.steady ? 'A steady ride: you rarely had to borrow, and never had to sell your home.' : 'A shaky ride in places.' }),
     notes.map(t => h('p', { class: 'hint', text: t })),
     h('p', { class: 'hint', text: "Savings count cash and investments, including provident funds once you stop working. The home you live in is not counted as spendable. All amounts are in today's rupees." }));

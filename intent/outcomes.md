@@ -17,7 +17,8 @@
 - **The verdict** (`engine/outcomes.js`) has three answers: *lasted* (savings and pension covered every year), *sold the home* (they did, but only by selling the home, a last resort) and *ran out* (the player had to borrow to live; the age is shown, with how many years before the end). It also shows what the savings could pay for when work stopped ("years of cover"), the pension, how the life ended and what was left.
 - **Spendable money** is cash and investments, including provident funds once retired. The home you live in is not counted.
 - **Resilience** is a plain "steady or shaky" line: steady means at most one working year of borrowing to cover bills and never a forced home sale.
-- **Wellbeing signal and the narrative debrief:** not built yet (the signal comes with the effort side of capability; the debrief is v2).
+- **Instinct cards** are counted on the verdict: how many cards, how often the gut was followed, whether you panic-sold, and how the hot tips went.
+- **Wellbeing signal:** a light "how it felt" line from effort and burnouts (see [capability](capability.md)). The narrative debrief is v2.
 - **What the model says** (seed sets of 60 per row, retiring at 60 with a 3-month fund and basic cover): the single IT persona lasts in about 97% of lives (median cover 56 years); with a wedding, a half-time partner and two children only about half do (median cover 14 years). The government persona lasts in nearly all lives, because the pension covers most spending: playing safe works, at the cost of a smaller estate.
 
 ## No composite score

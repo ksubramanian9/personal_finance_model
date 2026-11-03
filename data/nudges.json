@@ -1,0 +1,119 @@
+{
+  "perStage": 2,
+  "minStakeReal": 50000,
+  "cards": {
+    "crash": {
+      "emoji": "📉",
+      "title": "Markets are crashing",
+      "bias": "panicSell",
+      "trigger": {
+        "equityReturnBelow": -0.15,
+        "minEquityReal": 100000
+      },
+      "firing": {
+        "always": true
+      },
+      "story": "Shares have fallen about {pct}% this year and your funds went down with them. The news is full of people getting out.",
+      "gut": [
+        "A small voice wonders whether to sell.",
+        "Your stomach is turning. Selling feels sensible.",
+        "Your gut is screaming: get out now, before it gets worse!"
+      ],
+      "follow": {
+        "title": "Sell my shares",
+        "blurb": "Move all your shares into fixed deposits at today's low prices. Tax applies on any gain."
+      },
+      "resist": {
+        "title": "Hold on",
+        "blurb": "Stay invested and wait it out."
+      }
+    },
+    "raise": {
+      "emoji": "💸",
+      "title": "A big raise",
+      "bias": "lifestyleCreep",
+      "firing": {
+        "baseProb": 0.3,
+        "biasWeight": 1
+      },
+      "effect": {
+        "upgradePct": 0.2
+      },
+      "story": "The new pay is a big step up. Time to treat yourself: a bigger flat, a better car, nicer holidays?",
+      "gut": [
+        "You could do with a few small treats.",
+        "You have earned a proper upgrade, surely.",
+        "Your gut says: new car, new flat, new everything!"
+      ],
+      "follow": {
+        "title": "Upgrade my life",
+        "blurb": "Everyday costs go up by about a fifth, for good."
+      },
+      "resist": {
+        "title": "Carry on as before",
+        "blurb": "Keep your lifestyle and bank the difference."
+      }
+    },
+    "festival": {
+      "emoji": "🪔",
+      "title": "Festival season",
+      "bias": "lifestyleCreep",
+      "firing": {
+        "baseProb": 0.08,
+        "biasWeight": 0.2
+      },
+      "effect": {
+        "spendPctOfPay": 0.05
+      },
+      "story": "Diwali is coming. Everyone is shopping, gifting and dressing up, and the offers are everywhere.",
+      "gut": [
+        "A little gift here and there would be nice.",
+        "It is only once a year, after all.",
+        "Your gut says: go big, buy everything, gift everyone!"
+      ],
+      "follow": {
+        "title": "Splurge",
+        "blurb": "Spend about 5% of a year's pay on the celebrations."
+      },
+      "resist": {
+        "title": "Keep it simple",
+        "blurb": "Celebrate on a budget."
+      }
+    },
+    "tip": {
+      "emoji": "🔥",
+      "title": "A hot tip",
+      "bias": {
+        "inverse": "overConservatism"
+      },
+      "firing": {
+        "baseProb": 0.04,
+        "biasWeight": 0.1
+      },
+      "effect": {
+        "stakeShare": 0.1,
+        "winProb": 0.2,
+        "payoffMultiple": 3
+      },
+      "story": "A friend swears a small company is about to take off, and they have already put money in. 'Get in now,' they say.",
+      "gut": [
+        "It sounds risky. You are not tempted.",
+        "It does sound interesting, and everyone seems to be in.",
+        "Your gut says: this is the big one. Do not miss out!"
+      ],
+      "follow": {
+        "title": "Put money in",
+        "blurb": "Stake a tenth of your savings. Most tips like this lose the lot; a few pay several times over."
+      },
+      "resist": {
+        "title": "Pass",
+        "blurb": "Keep your savings where they are."
+      }
+    }
+  },
+  "provenance": {
+    "basis": "Game design, not data. A card can appear after a year in which it applies, at most two a stage (the crash card always appears and does not count). Crash: shares fell at least 15% in the year and you hold at least 1 lakh of them. Raise: after a recruiter's offer, with a chance of 30% plus your lifestyle creep. Festival: 8% plus a fifth of your lifestyle creep each year. Hot tip: 4% plus a tenth of how little cautious you are. Following the crash card sells all your shares into fixed deposits at that point; a raise adds a fifth to everyday costs for good; a festival costs 5% of pay; a tip stakes 10% of your sellable savings and returns three times the stake in one case in five. The stakes and payoff are made up to show the pattern (the expected result is a loss), not drawn from data.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

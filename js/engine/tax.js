@@ -74,6 +74,15 @@ export function computeTax(tax, { priceIndex, salary, windfall = 0, ordinary = 0
   return { total: total * priceIndex, incomeTax: incomeOnly * priceIndex, investTax: Math.max(0, total - incomeOnly) * priceIndex };
 }
 
+// Adds two sets of realised gains ({ id: { st, lt } }) together.
+export function mergeGains(a, b) {
+  const out = {};
+  for (const id of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    out[id] = { st: (a[id]?.st ?? 0) + (b[id]?.st ?? 0), lt: (a[id]?.lt ?? 0) + (b[id]?.lt ?? 0) };
+  }
+  return out;
+}
+
 // ---- cost basis ----
 // A holding is a pool whose pieces were bought in different years. Each piece (lot) is
 // { year, cost, share }: the year it was bought (at year end), what it cost, and what fraction of

@@ -41,6 +41,16 @@ const pickCard = (root, titleRe) => {
   card.click();
 };
 
+// Answers any instinct cards that pause a stage (resisting by default), until the result shows.
+function resolveNudges(g, choice = 'resist') {
+  for (let i = 0; i < 20; i++) {
+    const card = findAll(g.root, n => n.tagName === 'BUTTON' && hasClass(n, `nudge-${choice}`))[0];
+    if (!card) return;
+    card.click();
+  }
+}
+const playNow = (g) => { click(g.root, /^Play these/); resolveNudges(g); };
+
 // Starts a life as the first persona, accepting all defaults up to the first question.
 function begin(g, personaIndex = 0) {
   click(g.root, /Let's start/);
@@ -54,7 +64,7 @@ function playStageScreen(g, picks = {}) {
   for (;;) {
     if (picks[q]) pickCard(g.root, picks[q]);
     const play = buttonWithText(g.root, /^Play these/);
-    if (play) { play.click(); return; }
+    if (play) { play.click(); resolveNudges(g); return; }
     click(g.root, /^Next$/);
     q += 1;
   }
@@ -245,7 +255,14 @@ test('no screen leaks stray words like "undefined", "null", "NaN" or "false"', (
     for (;;) {
       snap(`stage ${i} question`);
       const play = buttonWithText(g.root, /^Play these/);
-      if (play) { play.click(); break; }
+      if (play) {
+        play.click();
+        for (let card = findAll(g.root, n => hasClass(n, 'nudge-resist'))[0]; card; card = findAll(g.root, n => hasClass(n, 'nudge-resist'))[0]) {
+          snap(`stage ${i} instinct card`);
+          card.click();
+        }
+        break;
+      }
       click(g.root, /^Next$/);
     }
     snap(`stage ${i} result`);
@@ -529,7 +546,7 @@ test('when you can afford it, buying opens; the result shows the purchase and th
   assert(!buy.disabled && !/Not yet/.test(buy.textContent), 'buying is open');
   buy.click();
   while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
-  click(g.root, /^Play these/);
+  playNow(g);
   assert(/You bought a home/.test(text(g.root)), 'purchase card');
   assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words on the purchase result');
   assert(/your home is worth/.test(text(g.root)) && /still owed on it/.test(text(g.root)), 'home stats');
@@ -543,7 +560,7 @@ test('when you can afford it, buying opens; the result shows the purchase and th
 test('keeping on renting asks again next stage, and the rent shows in the results', () => {
   const g = toFamilyStage(1, /Save hard/);
   while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
-  click(g.root, /^Play these/);
+  playNow(g);
   assert(/paid in rent/.test(text(g.root)), 'rent stat');
   assert(!/You bought a home/.test(text(g.root)));
   click(g.root, /^On to/);
@@ -555,7 +572,7 @@ test('the bridge and the chart show housing once there is a home', () => {
   stepTo(g, /Is it time to buy a home\?/);
   homeCards(g.root)[1].click();
   while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
-  click(g.root, /^Play these/);
+  playNow(g);
   while (buttonWithText(g.root, /^On to/)) { click(g.root, /^On to/); playStageScreen(g); }
   click(g.root, /^See the whole story/);
   whyButtons(g.root)[2].click(); // the 40s: a home owner by now
@@ -599,7 +616,7 @@ test('a wedding and then children show up in the stage results, and as lines in 
   pickCard(g.root, /Small and simple/);
   click(g.root, /^Next$/);
   pickCard(g.root, /Works full-time/);
-  click(g.root, /^Play these/);
+  playNow(g);
   assert(/You got married/.test(text(g.root)), 'wedding card');
   assert(/The wedding cost ₹[^ ]+( \w+)?\./.test(text(g.root)), 'with its bill');
   assert(/your partner's pay, after tax/.test(text(g.root)), 'partner pay stat');
@@ -608,7 +625,7 @@ test('a wedding and then children show up in the stage results, and as lines in 
   stepTo(g, /Will you have children\?/);
   pickCard(g.root, /Two children/);
   while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
-  click(g.root, /^Play these/);
+  playNow(g);
   assert(/A child arrived/.test(text(g.root)) && /A second child arrived/.test(text(g.root)), 'two births');
   assert(/spent on children/.test(text(g.root)), 'children stat');
   assert(!/undefined|null|NaN|false|\[object/.test(text(g.root)), 'no stray words');
@@ -629,7 +646,7 @@ test('a married player is not asked about marriage again, and the choices recap 
   pickCard(g.root, /Small and simple/);
   click(g.root, /^Next$/);
   pickCard(g.root, /Works part-time/);
-  click(g.root, /^Play these/);
+  playNow(g);
   click(g.root, /^On to/);
   assert(!/Still single/.test(text(g.root)), 'no marriage question now');
 });
@@ -663,7 +680,7 @@ test('the retirement-style question is asked at the last stage, and a pension sh
   }
   assert(/nobody knows how long they will live/i.test(text(g.root)), 'the question');
   pickCard(g.root, /Modest/);
-  click(g.root, /^Play these/);
+  playNow(g);
   click(g.root, /^See the whole story/);
   assert(/pension a year/.test(text(g.root)), 'the pension is shown');
 });
@@ -702,4 +719,61 @@ test('the coast option shows no skills stat and a calm "how it felt"', () => {
   begin(done);
   finish(done);
   assert(/How it felt: a sustainable pace, with no burnout\./.test(text(done.root)), 'coasting is balanced');
+});
+
+// ---- instinct cards ----
+
+const playToCard = (g) => {
+  while (!buttonWithText(g.root, /^Play these/)) click(g.root, /^Next$/);
+  click(g.root, /^Play these/);
+};
+
+test('a market crash pauses the stage with a card that names the gut and both answers', () => {
+  const g = newGame(4271);
+  begin(g);
+  playToCard(g);
+  const t = text(g.root);
+  assert(/Markets are crashing/.test(t), `the crash card: ${t.slice(0, 200)}`);
+  assert(/Early career · age \d+/.test(t), 'where we are');
+  assert(/fallen about \d+%/.test(t), 'what happened');
+  assert(/Arjun's gut: /.test(t), "the persona's gut");
+  const cards = findAll(g.root, n => n.tagName === 'BUTTON' && hasClass(n, 'option-card'));
+  assertEqual(cards.length, 2);
+  assert(/Sell my shares/.test(cards[0].textContent) && /your gut says this/.test(cards[0].textContent), 'the instinct is marked');
+  assert(/Hold on/.test(cards[1].textContent) && !/your gut says this/.test(cards[1].textContent));
+  assert(!cards.some(c => c.attrs['aria-pressed'] === 'true'), 'nothing is pre-selected');
+  assert(/Your shares are worth ₹/.test(cards[0].textContent), 'what is at stake');
+  assert(!/undefined|null|NaN|false|\[object/.test(t), 'no stray words');
+});
+
+test('following the crash card sells the shares and the stage result says so; resisting says it held', () => {
+  const run = (choice) => {
+    const g = newGame(4271);
+    begin(g);
+    playToCard(g);
+    const first = findAll(g.root, n => hasClass(n, `nudge-${choice}`))[0];
+    first.click();
+    resolveNudges(g, 'resist');
+    return text(g.root);
+  };
+  assert(/You sold your shares for ₹[^ ]+( \w+)? during the crash/.test(run('follow')), 'sold');
+  assert(/You held your shares through the crash\./.test(run('resist')), 'held');
+});
+
+test('the end screen counts how often you followed your gut', () => {
+  const g = newGame(4271);
+  begin(g);
+  for (let i = 0; i < stages.length; i++) {
+    playStageScreen(g);
+    click(g.root, /^(On to|See the whole story)/);
+  }
+  assert(/You faced \d+ instinct cards?: you followed your gut 0 times and resisted \d+\./.test(text(g.root)), 'instinct line');
+  const h = newGame(4271);
+  begin(h);
+  playToCard(h);
+  findAll(h.root, n => hasClass(n, 'nudge-follow'))[0].click(); // panic
+  resolveNudges(h, 'resist');
+  while (buttonWithText(h.root, /^On to/)) { click(h.root, /^On to/); playStageScreen(h); }
+  click(h.root, /^See the whole story/);
+  assert(/followed your gut [1-9]/.test(text(h.root)) && /You sold your shares in a crash\./.test(text(h.root)), 'followed once or more');
 });

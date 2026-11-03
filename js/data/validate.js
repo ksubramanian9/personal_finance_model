@@ -63,6 +63,10 @@ export const schemas = {
     events: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  nudges: {
+    perStage: 'number', minStakeReal: 'number', cards: 'object',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   capability: {
     gainPerYear: 'number', decayPct: 'number', maxGrowthBoost: 'number', regimeMult: 'object', ageMult: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

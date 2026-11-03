@@ -1,9 +1,11 @@
 import { createState } from '../engine/state.js';
-import { nextStage, playStage, askedDecisions, playRetirement } from '../engine/stages.js';
+import { nextStage, askedDecisions, playRetirement, beginStage, continueStage } from '../engine/stages.js';
+import { answerNudge } from '../engine/nudges.js';
 import { stageSummary } from '../engine/summary.js';
 import { h, mount } from './dom.js';
 import { renderPersonaPicker } from './screens/personaPicker.js';
 import { renderStageDecisions, renderStageResult } from './screens/stage.js';
+import { renderNudge } from './screens/nudge.js';
 import { renderLifeSummary } from './screens/lifeSummary.js';
 import { createDisclosure } from './disclosure.js';
 
@@ -64,24 +66,43 @@ export function createFlow(root, data, session) {
     });
   }
 
+  // Plays the chosen stage, stopping at any instinct card for the player's answer.
   function playCurrentStage() {
     const { stage } = game;
-    const picked = askedDecisions(stage, game.state, game.picks).map(ref => {
+    game.picked = askedDecisions(stage, game.state, game.picks).map(ref => {
       const o = data.decisions[ref.id].options.find(x => x.id === game.picks[ref.id]);
       return { emoji: o.emoji, title: o.title };
     });
-    game.state = playStage(game.state, data.params, stage, data.decisions, game.picks);
+    const begun = beginStage(game.state, data.params, stage, data.decisions, game.picks);
+    game.state = begun.state;
+    game.endAge = begun.endAge;
+    advance();
+  }
+
+  function advance() {
+    const { stage } = game;
+    const r = continueStage(game.state, data.params, stage, game.endAge);
+    game.state = r.state;
+    if (r.card) {
+      renderNudge(root, {
+        persona: game.persona, stages: data.stages, stage, card: r.card, def: data.params.nudges.cards[r.card.id],
+        state: game.state, doneIds: doneIds().filter(id => id !== stage.id), // this stage is still being played
+        onChoose: (choice) => { game.state = answerNudge(game.state, data.params, stage, r.card, choice); advance(); },
+      });
+      return;
+    }
     renderStageResult(root, {
       stages: data.stages,
       stage,
-      summary: stageSummary(game.state.history, game.startIdx),
+      summary: stageSummary(game.state.history, game.startIdx, game.state.nudgeLog.filter(l => l.stageId === stage.id)),
       regimes: data.params.macro.regimes,
       eventDefs,
+      cardDefs: data.params.nudges.cards,
       instruments: data.params.instruments,
       disclosure,
       years: game.state.history.slice(game.startIdx),
       doneIds: doneIds(),
-      picked,
+      picked: game.picked,
       nextStage: nextStage(data.stages, game.state),
       onNext: enterNextStage,
     });
