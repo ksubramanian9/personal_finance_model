@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smoke test</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    #report { font: 16px/1.5 system-ui, sans-serif; margin: 1rem 2rem; }
+    #report .pass { color: #1f7a4d; } #report .fail { color: #b3261e; font-weight: 600; }
+    #under-test { border-top: 4px solid #ccc; margin-top: 2rem; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div id="report"><h1>Browser smoke test</h1><p>Plays whole lives through the real screens in this browser. Serve the folder with liveserver and open this page.</p></div>
+  <main id="under-test"></main>
+  <script type="module" src="js/tests/smoke.js"></script>
+</body>
+</html>

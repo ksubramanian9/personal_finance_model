@@ -1,5 +1,5 @@
-// A just-big-enough DOM for smoke-testing screens in Node. In a real browser the real
-// document is used and installFakeDom() does nothing.
+// A just-big-enough DOM for testing screens without a browser. The tests inspect it directly (attrs, dispatch),
+// so tests.html uses it too: ui/dom.js builds elements with globalThis.__testDocument when it is set.
 
 class FakeText {
   constructor(text) { this.nodeType = 3; this.data = String(text); }
@@ -38,17 +38,19 @@ class FakeElement {
   }
 }
 
+const fakeDocument = {
+  createElement: (tag) => new FakeElement(tag),
+  createElementNS: (ns, tag) => Object.assign(new FakeElement(tag), { namespace: ns }),
+  createTextNode: (t) => new FakeText(t),
+};
+
 export function installFakeDom() {
-  if (typeof document !== 'undefined') return false;
-  globalThis.document = {
-    createElement: (tag) => new FakeElement(tag),
-    createElementNS: (ns, tag) => Object.assign(new FakeElement(tag), { namespace: ns }),
-    createTextNode: (t) => new FakeText(t),
-  };
+  globalThis.__testDocument = fakeDocument;
+  if (typeof document === 'undefined') globalThis.document = fakeDocument; // Node: also make it the global one
   return true;
 }
 
-export const createRoot = () => document.createElement('main');
+export const createRoot = () => fakeDocument.createElement('main');
 
 // ---- query helpers (work on real elements too) ----
 

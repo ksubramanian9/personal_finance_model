@@ -167,7 +167,8 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - Replay a run: `index.html?seed=4271`.
 
 ## Testing approach
-- **UI flows run in Node** against `fakeDom.js` (`flow.test.js`): play whole games by clicking buttons, check Back/replay behavior, retirement-age labels, and that no screen shows stray text. The fake DOM mimics the browser by turning non-node children into text, which is what exposed a real bug.
+- **UI flows run against `fakeDom.js`** (`flow.test.js`, `charts.test.js`), in Node and in the browser: play whole games by clicking buttons, check Back/replay behavior, retirement-age labels, and that no screen shows stray text. `ui/dom.js` builds elements with `globalThis.__testDocument` when a test has installed the fake (a real browser's own `document` cannot be replaced). The fake DOM mimics the browser by turning non-node children into text, which is what exposed a real bug.
+- **`smoke.html`** (`js/tests/smoke.js`) is the real-browser check: serve the folder with liveserver and open it. It plays whole lives through the real screens with the real DOM and data files, using an in-memory store so it never touches a saved life.
 - Engine tests assert **invariants** (every year's net-worth change is fully explained; balances never negative; determinism; save/reload continues identically) rather than only golden numbers.
 - One **golden-value** test pins seed 4271. When parameters change on purpose, re-pin it; if they did not change, something broke.
 - Data tests load the real files and also feed deliberately broken ones to check error messages.
@@ -188,7 +189,7 @@ Tracked in [implementation-plan](implementation-plan.md). New modules expected: 
 - Term life insurance (planned alongside health in the intent) is not built: nothing in the game can kill the breadwinner yet. It belongs with the family work in increment 8.
 - Event odds, sizes and age/economy multipliers are game tuning (confidence low).
 - Equity and gold volatilities, the gold safe-haven pattern, FD rates and the regime shares are estimates (confidence low); see provenance in the data files.
-- Screens are tested through the fake DOM, plus a few headless-Edge screenshots of serialized snapshots during increment 6 (stage result with the "why" open, the end screen with a decade open). Nobody has yet clicked through the live page in a real browser.
+- The whole test suite (364 tests) passes in a real browser (Edge, via `tests.html`) as well as in Node, and `smoke.html` plays whole lives through the real screens with the real DOM and real data (31 checks: both personas to the verdict, instinct cards, Level 2 charts and the keyboard, resume, the Advanced panel, localStorage). Both were run in headless Edge in increment 10. Nobody has yet used it on a phone or in Safari or Firefox.
 - Charts are light-theme only (the app has no dark mode). Chart text is SVG scaled to the container, so on a phone the axis labels become small; the readout and table carry the same facts in normal type.
 - The "fixed draws per step" convention above has no test yet.
 - Seeds from `?seed=` are used as given; a seed can also be typed under Advanced. The overrides are three shifts and a tax switch, not a full parameter editor.
