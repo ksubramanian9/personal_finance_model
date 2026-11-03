@@ -31,6 +31,7 @@ Pick a persona. Move through life stages (early career, family building, peak ea
 | Randomness, regimes, nudges | [randomness](intent/randomness.md) |
 | Capability and income growth | [capability](intent/capability.md) |
 | Family: marriage, children, parents | [family](intent/family.md) |
+| Housing: rent, buying, the home loan | [housing](intent/housing.md) |
 | India scope: instruments, tax, costs | [india-scope](intent/india-scope.md) |
 | Outcomes and the debrief | [outcomes](intent/outcomes.md) |
 | The three disclosure levels | [ux-disclosure](intent/ux-disclosure.md) |

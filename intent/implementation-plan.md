@@ -73,7 +73,7 @@ data/       personas/*.json  stages.json  events.json  instruments.json
 ### 8. Family and housing (visible: marriage/kids/parents/home choices)
 - `family.js`: marriage timing + wedding level, children count/timing with education inflation, parents' support and health events, spouse income parameter.
 - `housing.js`: rent vs buy with EMI; city-tier parameter; property growth tied to regime.
-- **Open question to settle first:** housing economics (#1).
+- **Housing economics settled** (open question #1, decisions 38 to 42, [housing](housing.md)): one buy-or-rent choice, price follows the economy mildly, fixed 20-year loan, must afford the down payment, home counts in net worth but is not spendable. Source its numbers while building.
 - **See:** a full family-building stage with big choices; home purchase creates an EMI line and a dominant asset on the net-worth chart.
 
 ### 9. Behavior, capability and the ending (visible: nudges and the verdict)

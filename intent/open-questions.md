@@ -2,7 +2,7 @@
 
 **Summary:** Not yet decided. Resolve before the relevant build step.
 
-1. **Housing.** Rent vs buy economics, city tiers, how property appreciation and EMI interact with regimes.
+1. ~~**Housing.**~~ *Resolved in the housing grilling; see [housing](housing.md) and decisions 38 to 42. Its numbers are sourced while building increment 8.*
 2. **Mobile and accessibility.** *Provisional default (increment 0):* responsive layout down to phone width, dark ink on bright fills for AA contrast, visible keyboard focus, reduced-motion respected. Revisit in the polish pass.
 3. **Disclaimer wording.** *Provisional default (increment 0):* footer on every page, "Educational tool. Illustrative numbers, not financial or tax advice." Revisit in the polish pass.
 4. **Persistence in v1.** How much `localStorage` (resume a run? remember the seed?).
