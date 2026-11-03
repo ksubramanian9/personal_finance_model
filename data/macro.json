@@ -5,22 +5,22 @@
     "boom": {
       "name": "Boom", "emoji": "☀️",
       "blurb": "Markets are cheerful and companies are hiring.",
-      "inflationPct": 5.8, "wageAdjPct": 2
+      "inflationPct": 5.1, "wageAdjPct": 2
     },
     "normal": {
       "name": "Steady", "emoji": "⛅",
       "blurb": "A fairly ordinary year.",
-      "inflationPct": 5.0, "wageAdjPct": 0.5
+      "inflationPct": 4.3, "wageAdjPct": 0.5
     },
     "slowdown": {
       "name": "Slowdown", "emoji": "🌧️",
       "blurb": "Growth cools, hiring freezes and raises shrink.",
-      "inflationPct": 4.5, "wageAdjPct": -2
+      "inflationPct": 3.8, "wageAdjPct": -2
     },
     "crisis": {
       "name": "Crisis", "emoji": "⛈️",
       "blurb": "Markets crash, jobs get shaky and prices still rise.",
-      "inflationPct": 6.0, "wageAdjPct": -4
+      "inflationPct": 5.3, "wageAdjPct": -4
     }
   },
   "transitions": {
@@ -30,7 +30,7 @@
     "crisis":   { "boom": 0.05, "normal": 0.35, "slowdown": 0.20, "crisis": 0.40 }
   },
   "provenance": {
-    "basis": "Illustrative four-state economy, tuned so the long-run mix is about 23% boom, 50% steady, 18% slowdown, 10% crisis. Inflation per regime averages about 5.2% across the mix; sources put India's CPI average at about 5.6% for 2012-2026 and 4.9% in the RBI inflation-targeting era (target 4%, band 2-6%; RBI and Trading Economics via secondary summaries, not checked against MoSPI). Crises last about 1.7 years on average. wageAdjPct is the extra raise (in percentage points) a fully cyclical job gets that year, averaging about zero across the mix.",
+    "basis": "Illustrative four-state economy, tuned so the long-run mix is about 23% boom, 50% steady, 18% slowdown, 10% crisis. Inflation per regime averages about 4.5% across the mix (boom 5.1, steady 4.3, slowdown 3.8, crisis 5.3), so prices rise about 5.3 times over 38 years. It was 5.2% until the November 2026 review: that matched the 2012-2026 CPI average of about 5.6% but looked high for a 60-year view. 4.5% sits between the RBI's 4% target (band 2-6%) and the 4.9% average of the targeting era; recent years were lower (RBI put FY2025-26 near 2.1%) and FY2026-27 is projected near 5%. Sources are secondary summaries (RBI, Trading Economics, press), not checked against MoSPI. Crises last about 1.7 years on average. wageAdjPct is the extra raise (in percentage points) a fully cyclical job gets that year, averaging about zero across the mix.",
     "confidence": "low",
     "asOf": 2026
   }

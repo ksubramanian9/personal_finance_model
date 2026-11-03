@@ -24,7 +24,7 @@
     "siblingSupportMonthly": 0
   },
   "career": {
-    "salaryGrowthPct": 6,
+    "salaryGrowthPct": 5.3,
     "jobSwitchJumpPct": 0,
     "layoffRisk": 0,
     "cyclicality": 0.15,
@@ -37,7 +37,7 @@
     "overConservatism": 0.8
   },
   "provenance": {
-    "basis": "Illustrative: entry-level state government pay including allowances, mid-2020s",
+    "basis": "Illustrative: entry-level state government pay including allowances, mid-2020s. Base pay growth of 5.3% a year is nominal: about 0.8 points above the 4.5% average inflation, the same real growth as when it was 6% against 5.2% inflation.",
     "confidence": "low",
     "asOf": 2025
   }

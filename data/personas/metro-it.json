@@ -24,7 +24,7 @@
     "siblingSupportMonthly": 5000
   },
   "career": {
-    "salaryGrowthPct": 7,
+    "salaryGrowthPct": 6.3,
     "jobSwitchJumpPct": 30,
     "layoffRisk": 0.045,
     "cyclicality": 1,
@@ -37,7 +37,7 @@
     "overConservatism": 0.1
   },
   "provenance": {
-    "basis": "Illustrative: typical fresher package at an Indian product company, mid-2020s",
+    "basis": "Illustrative: typical fresher package at an Indian product company, mid-2020s. Base pay growth of 6.3% a year is nominal: about 1.8 points above the 4.5% average inflation, the same real growth as when it was 7% against 5.2% inflation.",
     "confidence": "low",
     "asOf": 2025
   }

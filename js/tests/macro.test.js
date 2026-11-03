@@ -97,9 +97,9 @@ test('gold: long-run compounding is near 11% in rupee terms', () => {
   assert(g.geometric > 10 && g.geometric < 12.5, `compounded ${g.geometric}`);
 });
 
-test('inflation: the long-run mix averages between the targeting-era 4.9% and the 2012-26 average 5.6%', () => {
+test('inflation: the long-run mix averages between the RBI 4% target and the targeting-era 4.9%', () => {
   const infl = params.macro.order.reduce((a, r) => a + pi[r] * params.macro.regimes[r].inflationPct, 0);
-  assert(infl > 4.8 && infl < 5.7, `average inflation ${infl}`);
+  assert(infl > 4.0 && infl < 4.9, `average inflation ${infl}`);
 });
 
 test('real returns are ordered the way Indian savers experience them', () => {
