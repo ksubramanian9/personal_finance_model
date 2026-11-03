@@ -1,0 +1,26 @@
+{
+  "lifespan": {
+    "meanAge": 80,
+    "sdYears": 8,
+    "minAge": 68,
+    "maxAge": 100,
+    "provenance": {
+      "basis": "How long a life lasts, drawn once per life from a bell curve and clipped. India's official abridged life tables (Sample Registration System, 2015-19, read from a mirror of the ORGI report) give about 18.3 more years at age 60, so about 78; the mean is set to 80 for someone retiring in the 2060s after decades of improvement. The spread of 8 years is a rough estimate, not sourced. Nobody dies before 68, so every life reaches its retirement age (at most 65). It does not depend on persona, health cover or choices.",
+      "confidence": "low",
+      "asOf": 2026
+    }
+  },
+  "pension": {
+    "shareOfLastPay": 0.3,
+    "provenance": {
+      "basis": "For a persona with a pension: 30% of the last pay, rising with prices. The Unified Pension Scheme for central government employees (PFRDA and several news explainers) gives 50% of the average basic pay of the last 12 months after 25 years of service. Basic pay is roughly 60% of the whole salary (the rest is allowances), and pay in the game is the whole salary, so 50% of basic is about 30% of pay (the 60% share is an estimate, not sourced). States differ and the IT persona has none. Tax is charged as on salary. No family pension, no lump sum.",
+      "confidence": "medium",
+      "asOf": 2026
+    }
+  },
+  "provenance": {
+    "basis": "After the retirement age the game keeps playing the years until the end of life, with no pay. Everyday costs become the chosen share (Comfortable 100%, Modest 75%, Lean 55%) of the last year's costs. Parents' support ends at retirement. Employer health cover ends too. Provident funds unlock and are drawn after fixed deposits. Home loans, rent and children's costs carry on.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

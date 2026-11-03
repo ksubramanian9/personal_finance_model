@@ -12,7 +12,7 @@ const fetchImpl = await getFetch();
 const params = await loadParams({ fetchImpl });
 const personas = await loadPersonas({ fetchImpl });
 const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60', retirementStyle: 'comfortable' };
 
 const life = (persona, seed, picks = base) => {
   let s = createState(persona, params, { seed, retirementAge: 60 });
@@ -74,7 +74,7 @@ test('bridge: only what you chose is charged: no cover, no premiums; no learning
 });
 
 test('bridge lists every line the UI groups, in order', () => {
-  assertEqual(BRIDGE_ORDER, ['income', 'windfalls', 'spouse', 'living', 'children', 'wedding', 'rent', 'homeUpkeep', 'homeInterest', 'homeBuying', 'homeSelling', 'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', 'growth', 'homeGrowth', 'cashInterest', 'loanInterest', 'inflation']);
+  assertEqual(BRIDGE_ORDER, ['income', 'windfalls', 'spouse', 'living', 'drift', 'children', 'wedding', 'rent', 'homeUpkeep', 'homeInterest', 'homeBuying', 'homeSelling', 'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', 'growth', 'homeGrowth', 'cashInterest', 'loanInterest', 'inflation']);
   assertEqual(Object.keys(bridge(life(personas[1], 1).history, { real: true }).items), BRIDGE_ORDER);
 });
 

@@ -5,7 +5,7 @@ import { homeOffer } from './housing.js';
 // (data/stages.js rejects unknown keys when the file loads).
 // "alloc.<id>" keys live in state.alloc.<id>; the rest are top-level state fields.
 const SETTABLE = ['savingsRate', 'learningPct', 'growthBoost', 'retirementAge', 'emergencyMonths', 'healthCover', 'healthPremium', 'buyHome',
-  'marryAge', 'weddingReal', 'spousePct', 'childPlan'];
+  'marryAge', 'weddingReal', 'spousePct', 'childPlan', 'retireSpendPct'];
 const ALLOC = 'alloc.';
 
 function readEffect(state, key) {
@@ -70,6 +70,11 @@ export function applyPicks(state, stage, decisions, picks, params = null) {
   }
   s.choices[stage.id] = Object.fromEntries(asked.map(ref => [ref.id, picks[ref.id]]));
   return s;
+}
+
+// After the last stage: the years of retirement, until the end of life.
+export function playRetirement(state, params) {
+  return runUntil(state, params, state.deathAge);
 }
 
 // Applies the picks, then plays the years of this stage.

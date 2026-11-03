@@ -460,3 +460,10 @@ h1, h2, h3 {
 .option-card.unavailable { opacity: 0.6; cursor: not-allowed; }
 .option-card.unavailable:hover { transform: none; box-shadow: none; }
 .option-extra { font-size: 0.95rem; color: var(--c-inkSoft); text-align: left; }
+
+/* The verdict on a finished life */
+.verdict { border-left-width: 12px; }
+.verdict-lasted { border-left-color: var(--c-good); }
+.verdict-soldHome { border-left-color: var(--c-warn); }
+.verdict-ranOut { border-left-color: var(--c-bad); }
+.verdict-line { font-family: var(--font-display, inherit); font-size: 1.5rem; margin: 0.25rem 0 0.75rem; }

@@ -16,6 +16,7 @@ export const EFFECT_RANGES = {
   weddingReal: [0, 5e7],
   spousePct: [0, 1],
   childPlan: [0, 3],
+  retireSpendPct: [0.3, 1.5],
 };
 // Conditions a stage's decision may use in "onlyIf" (the rules are in engine/stages.js).
 const CONDITIONS = ['renting', 'single', 'married', 'childless', 'marriagePlanned', 'marriedOrPlanned'];

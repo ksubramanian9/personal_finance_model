@@ -20,7 +20,7 @@ const personas = await loadPersonas({ fetchImpl });
 const { stages, decisions } = await loadStages({ fetchImpl, instrumentIds: params.instruments.map(i => i.id) });
 const regimes = params.macro.regimes;
 const eventDefs = Object.fromEntries(params.events.map(e => [e.id, e]));
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60', retirementStyle: 'comfortable' };
 
 function life(persona, seed, picks = base) {
   let s = createState(persona, params, { seed, retirementAge: 60 });

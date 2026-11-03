@@ -18,7 +18,7 @@ const { decisions, stages } = data;
 
 const fresh = (persona = aarav, seed = 4271, retirementAge = 60) =>
   createState(persona, params, { seed, retirementAge });
-const balanced = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
+const balanced = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60', retirementStyle: 'comfortable' };
 
 // Plays a whole life stage by stage with the same picks every time.
 function playLife(state, picks) {

@@ -10,7 +10,7 @@ Working rules for every increment:
 - Pick up `intent/open-questions.md` items just before the increment that needs them (flagged below).
 - At the end of each increment, update [architecture.md](architecture.md) so it describes the code as built.
 
-Progress: increments 0, 1, 2, 3, 4, 5, 6, 7 done; 8 done (housing, then family).
+Progress: increments 0, 1, 2, 3, 4, 5, 6, 7 done; 8 done (housing, then family); 9 in parts (ending and lifestyle drift done; nudges and the refined skills model next).
 
 ## Target layout
 ```

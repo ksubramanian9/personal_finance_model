@@ -5,6 +5,7 @@ import { netWorth } from './state.js';
 import { computeTax, buyLot, sellLots, cloneLots } from './tax.js';
 import { buyHome, payLoanYear, saleProceeds } from './housing.js';
 import { marry, birthDue, childCosts, spouseGross } from './family.js';
+import { retire } from './retirement.js';
 
 const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 
@@ -18,7 +19,7 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 //
 // Order within the year:
 //   0. a home chosen at the stage start is bought (down payment and one-off costs go out now);
-//      a planned wedding or birth happens
+//      a planned wedding or birth happens; at the retirement age the pay stops (see retirement.js)
 //   1. the economy moves to this year's regime; every instrument gets its return for that regime
 //   2. holdings and cash earn; debt accrues interest; homes change in price
 //   3. life events happen (layoff, hospital bill, windfall...); insurance pays what it covers;
@@ -26,7 +27,7 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 //   4. debt is paid down from income, up to a share of income left after expenses
 //   5. surplus is split into saved (first topping up the emergency fund in cash, the rest spread
 //      over instruments by the player's allocation) and consumed; a deficit is drawn from cash,
-//      then liquid instruments in drawOrder (provident funds are locked in, never sold), then, if
+//      then liquid instruments in drawOrder (provident funds are locked in until retirement), then, if
 //      borrowing would swamp the player, the home; then borrowed. Tax on gains from selling is
 //      added to the shortfall
 //   6. salary, costs and prices roll forward to next year (raises follow the economy)
@@ -45,6 +46,9 @@ export function tickYear(state, params) {
   let birth = false;
   if (s.marryAge > 0 && !s.spouse && s.age >= s.marryAge) marriage = marry(s, params);
   if (birthDue(s, params)) { s.children.push(s.year); birth = true; }
+
+  // 0c. the pay stops
+  if (s.age >= s.retirementAge && !s.retired) retire(s, params);
 
   // 1. the economy and market returns
   const regime = nextRegime(s.regime, nextFloat(s.rng), params.macro);
@@ -87,7 +91,8 @@ export function tickYear(state, params) {
 
   // 3. life events, then the tax on this year's pay and interest (tax on gains from selling comes later)
   const ev = settleEvents(s, rollEvents(s, params.events, regime), params.insurance, priceIndexStart);
-  const income = ev.salaryReceived + ev.severance;
+  const pensionIncome = s.pension;
+  const income = ev.salaryReceived + ev.severance + pensionIncome;
   const extraIncome = ev.extraIncome;
   const learning = s.salary * s.learningPct;
   const premium = s.healthPremium * priceIndexStart * (1 + (params.insurance.premiumAgeLoadingPct / 100) * Math.max(0, s.age - 30));
@@ -132,7 +137,10 @@ export function tickYear(state, params) {
   } else {
     // Selling shares or gold can trigger tax, which has to be raised by selling a little more. The
     // extra sale triggers a little more tax, so repeat until the tax on the sale stops changing.
-    const sellOrder = params.instruments.filter(i => i.liquid).sort((a, b) => a.drawOrder - b.drawOrder);
+    // Provident funds open up once the pay has stopped.
+    const opens = (i) => i.liquid || (s.retired && i.retiredDrawOrder !== undefined);
+    const key = (i) => (s.retired && i.retiredDrawOrder !== undefined ? i.retiredDrawOrder : i.drawOrder);
+    const sellOrder = params.instruments.filter(opens).sort((a, b) => key(a) - key(b));
     const plan = (raise) => {
       let need = raise;
       const p = { fromCash: Math.min(s.cash, need), sold: {}, holdings: { ...s.holdings }, lots: cloneLots(s.lots), gains: {}, sellsHome: false, homeCash: 0 };
@@ -206,6 +214,8 @@ export function tickYear(state, params) {
     income, extraIncome, expenses, learning, premium, eventCost: ev.eventCost, insurancePaid: ev.insurancePaid,
     taxIncome, taxInvest, // tax on pay and windfalls, and the extra tax investing brought (both are in expenses)
     rent: rentPaid, homeUpkeep, homeOutlay, // what housing cost (all in expenses)
+    pension: pensionIncome, retired: s.retired,
+    drift: s.livingCost * (1 - 1 / s.creepIndex), // the part of everyday costs that crept up with pay (inside expenses)
     spouseNet, childCost, weddingCost,      // a partner's pay after tax (income); children and the wedding (in expenses)
     family: [...(marriage ? ['married'] : []), ...(birth ? ['birth'] : [])],
     married: s.spouse !== null, childrenCount: s.children.length,
@@ -233,14 +243,21 @@ export function tickYear(state, params) {
   // A fully cyclical job (1) gets the regime's full raise adjustment; a stable one barely feels it.
   // Raises never go negative.
   const raise = Math.max(0, s.salaryGrowth + s.growthBoost + s.cyclicality * (R.wageAdjPct / 100));
+  const salaryBefore = s.salary;
   s.age += 1;
   s.year += 1;
   s.priceIndex = priceIndexEnd;
   s.salary *= 1 + raise;
   if (ev.payHit) s.salary *= 1 - ev.payHit;   // the next job after a layoff pays less
   if (ev.payJump) s.salary *= 1 + ev.payJump; // the offer you took
+  s.pension *= 1 + inflation; // the pension is linked to prices
   s.educationIndex *= 1 + params.family.children.educationPremiumPct / 100;
-  s.livingCost *= 1 + inflation;
+  // Slow drift: when pay rises faster than prices, part of the extra goes into a more expensive way of
+  // living, and it never comes back down. The share is the persona's lifestyleCreep.
+  const realPayGrowth = salaryBefore > 0 ? s.salary / salaryBefore / (1 + inflation) - 1 : 0;
+  const drift = realPayGrowth > 0 ? 1 + s.lifestyleCreep * realPayGrowth : 1;
+  s.creepIndex *= drift;
+  s.livingCost *= (1 + inflation) * drift;
   s.support *= 1 + inflation;
   if (s.rent > 0 && !homeSale) s.rent *= 1 + inflation; // rent follows prices
   return s;

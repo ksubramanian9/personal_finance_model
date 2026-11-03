@@ -369,6 +369,39 @@
         }
       ]
     },
+    "retirementStyle": {
+      "title": "Life after work",
+      "question": "How will you live once you stop working?",
+      "options": [
+        {
+          "id": "comfortable",
+          "emoji": "🛋️",
+          "title": "Comfortable",
+          "blurb": "Keep living just as you do now: all of your everyday costs carry on.",
+          "effects": {
+            "retireSpendPct": 1
+          }
+        },
+        {
+          "id": "modest",
+          "emoji": "🍵",
+          "title": "Modest",
+          "blurb": "Cut back a little: about three-quarters of your everyday costs.",
+          "effects": {
+            "retireSpendPct": 0.75
+          }
+        },
+        {
+          "id": "lean",
+          "emoji": "🥗",
+          "title": "Lean",
+          "blurb": "Live carefully on a little over half of your everyday costs.",
+          "effects": {
+            "retireSpendPct": 0.55
+          }
+        }
+      ]
+    },
     "retire": {
       "title": "Retirement age",
       "question": "When do you want to stop working?",
@@ -576,12 +609,16 @@
         {
           "id": "retire",
           "question": "Last call: when do you want to stop working?"
+        },
+        {
+          "id": "retirementStyle",
+          "question": "And once you stop: nobody knows how long they will live (planners often use 90). How will you live?"
         }
       ]
     }
   ],
   "provenance": {
-    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json). Marriage, wedding size, the partner's work and children are asked only when they apply (see onlyIf in engine/stages.js). Wedding sizes are game presets of 5, 15 and 40 lakh in today's rupees; see family.json for the household and child cost assumptions.",
+    "basis": "Illustrative game tuning: savings shares, learning cost as a share of pay, and the extra yearly pay growth each learning level buys. Not drawn from data. Replaced by the three-track capability model in v2. The three savings mixes are game presets; new savings follow the mix, existing holdings are never sold to rebalance. Insurance covers and premiums, and the emergency-fund sizes, are illustrative round numbers. The home decision is offered only while the player rents; whether they can afford it is worked out from their cash and savings (see housing.json). Marriage, wedding size, the partner's work and children are asked only when they apply (see onlyIf in engine/stages.js). Wedding sizes are game presets of 5, 15 and 40 lakh in today's rupees; see family.json for the household and child cost assumptions. Retirement spending levels (100%, 75% and 55% of the last working year's everyday costs) are game presets; see retirement.json for pensions, how long life lasts and what changes at retirement.",
     "confidence": "low",
     "asOf": 2025
   }

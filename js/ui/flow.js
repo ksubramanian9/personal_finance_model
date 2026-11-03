@@ -1,5 +1,5 @@
 import { createState } from '../engine/state.js';
-import { nextStage, playStage, askedDecisions } from '../engine/stages.js';
+import { nextStage, playStage, askedDecisions, playRetirement } from '../engine/stages.js';
 import { stageSummary } from '../engine/summary.js';
 import { h, mount } from './dom.js';
 import { renderPersonaPicker } from './screens/personaPicker.js';
@@ -88,6 +88,8 @@ export function createFlow(root, data, session) {
   }
 
   function showLifeSummary() {
+    // The rest of life: the retirement years, until the end.
+    if (game.state.age < game.state.deathAge) game.state = playRetirement(game.state, data.params);
     renderLifeSummary(root, {
       persona: game.persona,
       state: game.state,

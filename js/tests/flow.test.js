@@ -155,12 +155,18 @@ test('the last stage offers a retirement age, and the button counts the years it
   begin(g);
   for (let i = 0; i < 3; i++) { playStageScreen(g); click(g.root, /^On to/); }
   assert(/Pre-retirement/.test(text(g.root)), 'in the last stage');
-  for (let i = 0; i < NLAST - 1; i++) click(g.root, /^Next$/);
+  for (let i = 0; i < NLAST - 2; i++) click(g.root, /^Next$/);
   assert(/when do you want to stop working/i.test(text(g.root)), 'retirement question');
+  click(g.root, /^Next$/);
+  assert(/How will you live once|how will you live/i.test(text(g.root)), 'then how to live in retirement');
   assert(buttonWithText(g.root, /^Play these 8 years$/), 'defaults to 52 -> 60');
+  click(g.root, /^Back$/);
   pickCard(g.root, /At 65/);
+  click(g.root, /^Next$/);
   assert(buttonWithText(g.root, /^Play these 13 years$/), 'picking 65 changes the count');
+  click(g.root, /^Back$/);
   pickCard(g.root, /At 55/);
+  click(g.root, /^Next$/);
   assert(buttonWithText(g.root, /^Play these 3 years$/), 'picking 55 changes the count');
 });
 
@@ -168,7 +174,7 @@ test('retiring at 65 in the last stage runs the life to 65', () => {
   const g = newGame();
   begin(g);
   finish(g, { 3: { [qIndex(3, 'retire')]: /At 65/ } });
-  assert(/At 65 you have about/.test(text(g.root)), text(g.root).slice(0, 300));
+  assert(/At 65 you had about/.test(text(g.root)), text(g.root).slice(0, 300));
 });
 
 test('same seed and same choices give the same ending, different seed a different one', () => {
@@ -359,7 +365,7 @@ test("a decade's Why? opens its own chart, its money story and a year-by-year ta
   assertEqual(bodyRows, 10);
   assert(/Forces at work/.test(text(g.root)) && /Prices rose \d+% over these 10 years/.test(text(g.root)), 'named forces');
   assert(/What came in/.test(text(g.root)) && /Investment growth/.test(text(g.root)), 'bridge lines');
-  assertEqual(btns.map(b => b.attrs['aria-expanded']), ['false', 'true', 'false', 'false']);
+  assertEqual(btns.map(b => b.attrs['aria-expanded']), btns.map((_, k) => String(k === 1)));
 });
 
 test('opening another decade replaces the first one', () => {
@@ -370,7 +376,7 @@ test('opening another decade replaces the first one', () => {
   btns[2].click();
   assert(/Your 40s, in detail/.test(text(g.root)) && !/Your 20s, in detail/.test(text(g.root)), '40s replaced 20s');
   assertEqual(tables(g.root).length, 1);
-  assertEqual(btns.map(b => b.attrs['aria-expanded']), ['false', 'false', 'true', 'false']);
+  assertEqual(btns.map(b => b.attrs['aria-expanded']), btns.map((_, k) => String(k === 2)));
 });
 
 test('the bridge shows lines that explain the change, each with a signed amount', () => {
@@ -430,7 +436,7 @@ test('"Hide the why" closes everything again', () => {
   assertEqual(whyRegion(g.root).hidden, true);
   assertEqual(figures(g.root).length, 0);
   assertEqual(tables(g.root).length, 0);
-  assertEqual(whyButtons(g.root).map(b => b.attrs['aria-expanded']), ['false', 'false', 'false', 'false']);
+  assertEqual(whyButtons(g.root).map(b => b.attrs['aria-expanded']), whyButtons(g.root).map(() => 'false'));
 });
 
 test('a stage result has its own Why button, and the level sticks for later stages', () => {
@@ -626,4 +632,47 @@ test('a married player is not asked about marriage again, and the choices recap 
   click(g.root, /^Play these/);
   click(g.root, /^On to/);
   assert(!/Still single/.test(text(g.root)), 'no marriage question now');
+});
+
+// ---- the ending ----
+
+test('the end of the story answers "could you stop working, and did the money last?" in words', () => {
+  const g = newGame(4271);
+  begin(g);
+  for (let i = 0; i < stages.length; i++) {
+    assert(!/your life ended at/i.test(text(g.root)), 'the end age is hidden until the end');
+    playStageScreen(g);
+    click(g.root, /^(On to|See the whole story)/);
+  }
+  const t = text(g.root);
+  assert(/Could you stop working, and did the money last\?/.test(t), 'the question');
+  assert(/(Yes|No)[.,]/.test(t) && /You stopped at 60/.test(t), `an answer: ${t.slice(0, 300)}`);
+  assert(/your life ended at/.test(t) && /savings when you stopped/.test(t) && /left at the end/.test(t), 'the facts');
+  assert(/Your 60s/.test(t), 'decade cards run past retirement');
+  assert(/At 60 you had about/.test(t));
+  assert(!/undefined|null|NaN|false|\[object|Infinity/.test(t), 'no stray words');
+});
+
+test('the retirement-style question is asked at the last stage, and a pension shows for the government officer', () => {
+  const g = newGame(4271);
+  begin(g, 1);
+  for (let i = 0; i < 3; i++) { playStageScreen(g); click(g.root, /^On to/); }
+  for (let i = 0; i < NLAST; i++) {
+    if (/How will you live|nobody knows how long/i.test(text(g.root))) break;
+    click(g.root, /^Next$/);
+  }
+  assert(/nobody knows how long they will live/i.test(text(g.root)), 'the question');
+  pickCard(g.root, /Modest/);
+  click(g.root, /^Play these/);
+  click(g.root, /^See the whole story/);
+  assert(/pension a year/.test(text(g.root)), 'the pension is shown');
+});
+
+test('a retired life shows its pension and drift as lines in the story', () => {
+  const g = newGame(4271);
+  begin(g, 1);
+  finish(g);
+  const buttons = whyButtons(g.root);
+  buttons[buttons.length - 1].click(); // the last decade, in retirement
+  assert(/Pay, pension and severance/.test(text(g.root)), 'pension is part of what came in');
 });

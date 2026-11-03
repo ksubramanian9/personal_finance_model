@@ -5,9 +5,10 @@ import { bridge, inflationOver, economyCounts, taxStory, yearRows } from '../eng
 
 // The plain-words name of each line in the net-worth bridge, grouped the way the story is told.
 export const BRIDGE_GROUPS = [
-  { title: 'What came in', lines: [['income', 'Salary and severance'], ['windfalls', 'Windfalls'], ['spouse', "Your partner's pay, after their tax"]] },
+  { title: 'What came in', lines: [['income', 'Pay, pension and severance'], ['windfalls', 'Windfalls'], ['spouse', "Your partner's pay, after their tax"]] },
   { title: 'What went out', lines: [
     ['living', 'Everyday life and family support'],
+    ['drift', 'Lifestyle drift: spending that crept up with your pay'],
     ['children', 'Children: birth, school and college'],
     ['wedding', 'The wedding'],
     ['rent', 'Rent'],

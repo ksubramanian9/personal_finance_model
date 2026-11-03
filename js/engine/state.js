@@ -1,4 +1,4 @@
-import { createRng } from './rng.js';
+import { createRng, nextNormal } from './rng.js';
 import { gainsIds } from './tax.js';
 
 // The whole game in one plain, JSON-serializable object.
@@ -7,8 +7,12 @@ import { gainsIds } from './tax.js';
 export function createState(persona, params, { seed, retirementAge }) {
   const tier = params.housing.cityTiers[persona.profile.cityTier];
   if (!tier) throw new Error(`housing.json has no city tier ${persona.profile.cityTier} (needed by ${persona.id})`);
+  // How long this life lasts: its own random stream, so nothing else's luck moves.
+  const L = params.retirement.lifespan;
+  const lifeZ = nextNormal(createRng(`${seed}:life`));
+  const deathAge = Math.round(Math.min(L.maxAge, Math.max(L.minAge, L.meanAge + L.sdYears * lifeZ)));
   return {
-    version: 6,
+    version: 7,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,
@@ -24,6 +28,8 @@ export function createState(persona, params, { seed, retirementAge }) {
     livingCost: persona.money.monthlyExpenses * 12,
     rentReal: persona.money.monthlyRent * 12, // rent in today's rupees, for when the player goes back to renting
     rent: persona.money.monthlyRent * 12,     // this year's rent, nominal; 0 while the player owns a home
+    lifestyleCreep: persona.biases.lifestyleCreep, // how much of a real pay rise turns into spending
+    creepIndex: 1,                                  // how much dearer a lifestyle has become through that drift
     support: (persona.obligations.parentsSupportMonthly + persona.obligations.siblingSupportMonthly) * 12,
     salaryGrowth: persona.career.salaryGrowthPct / 100,
     cyclicality: persona.career.cyclicality, // how much the economy moves this job's raises
@@ -31,6 +37,7 @@ export function createState(persona, params, { seed, retirementAge }) {
       layoffRisk: persona.career.layoffRisk,
       jobSwitchJumpPct: persona.career.jobSwitchJumpPct,
       employerHealthCover: persona.career.employerHealthCover,
+      pension: persona.career.pension,
     },
 
     // balances
@@ -43,6 +50,12 @@ export function createState(persona, params, { seed, retirementAge }) {
     homePrice: tier.homePrice, // what a typical apartment in this city costs now (nominal)
     home: null,                // the player's home, once bought (see housing.js)
     buyHome: 0,                // 1 = buy at the start of the next year (set by a choice)
+
+    // the end of working life and of life (see retirement.js)
+    deathAge,            // hidden from the player until the end
+    retired: false,
+    pension: 0,          // yearly, nominal, once retired
+    retireSpendPct: 1,   // everyday costs in retirement, as a share of the last working year's
 
     // family (see family.js)
     spouse: null,        // { year } once married

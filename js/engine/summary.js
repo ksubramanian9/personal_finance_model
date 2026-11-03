@@ -71,6 +71,7 @@ export function decadeSummary(state) {
       netWorth: last.netWorth,
       incomeReal: last.incomeReal,
       savedReal: years.reduce((sum, y) => sum + y.savedReal, 0),
+      retired: last.retired === true, // the last year of this decade was in retirement
     };
   });
 }

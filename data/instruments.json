@@ -3,7 +3,7 @@
     {
       "id": "pf", "name": "Provident funds", "emoji": "🏦",
       "blurb": "EPF and PPF. Steady, government-set returns, locked in until you retire.",
-      "liquid": false,
+      "liquid": false, "retiredDrawOrder": 1.5,
       "returns": {
         "boom":     { "meanPct": 7.6, "volPct": 0 },
         "normal":   { "meanPct": 7.6, "volPct": 0 },
@@ -11,7 +11,7 @@
         "crisis":   { "meanPct": 7.6, "volPct": 0 }
       },
       "provenance": {
-        "basis": "PPF has paid 7.1% since April 2020 (small-savings notices via secondary sources, rate reset quarterly). EPF 8.25% for FY2024-25 is from memory of the EPFO announcement and was not confirmed in this pass. 7.6% is a rough blend. Held constant across regimes because rates are set by the government.",
+        "basis": "PPF has paid 7.1% since April 2020 (small-savings notices via secondary sources, rate reset quarterly). EPF 8.25% for FY2024-25 is from memory of the EPFO announcement and was not confirmed in this pass. 7.6% is a rough blend. Held constant across regimes because rates are set by the government. Locked until retirement; then it is drawn after fixed deposits (retiredDrawOrder).",
         "confidence": "medium",
         "asOf": 2026
       }

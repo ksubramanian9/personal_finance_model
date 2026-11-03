@@ -36,7 +36,7 @@ export function describeCoping(coping, instruments) {
   const parts = [];
   if (coping.fromCash > 0) parts.push(`used ${formatINR(coping.fromCash)} of your cash`);
   // In the order they were sold (fixed deposits, gold, then shares), not the order in the file.
-  const sellOrder = [...instruments].sort((a, b) => (a.drawOrder ?? 99) - (b.drawOrder ?? 99));
+  const sellOrder = [...instruments].sort((a, b) => (a.drawOrder ?? a.retiredDrawOrder ?? 99) - (b.drawOrder ?? b.retiredDrawOrder ?? 99));
   for (const inst of sellOrder) {
     if (coping.sold[inst.id] > 0) parts.push(`sold ${formatINR(coping.sold[inst.id])} of ${inst.name.toLowerCase()}`);
   }

@@ -22,6 +22,8 @@
 - Capped at about 1-2 per stage; crash nudges always fire. The cap is a JSON parameter.
 - **Slow drift** (e.g. lifestyle creep) happens automatically but is always visible as a named line in the "why" panel.
 
+*As built (increment 9, part 1):* slow drift exists as **lifestyle drift**. When pay rises faster than prices, a share of the real rise (the persona's `lifestyleCreep`, 0.7 for the IT persona and 0.2 for the government officer) turns into spending that never comes back down. It is a named line in the "why" panel. The instinct cards (crash panic-sell, raise upgrade, festival overspend, hot tip) are not built yet.
+
 ## Luck dial (v2)
 Gentle / Normal / Harsh, scaling event frequency and severity. Level 3.
 

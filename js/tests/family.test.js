@@ -19,7 +19,7 @@ const meera = personas.find(p => p.id === 'govt-psu');
 const F = params.family;
 const near = (a, b, tol = 1e-9) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
 const fresh = (persona = aarav, seed = 4271) => createState(persona, params, { seed, retirementAge: 60 });
-const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60' };
+const base = { savings: 'balanced', invest: 'mixed', emergency: 'none', health: 'none', growth: 'none', home: 'rent', marry: 'single', marryLater: 'single', retire: 'at60', retirementStyle: 'comfortable' };
 
 // A whole life with the given family choices (wedding, partner and children picks are only used when asked).
 function life(persona, seed, family = {}) {
@@ -75,9 +75,10 @@ test('marrying: on the planned age, once, with the wedding bill and a bigger hou
   assert(near(y.weddingCost, 1500000 * y.priceIndexStart), 'wedding in the prices of that year');
   assertEqual(mid.history.filter(h => h.weddingCost > 0).length, 1);
   assert(mid.spouse && mid.spouse.year === y.year);
-  // two years of price rises, then the 40% household uplift
-  const k = mid.priceIndex / s0.priceIndex;
-  assert(near(mid.livingCost, living * F.marriage.livingCostMultiplier * k, 1e-9), 'living costs');
+  // the household uplift: the same year's costs are 40% higher than for a single person on the same luck
+  const alone = tickYear(fresh(aarav, 3), params);
+  const wed = tickYear(married({ marryAge: 22, childPlan: 0 }), params);
+  assert(near(wed.livingCost / alone.livingCost, F.marriage.livingCostMultiplier, 1e-9), 'living costs');
   assert(near(mid.rentReal, aarav.money.monthlyRent * 12 * F.marriage.rentMultiplier), 'a bigger place to rent');
 });
 

@@ -61,8 +61,13 @@ export function checkInstruments(data, regimeIds, label) {
     }
     checkProvenance(inst.provenance, at, problems);
   });
+  list.forEach((inst, i) => {
+    if (inst.retiredDrawOrder !== undefined && !isNum(inst.retiredDrawOrder)) problems.push(`"instruments[${i}].retiredDrawOrder" should be a number`);
+  });
   const orders = list.filter(i => i.liquid).map(i => i.drawOrder);
   if (new Set(orders).size !== orders.length) problems.push('liquid instruments should each have a different "drawOrder"');
+  const retired = list.filter(i => !i.liquid && i.retiredDrawOrder !== undefined).map(i => i.retiredDrawOrder);
+  if (retired.some(o => orders.includes(o))) problems.push('"retiredDrawOrder" should differ from every liquid instrument\'s "drawOrder"');
   if (problems.length) throw new ValidationError(label, problems);
   return data;
 }
@@ -233,6 +238,22 @@ export function checkFamily(data, label) {
   return data;
 }
 
+export function checkRetirement(data, label) {
+  const problems = [];
+  checkProvenance(data.provenance, '', problems);
+  const L = data.lifespan ?? {};
+  checkProvenance(L.provenance, 'lifespan', problems);
+  if (!isNum(L.meanAge) || L.meanAge < 60 || L.meanAge > 100) problems.push('"lifespan.meanAge" should be from 60 to 100');
+  if (!isNum(L.sdYears) || L.sdYears < 0 || L.sdYears > 20) problems.push('"lifespan.sdYears" should be from 0 to 20');
+  if (!isNum(L.minAge) || L.minAge < 66) problems.push('"lifespan.minAge" should be at least 66, so everyone reaches the latest retirement age (65)');
+  if (!isNum(L.maxAge) || L.maxAge <= L.minAge || L.maxAge > 120) problems.push('"lifespan.maxAge" should be above minAge and at most 120');
+  const P = data.pension ?? {};
+  checkProvenance(P.provenance, 'pension', problems);
+  if (!isNum(P.shareOfLastPay) || P.shareOfLastPay < 0 || P.shareOfLastPay > 1) problems.push('"pension.shareOfLastPay" should be from 0 to 1');
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
 export function checkEngine(e, instrumentIds, label) {
   const problems = [];
   if (e.savingsRate < 0 || e.savingsRate > 1) problems.push('"savingsRate" should be between 0 and 1');
@@ -250,7 +271,7 @@ export function checkEngine(e, instrumentIds, label) {
 }
 
 // Everything the engine needs, as one object:
-//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family }
+//   { ...engine.json, macro: <macro.json>, instruments: [...], events: [...], insurance: {...}, tax, housing, family, retirement }
 export async function loadParams({ fetchImpl = fetch } = {}) {
   const opts = (schema, label) => ({ schema, label, fetchImpl });
   const macro = checkMacro(await loadJSON('data/macro.json', opts(schemas.macro, 'macro.json')), 'macro.json');
@@ -271,5 +292,7 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
     macro.order, 'housing.json');
   const family = checkFamily(
     await loadJSON('data/family.json', opts(schemas.family, 'family.json')), 'family.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family };
+  const retirement = checkRetirement(
+    await loadJSON('data/retirement.json', opts(schemas.retirement, 'retirement.json')), 'retirement.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax, housing, family, retirement };
 }

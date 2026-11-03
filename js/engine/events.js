@@ -20,6 +20,7 @@ function ageMult(bands, age) {
 // the economy, the player's age and, where the file says so, how strong their skills are.
 export function eventProbability(def, state, regime) {
   const { prob } = def;
+  if (state.retired && (def.kind === 'jobLoss' || def.kind === 'payJump')) return 0; // no job left to lose or leave
   if (prob.requiresCareerPositive && !(state.career[prob.requiresCareerPositive] > 0)) return 0;
   const base = prob.fromCareer ? (state.career[prob.fromCareer] ?? 0) : prob.base;
   const capability = clamp(1 + (def.capabilityEffect ?? 0) * state.growthBoost, 0.2, 3);
@@ -63,7 +64,7 @@ export function settleEvents(state, rolled, insurance, priceIndex) {
 
   // Cover left this year, shared by all medical events: employer first, then the player's policy.
   const cover = {
-    employer: state.career.employerHealthCover && !out.lostJob ? insurance.employerCoverReal * priceIndex : 0,
+    employer: state.career.employerHealthCover && !out.lostJob && !state.retired ? insurance.employerCoverReal * priceIndex : 0,
     player: state.healthCover * priceIndex,
   };
 
