@@ -9,7 +9,7 @@
 // The order the story is told in. Each id is a line in the net-worth bridge.
 export const BRIDGE_ORDER = [
   'income', 'windfalls',                                  // what came in
-  'living', 'learning', 'premiums', 'unplanned', 'lifestyle', // what went out
+  'living', 'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', // what went out
   'growth', 'cashInterest', 'loanInterest',               // what the money earned (or cost)
   'inflation',                                            // only in today's rupees
 ];
@@ -28,13 +28,15 @@ export function bridge(years, { real }) {
 
   for (const y of years) {
     const k = real ? 1 / y.priceIndexStart : 1;
-    const livingAndSupport = y.expenses - y.learning - y.premium - y.eventCost;
+    const livingAndSupport = y.expenses - y.learning - y.premium - y.eventCost - y.taxIncome - y.taxInvest;
     items.income += y.income * k;
     items.windfalls += y.extraIncome * k;
     items.living -= livingAndSupport * k;
     items.learning -= y.learning * k;
     items.premiums -= y.premium * k;
     items.unplanned -= y.eventCost * k;
+    items.incomeTax -= y.taxIncome * k;
+    items.investTax -= y.taxInvest * k;
     items.lifestyle -= y.consumed * k;
     items.growth += y.investGain * k;
     items.cashInterest += y.cashInterest * k;
@@ -58,6 +60,22 @@ export function inflationOver(years) {
     perYearPct: (ratio ** (1 / years.length) - 1) * 100,
     hundredThen: 100 * ratio,
   };
+}
+
+// What tax took over these years, against what came in before tax. `paid` is tax on pay and
+// windfalls (onPay) plus the extra tax investing brought (onInvesting).
+export function taxStory(years, { real }) {
+  let onPay = 0;
+  let onInvesting = 0;
+  let earned = 0;
+  for (const y of years) {
+    const k = real ? 1 / y.priceIndexStart : 1;
+    onPay += y.taxIncome * k;
+    onInvesting += y.taxInvest * k;
+    earned += (y.income + y.extraIncome) * k;
+  }
+  const paid = onPay + onInvesting;
+  return { paid, onPay, onInvesting, earned, sharePct: earned > 0 ? (paid / earned) * 100 : 0 };
 }
 
 // How many years of each kind of economy.

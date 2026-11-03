@@ -163,8 +163,8 @@ test('engine: known outcomes for seed 4271 (regression guard)', () => {
   const near = (actual, expected) => Math.abs(actual - expected) / expected < 1e-8;
   const a = play(aarav, 4271).history.at(-1);
   const m = play(meera, 4271).history.at(-1);
-  assert(near(a.netWorth, 1901579470.32), `Aarav final nominal net worth ${a.netWorth}`);
-  assert(near(m.netWorth, 822987188.20), `Meera final nominal net worth ${m.netWorth}`);
+  assert(near(a.netWorth, 1771757396.47), `Aarav final nominal net worth ${a.netWorth}`);
+  assert(near(m.netWorth, 807392038.43), `Meera final nominal net worth ${m.netWorth}`);
 });
 
 // ---- decade summary ----

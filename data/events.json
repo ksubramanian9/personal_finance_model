@@ -72,7 +72,8 @@
       "regimeMult": { "boom": 1.5, "normal": 1, "slowdown": 0.7, "crisis": 0.5 },
       "ageMult": [[100, 1]],
       "amountReal": [200000, 3000000], "shape": 2,
-      "story": "A bonus, a small inheritance or a lucky break brought in {amount}."
+      "taxable": true,
+      "story": "A bonus or a lucky break brought in {amount}, before tax."
     }
   ],
   "provenance": {

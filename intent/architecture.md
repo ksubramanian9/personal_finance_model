@@ -2,7 +2,7 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
-**Status:** as of increment 6 (the "why": charts, bridge, tables, rupee toggle). Planned-but-unbuilt modules are listed at the bottom.
+**Status:** as of increment 7 (tax and capital gains). Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
 
@@ -16,7 +16,8 @@ data/                   all tunable numbers and content (JSON)
   engine.json           engine parameters (cash/debt rates, savings rate, starting allocation)
   macro.json            economy regimes (inflation, raise adjustment) and the transition matrix
   instruments.json      pf / equity / fd / gold: returns by regime, liquidity, provenance
-  events.json           life events (odds, size, who covers them) and insurance constants
+  events.json           life events (odds, size, who covers them, whether a windfall is taxable) and insurance constants
+  tax.json              income-tax slabs, rebate, cess, surcharge; how each instrument is taxed (exempt / interest / capitalGains)
   stages.json           decision library (options + effects) and the ordered life stages
   personas/index.json   lists persona files, in display order
   personas/*.json       one thick persona each
@@ -26,12 +27,13 @@ js/data/                load + validate; no DOM, no engine
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks
   stages.js             loadStages + checkStages (ranges, contiguity, same-effects rule, allocation sums)
-  params.js             loadParams: engine + macro + instruments + events, with cross-file checks
+  params.js             loadParams: engine + macro + instruments + events + tax, with cross-file checks
 
 js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ imports
   rng.js                seeded mulberry32; generator is a plain {s} object
   macro.js              nextRegime, stationaryDistribution
   events.js             rollEvents (draws) and settleEvents (money effects, insurance)
+  tax.js                computeTax (income tax + capital gains, split into pay and investing), cost-basis lots (buyLot, sellLots)
   state.js              createState, netWorth, totalInvested
   tick.js               tickYear (one year), runUntil
   stages.js             nextStage, stageEnd, currentOption, applyPicks, playStage
@@ -92,7 +94,8 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - **The bridge is exact.** `bridge()` lines sum from start to end net worth in both rupee modes (tests check this over many lives). In today's rupees, flows use the price level at the start of their year and the extra "prices rising on what you hold" line makes it balance; nominal mode has no such line.
 - **Charts follow the dataviz skill**: a validated palette in fixed slot order (cash, fixed deposits, provident funds, gold, equity; loans neutral grey), columns at most 24px with a 4px rounded data end and 2px gaps, 2px lines, hairline grid, a legend always, one or two direct labels, a readout that follows hover, tap and the arrow keys, and a table twin for every chart. Chart colours live in `theme.json` under `chart`. The whole-life chart uses a linear scale, so early years are tiny; each decade's "Why?" draws its own chart on its own scale, and the hint says so.
 - **Stage-level "why"** (`whyToggle`) and the end-screen region share `whyPanel`, `yearTable` and `moneyToggle`.
-- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance }`. Pass it to `createState` and `tickYear`; tests use the same loader.
+- **Tax** (`engine/tax.js`, rules in `tax.json`). Worked out once a year in today's rupees (slabs and the exemption rise with prices) and scaled back. Salary, taxable windfalls and interest (cash, fixed deposits) are taxed that year; shares and gold only when sold. `state.lots[id]` keeps, for each taxed-on-sale holding, the pieces bought: `{ year, cost, share }`, oldest sold first, so the holding period picks long- or short-term. Tax on a sale makes the shortfall bigger, so `tickYear` re-plans the sale until the tax stops changing (a few rounds). `history` records `taxIncome` (pay and windfalls) and `taxInvest` (the extra tax investing brought); both are inside `expenses`, and the bridge shows them as two lines. A pool that exists without lots (a test that sets `holdings` directly) is treated as bought at its current value.
+- **`params` is one object**: `loadParams()` returns `{ ...engine.json, macro, instruments, events, insurance, tax }`. Pass it to `createState` and `tickYear`; tests use the same loader.
 - **Money is nominal rupees inside the engine.** `priceIndex` (1.0 at start) converts to today's rupees. History carries `*Real` fields so the UI doesn't divide.
 - **`tickYear` is pure.** It `structuredClone`s the input state and returns a new one. Randomness comes only from `state.rng`.
 - **Each year consumes a fixed number of RNG values** (1 uniform for the economy + 1 normal per instrument, in `instruments.json` order, whatever the player holds). So the same seed gives the same economy and market returns however the player invests; a test guards this. When you add a random event, give it its own fixed draws and put it after the existing ones.
@@ -142,13 +145,14 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - Data tests load the real files and also feed deliberately broken ones to check error messages.
 
 ## Planned but not built yet
-Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/income.js`, `assets.js`, `tax.js`, `family.js`, `housing.js`, `nudges.js`, `outcomes.js`; `data/tax.json`; `ui/charts.js`, `ui/disclosure.js`. The single-investment placeholder is gone; regimes and instruments arrived in increment 4.
+Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/family.js`, `housing.js`, `nudges.js`, `outcomes.js`. (`income.js` and `assets.js` from the original plan were folded into `tick.js` and `macro.js`.)
 
 ## Known loose ends
 - No retirement (drawdown) stage yet; the run ends at the retirement age. Arrives with the outcomes work in increment 9.
 - "Go all in" on learning is still the best choice for every persona and seed tried. Diminishing returns and decay come with increment 9.
 - Even with events, a long horizon makes volatility mostly harmless: a bolder mix has about the same bad-luck outcome (p10) as a safe one but a higher median. Cushions show up mainly in how often a life has to borrow (Aarav: 46 of 300 lives with no cushion, 27 with a 6-month fund and strong cover; Meera: 21 and 5), not in median wealth. Insurance costs a little median wealth. The v2 debrief should surface this.
-- Outcomes are still optimistic: no tax, family or home yet.
+- Outcomes are still optimistic: no family or home yet. Tax trimmed seed 4271's final net worth by about 7% (Aarav) and 2% (Meera): Aarav pays roughly a tenth of his lifetime pay in tax (real terms), Meera about 1%.
+- Net worth before retirement is before tax on gains not yet sold (a lump of up to 12.5% of the gains), and the free-limit rebate means early careers pay nothing. Losses are not carried forward; surcharge has no marginal relief; only the new regime exists.
 - Term life insurance (planned alongside health in the intent) is not built: nothing in the game can kill the breadwinner yet. It belongs with the family work in increment 8.
 - Event odds, sizes and age/economy multipliers are game tuning (confidence low).
 - Equity and gold volatilities, the gold safe-haven pattern, FD rates and the regime shares are estimates (confidence low); see provenance in the data files.

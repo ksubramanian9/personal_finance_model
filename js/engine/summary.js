@@ -14,6 +14,7 @@ export function stageSummary(history, startIdx) {
     savedReal: years.reduce((sum, y) => sum + y.savedReal, 0),
     learningReal: years.reduce((sum, y) => sum + y.learningReal, 0),
     economy: years.map(y => ({ age: y.age, year: y.year, regime: y.regime })),
+    taxReal: years.reduce((sum, y) => sum + (y.taxIncome + y.taxInvest) / y.priceIndexStart, 0),
     premiumsReal: years.reduce((sum, y) => sum + y.premium / y.priceIndexStart, 0),
     // Years in which something happened, with how any shortfall was met, in today's rupees.
     eventYears: years.filter(y => y.events.length).map(y => ({

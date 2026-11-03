@@ -43,6 +43,7 @@ export function settleEvents(state, rolled, insurance, priceIndex) {
   const happened = rolled.filter(r => r.occurred);
   const out = {
     salaryReceived: state.salary, severance: 0, extraIncome: 0,
+    taxableExtra: 0,     // the part of extraIncome that income tax applies to
     eventCost: 0,        // what the player pays out of pocket
     insurancePaid: 0,    // what insurance paid
     payHit: 0, payJump: 0, lostJob: false, records: [],
@@ -85,6 +86,7 @@ export function settleEvents(state, rolled, insurance, priceIndex) {
     } else if (def.kind === 'windfall') {
       const amount = amountReal(def, r.u1) * priceIndex;
       out.extraIncome += amount;
+      if (def.taxable) out.taxableExtra += amount;
       out.records.push({ id: def.id, amountReal: amount / priceIndex });
     }
   }

@@ -115,10 +115,54 @@ export function checkEvents(data, regimeIds, label) {
       if (!isRange(e.amountReal)) problems.push(`"${at}.amountReal" should be [min, max] in today's rupees`);
       if (!isNum(e.shape) || e.shape < 0.5 || e.shape > 6) problems.push(`"${at}.shape" should be a number from 0.5 to 6 (1 = even, higher = mostly small, sometimes big)`);
     }
+    if (e.kind === 'windfall' && typeof e.taxable !== 'boolean') problems.push(`"${at}.taxable" should be true or false`);
     if (e.kind === 'expense') {
       if (!Array.isArray(e.coveredBy) || e.coveredBy.some(c => !COVERS.includes(c))) problems.push(`"${at}.coveredBy" should list any of ${COVERS.join(', ')}`);
     }
   });
+  if (problems.length) throw new ValidationError(label, problems);
+  return data;
+}
+
+const TAX_KINDS = ['exempt', 'interest', 'capitalGains'];
+
+export function checkTax(data, instrumentIds, label) {
+  const problems = [];
+  const it = data.incomeTax;
+  checkProvenance(it?.provenance, 'incomeTax', problems);
+  const slabs = it?.slabs;
+  if (!Array.isArray(slabs) || !slabs.length) problems.push('"incomeTax.slabs" should list the tax slabs');
+  else {
+    slabs.forEach((s, i) => {
+      const last = i === slabs.length - 1;
+      if (last ? s.upTo !== null : !isNum(s.upTo)) problems.push(`"incomeTax.slabs[${i}].upTo" should be ${last ? 'null (no upper limit)' : 'a number'}`);
+      else if (i > 0 && !last && s.upTo <= slabs[i - 1].upTo) problems.push('"incomeTax.slabs" limits should go up');
+      if (!isNum(s.ratePct) || s.ratePct < 0 || s.ratePct > 100) problems.push(`"incomeTax.slabs[${i}].ratePct" should be a percentage from 0 to 100`);
+    });
+  }
+  for (const f of ['standardDeduction', 'rebateIncomeLimit']) if (!isNum(it?.[f]) || it[f] < 0) problems.push(`"incomeTax.${f}" should be a number of rupees`);
+  if (!isNum(it?.cessPct) || it.cessPct < 0 || it.cessPct > 20) problems.push('"incomeTax.cessPct" should be from 0 to 20');
+  if (!Array.isArray(it?.surcharge)) problems.push('"incomeTax.surcharge" should be a list (possibly empty)');
+  else it.surcharge.forEach((s, i) => {
+    if (!isNum(s.above) || !isNum(s.ratePct) || s.ratePct < 0 || s.ratePct > 50) problems.push(`"incomeTax.surcharge[${i}]" should be { above, ratePct }`);
+    else if (i > 0 && s.above <= it.surcharge[i - 1].above) problems.push('"incomeTax.surcharge" tiers should go up');
+  });
+
+  const rules = data.instruments;
+  for (const id of instrumentIds) {
+    const r = rules[id];
+    const at = `instruments.${id}`;
+    if (!r) { problems.push(`"${at}" is missing: say how ${id} is taxed`); continue; }
+    if (!TAX_KINDS.includes(r.kind)) problems.push(`"${at}.kind" should be one of ${TAX_KINDS.join(', ')}`);
+    checkProvenance(r.provenance, at, problems);
+    if (r.kind === 'capitalGains') {
+      if (!isNum(r.longTermYears) || r.longTermYears < 0) problems.push(`"${at}.longTermYears" should be a number of years`);
+      if (!isNum(r.longTermRatePct) || r.longTermRatePct < 0 || r.longTermRatePct > 100) problems.push(`"${at}.longTermRatePct" should be a percentage`);
+      if (r.shortTermRatePct !== 'slab' && (!isNum(r.shortTermRatePct) || r.shortTermRatePct < 0 || r.shortTermRatePct > 100)) problems.push(`"${at}.shortTermRatePct" should be a percentage or "slab"`);
+      if (!isNum(r.exemptionPerYear) || r.exemptionPerYear < 0) problems.push(`"${at}.exemptionPerYear" should be a number of rupees`);
+    }
+  }
+  for (const id of Object.keys(rules)) if (!instrumentIds.includes(id)) problems.push(`"instruments.${id}" is not a known instrument`);
   if (problems.length) throw new ValidationError(label, problems);
   return data;
 }
@@ -153,5 +197,8 @@ export async function loadParams({ fetchImpl = fetch } = {}) {
   const ev = checkEvents(
     await loadJSON('data/events.json', opts(schemas.events, 'events.json')),
     macro.order, 'events.json');
-  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance };
+  const tax = checkTax(
+    await loadJSON('data/tax.json', opts(schemas.tax, 'tax.json')),
+    inst.instruments.map(i => i.id), 'tax.json');
+  return { ...engine, macro, instruments: inst.instruments, events: ev.events, insurance: ev.insurance, tax };
 }

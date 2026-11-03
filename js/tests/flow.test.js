@@ -368,6 +368,32 @@ test('the bridge shows lines that explain the change, each with a signed amount'
   assert(/Prices rising on what you hold/.test(text(g.root)), 'inflation line in today\'s rupees');
 });
 
+test('tax is its own line in the bridge, with a plain sentence about how much it took', () => {
+  const g = playToEnd();
+  whyButtons(g.root)[2].click(); // the 40s: Aarav is paying tax by now
+  const lines = findAll(g.root, n => hasClass(n, 'bridge-row')).map(r => r.attrs['data-line']);
+  assert(lines.includes('incomeTax'), `income tax line: ${lines}`);
+  assert(/Income tax on pay and windfalls/.test(text(g.root)), 'plain label');
+  assert(/Tax took ₹[^ ]+( \w+)? of the ₹[^ ]+( \w+)? you earned \(\d+\.\d%\)/.test(text(g.root)), 'tax sentence');
+  whyButtons(g.root)[0].click(); // the 20s: below the free limit
+  assert(/No tax was due/.test(text(g.root)), 'quiet when nothing was due');
+  assert(!findAll(g.root, n => hasClass(n, 'bridge-row')).some(r => r.attrs['data-line'] === 'incomeTax'), 'no empty tax line');
+});
+
+test('a stage result shows tax paid once there is some', () => {
+  const g = newGame(4271);
+  begin(g);
+  playStageScreen(g);
+  assert(!/paid in tax/.test(text(g.root)), 'nothing to show in the first stage');
+  let shown = false;
+  while (buttonWithText(g.root, /^On to/)) {
+    click(g.root, /^On to/);
+    playStageScreen(g);
+    shown = shown || /paid in tax/.test(text(g.root));
+  }
+  assert(shown, 'a later stage shows the tax paid');
+});
+
 test('the rupee toggle switches charts, panel and table between kinds of rupee', () => {
   const g = playToEnd();
   whyButtons(g.root)[1].click();

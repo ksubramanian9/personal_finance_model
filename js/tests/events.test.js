@@ -327,7 +327,7 @@ test('describeEvent: the story, insurance lines and severance', () => {
   assertEqual(loss[0], 'Layoffs hit and you were out of work for 6 months. Your next job paid 6% less.');
   assertEqual(loss[1], 'Severance softened the blow by ₹60,000.');
   assertEqual(describeEvent(def('job_offer'), { pct: 30 })[0], "A recruiter's offer was too good to refuse. Your pay jumped 30%.");
-  assertEqual(describeEvent(def('windfall'), { amountReal: 1500000 })[0], 'A bonus, a small inheritance or a lucky break brought in ₹15 lakh.');
+  assertEqual(describeEvent(def('windfall'), { amountReal: 1500000 })[0], 'A bonus or a lucky break brought in ₹15 lakh, before tax.');
 });
 
 test('fillTemplate leaves unknown placeholders visible', () => {

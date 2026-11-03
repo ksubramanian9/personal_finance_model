@@ -1,7 +1,7 @@
 import { h, mount } from './dom.js';
 import { formatINR } from './format.js';
 import { LEVEL } from './disclosure.js';
-import { bridge, inflationOver, economyCounts, yearRows } from '../engine/explain.js';
+import { bridge, inflationOver, economyCounts, taxStory, yearRows } from '../engine/explain.js';
 
 // The plain-words name of each line in the net-worth bridge, grouped the way the story is told.
 export const BRIDGE_GROUPS = [
@@ -11,6 +11,8 @@ export const BRIDGE_GROUPS = [
     ['learning', 'Courses and upskilling'],
     ['premiums', 'Health insurance premiums'],
     ['unplanned', 'Surprise costs, after insurance'],
+    ['incomeTax', 'Income tax on pay and windfalls'],
+    ['investTax', 'Tax on interest and on gains from selling'],
     ['lifestyle', 'Lifestyle spending (your money style)'],
   ] },
   { title: 'What your money did', lines: [
@@ -65,6 +67,7 @@ export function whyPanel({ years, real, regimes, title }) {
     });
 
   const infl = inflationOver(years);
+  const tax = taxStory(years, { real });
   const counts = economyCounts(years);
   const economy = Object.entries(regimes)
     .filter(([id]) => counts[id])
@@ -81,7 +84,10 @@ export function whyPanel({ years, real, regimes, title }) {
       h('h4', { text: 'Forces at work' }),
       h('ul', {},
         h('li', { text: `Prices rose ${infl.totalPct.toFixed(0)}% over these ${years.length} years, about ${infl.perYearPct.toFixed(1)}% a year. What cost ₹100 at the start cost about ₹${Math.round(infl.hundredThen)} by the end.` }),
-        h('li', { text: `The economy: ${economy}.` }))));
+        h('li', { text: `The economy: ${economy}.` }),
+        h('li', { text: tax.paid > 0.5
+          ? `Tax took ${formatINR(tax.paid)} of the ${formatINR(tax.earned)} you earned (${tax.sharePct.toFixed(1)}%). Everything that is yours to spend or save is what is left.`
+          : 'No tax was due: pay stayed below the level where tax starts.' }))));
 }
 
 // The same facts as the charts, as a table anyone can read or navigate.

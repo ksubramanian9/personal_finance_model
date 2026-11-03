@@ -74,7 +74,7 @@ test('bridge: only what you chose is charged: no cover, no premiums; no learning
 });
 
 test('bridge lists every line the UI groups, in order', () => {
-  assertEqual(BRIDGE_ORDER, ['income', 'windfalls', 'living', 'learning', 'premiums', 'unplanned', 'lifestyle', 'growth', 'cashInterest', 'loanInterest', 'inflation']);
+  assertEqual(BRIDGE_ORDER, ['income', 'windfalls', 'living', 'learning', 'premiums', 'unplanned', 'incomeTax', 'investTax', 'lifestyle', 'growth', 'cashInterest', 'loanInterest', 'inflation']);
   assertEqual(Object.keys(bridge(life(personas[1], 1).history, { real: true }).items), BRIDGE_ORDER);
 });
 

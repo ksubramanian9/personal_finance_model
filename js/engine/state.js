@@ -1,11 +1,12 @@
 import { createRng } from './rng.js';
+import { gainsIds } from './tax.js';
 
 // The whole game in one plain, JSON-serializable object.
 // All money is nominal rupees. `priceIndex` converts to today's rupees (1 at the start).
 // `params` is what loadParams() returns (engine.json plus macro and instruments).
 export function createState(persona, params, { seed, retirementAge }) {
   return {
-    version: 3,
+    version: 4,
     seed,
     personaId: persona.id,
     startAge: persona.profile.startAge,
@@ -31,6 +32,8 @@ export function createState(persona, params, { seed, retirementAge }) {
     // balances
     cash: persona.money.startingSavings,
     holdings: Object.fromEntries(params.instruments.map(i => [i.id, 0])),
+    // what each taxed-on-sale holding cost and when it was bought (see tax.js)
+    lots: Object.fromEntries(gainsIds(params.tax).map(id => [id, []])),
     debt: persona.money.startingDebt,
 
     priceIndex: 1,

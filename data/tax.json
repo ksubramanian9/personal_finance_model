@@ -1,0 +1,73 @@
+{
+  "incomeTax": {
+    "slabs": [
+      { "upTo": 400000,  "ratePct": 0 },
+      { "upTo": 800000,  "ratePct": 5 },
+      { "upTo": 1200000, "ratePct": 10 },
+      { "upTo": 1600000, "ratePct": 15 },
+      { "upTo": 2000000, "ratePct": 20 },
+      { "upTo": 2400000, "ratePct": 25 },
+      { "upTo": null,    "ratePct": 30 }
+    ],
+    "standardDeduction": 75000,
+    "rebateIncomeLimit": 1200000,
+    "cessPct": 4,
+    "surcharge": [
+      { "above": 5000000,  "ratePct": 10 },
+      { "above": 10000000, "ratePct": 15 },
+      { "above": 20000000, "ratePct": 25 }
+    ],
+    "provenance": {
+      "basis": "The new tax regime for FY2025-26, unchanged for FY2026-27 per several secondary sources (bank and tax-site explainers, not the Finance Act itself): nothing up to 4 lakh, then 5%, 10%, 15%, 20%, 25% and 30% above 24 lakh; standard deduction 75,000 for salary; no tax at all if taxable income is up to 12 lakh (section 87A rebate), with marginal relief just above it. Cess 4%. Surcharge tiers (10% above 50 lakh, 15% above 1 crore, 25% above 2 crore) are from memory and were not confirmed in this pass; relief at the surcharge thresholds is ignored. Only the new regime is modelled (no 80C, HRA or home-loan deductions). The slabs are assumed to rise with prices (they have risen about 4-5% a year, roughly with inflation), so a rupee of real income is taxed the same in any year.",
+      "confidence": "medium",
+      "asOf": 2026
+    }
+  },
+  "instruments": {
+    "pf": {
+      "kind": "exempt",
+      "provenance": {
+        "basis": "PPF interest is tax-free; EPF interest is tax-free up to a yearly contribution limit that is ignored here.",
+        "confidence": "medium",
+        "asOf": 2026
+      }
+    },
+    "fd": {
+      "kind": "interest",
+      "provenance": {
+        "basis": "Bank deposit interest is taxed as ordinary income every year as it builds up, at your slab rate, whether or not you withdraw it. Savings-account interest is treated the same way.",
+        "confidence": "high",
+        "asOf": 2026
+      }
+    },
+    "equity": {
+      "kind": "capitalGains",
+      "longTermYears": 1,
+      "longTermRatePct": 12.5,
+      "shortTermRatePct": 20,
+      "exemptionPerYear": 125000,
+      "provenance": {
+        "basis": "Equity funds and listed shares: gains on holdings sold after more than 12 months are taxed at 12.5% beyond 1.25 lakh a year; sold sooner, at 20%. Rates in force since July 2024 and still current for FY2026-27 per several secondary sources. Sales happen at year end in this game, so a holding kept exactly one year counts as long-term. The exemption is assumed to rise with prices. Losses are not carried forward.",
+        "confidence": "medium",
+        "asOf": 2026
+      }
+    },
+    "gold": {
+      "kind": "capitalGains",
+      "longTermYears": 2,
+      "longTermRatePct": 12.5,
+      "shortTermRatePct": "slab",
+      "exemptionPerYear": 0,
+      "provenance": {
+        "basis": "Physical gold: gains on holdings sold after more than 24 months are taxed at 12.5% without indexation; sold sooner, the gain is added to income and taxed at your slab rate. Sources disagreed on the period for gold ETFs (12 or 24 months); the 24-month rule is used. Sales happen at year end, so a holding kept exactly two years counts as long-term.",
+        "confidence": "medium",
+        "asOf": 2026
+      }
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative, rounded and simplified: the amount you pay is worked out once a year from your pay, interest and the gains you realised. Tax on gains you have not yet sold is not counted, so net worth before retirement is before that tax.",
+    "confidence": "medium",
+    "asOf": 2026
+  }
+}

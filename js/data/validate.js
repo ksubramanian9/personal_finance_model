@@ -63,6 +63,10 @@ export const schemas = {
     events: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  tax: {
+    incomeTax: 'object', instruments: 'object',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   macro: {
     order: 'array', start: 'string', regimes: 'object', transitions: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
