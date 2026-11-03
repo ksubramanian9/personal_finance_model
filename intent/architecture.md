@@ -145,7 +145,7 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 
 ## Recipes
 
-**Add a persona.** Copy `data/personas/metro-it.json`, give it a unique `id`, edit (`name` is the full title shown on cards and the end screen; `firstName` is used in sentences such as "Meet Aarav"), and add the filename to `data/personas/index.json`. `loadPersonas` validates it (schema in `validate.js`, ranges in `personas.js:checkPersona`) and a card appears. No code change.
+**Add a persona.** Copy `data/personas/metro-it.json`, give it a unique `id`, edit (`name` is the full title shown on cards and the end screen; `firstName` is used in sentences such as "Meet Arjun"; optional `career.severanceMonths` and `eventText` give it its own severance and its own words for events, see `freelance-designer.json`), and add the filename to `data/personas/index.json`. `loadPersonas` validates it (schema in `validate.js`, ranges in `personas.js:checkPersona`) and a card appears. No code change.
 
 **Add a JSON data file.**
 1. Add the file under `data/`.
@@ -194,7 +194,7 @@ Tracked in [implementation-plan](implementation-plan.md). New modules expected: 
 - Term life insurance (planned alongside health in the intent) is not built: nothing in the game can kill the breadwinner yet. It belongs with the family work in increment 8.
 - Event odds, sizes and age/economy multipliers are game tuning (confidence low).
 - Equity and gold volatilities, the gold safe-haven pattern, FD rates and the regime shares are estimates (confidence low); see provenance in the data files.
-- The whole test suite (368 tests) passes in a real browser (Edge, via `tests.html`) as well as in Node, and `smoke.html` plays whole lives through the real screens with the real DOM and real data (35 checks: both personas to the verdict, instinct cards, Level 2 charts and the keyboard, focus moving between screens, resume, the Advanced panel, the About dialog, localStorage). Both were run in headless Edge in increment 10. Nobody has yet used the game on a real phone or in Safari or Firefox (phone width was checked in Edge, with the page in a narrow frame).
+- The whole test suite (385 tests) passes in a real browser (Edge, via `tests.html`) as well as in Node, and `smoke.html` plays whole lives through the real screens with the real DOM and real data (38 checks: both personas to the verdict, instinct cards, Level 2 charts and the keyboard, focus moving between screens, resume, the Advanced panel, the About dialog, the theme button, localStorage). Both were run in headless Edge in increment 10. Nobody has yet used the game on a real phone or in Safari or Firefox (phone width was checked in Edge, with the page in a narrow frame).
 - Chart text is SVG: on a phone the charts keep a minimum width and scroll sideways, and the readout and table beside each carry the same facts in normal type.
 - The "fixed draws per step" convention above has no test yet.
 - Seeds from `?seed=` are used as given; a seed can also be typed under Advanced. The overrides are three shifts and a tax switch, not a full parameter editor.
