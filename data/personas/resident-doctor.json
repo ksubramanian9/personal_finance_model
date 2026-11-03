@@ -1,0 +1,58 @@
+{
+  "id": "resident-doctor",
+  "firstName": "Rohan",
+  "name": "Dr. Rohan, the Resident Doctor",
+  "emoji": "🩺",
+  "accent": "accent1",
+  "tagline": "Years of study, a big loan, and a long climb to a good income.",
+  "story": "First doctor in the family. The years of study left a loan and little else, and a junior resident's pay does not stretch far. The climb to a specialist's income is steep and sure, but it takes a while, and a lot rides on the loan being paid in time.",
+  "profile": {
+    "startAge": 26,
+    "city": "Indore",
+    "cityTier": 2,
+    "education": "MBBS",
+    "job": "Junior resident doctor"
+  },
+  "money": {
+    "startingSalary": 840000,
+    "startingSavings": 20000,
+    "startingDebt": 1500000,
+    "monthlyExpenses": 12000,
+    "monthlyRent": 6000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 5000,
+    "siblingSupportMonthly": 0
+  },
+  "career": {
+    "salaryGrowthPct": 10,
+    "jobSwitchJumpPct": 15,
+    "layoffRisk": 0.01,
+    "cyclicality": 0.1,
+    "skillPayoff": 1.2,
+    "pension": false,
+    "employerHealthCover": true
+  },
+  "biases": {
+    "lifestyleCreep": 0.6,
+    "panicSell": 0.3,
+    "overConservatism": 0.4
+  },
+  "eventText": {
+    "job_loss": {
+      "name": "Hospital cutbacks",
+      "emoji": "📉",
+      "story": "The hospital cut its posts and you were between jobs for {months} months. The next post paid {pct}% less."
+    },
+    "job_offer": {
+      "name": "A better post",
+      "emoji": "📞",
+      "story": "A bigger hospital offered you a better post. Your pay jumped {pct}%."
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative: a junior resident in a tier-2 city carrying a 15 lakh education loan, mid-2020s. Pay growth of 10% a year (nominal, about 5.5 points above inflation) stands for the climb from resident to specialist; a real specialist's income is far more uneven than this. The loan is a game number, not a typical figure.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

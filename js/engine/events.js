@@ -58,7 +58,7 @@ export function settleEvents(state, rolled, insurance, priceIndex) {
     const months = lerp(def.monthsOut, loss.u1);
     out.lostJob = true;
     out.salaryReceived = state.salary * (12 - months) / 12;
-    out.severance = (state.salary / 12) * def.severanceMonths;
+    out.severance = (state.salary / 12) * (state.career.severanceMonths ?? def.severanceMonths);
     out.payHit = lerp(def.payHitPct, loss.u2) / 100;
     out.records.push({ id: def.id, months, pct: out.payHit * 100, severanceReal: out.severance / priceIndex });
   }

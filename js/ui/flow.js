@@ -25,7 +25,9 @@ export function createFlow(root, data, session, store = createNoStore()) {
     level: saved.level, real: saved.real,
     onChange: (d) => store.saveSettings({ ...store.loadSettings(), level: d.level, real: d.real }),
   }); // how much detail the player has asked for, remembered between visits
-  const eventDefs = Object.fromEntries(data.params.events.map(e => [e.id, e]));
+  const baseEventDefs = Object.fromEntries(data.params.events.map(e => [e.id, e]));
+  // A persona can use its own words for an event (a freelancer loses a client, not a job).
+  const eventDefsFor = (persona) => Object.fromEntries(Object.entries(baseEventDefs).map(([id, def]) => [id, { ...def, ...(persona?.eventText?.[id] ?? {}) }]));
   const entries = collectSources({ ...data.params.sources, ...(data.sources ?? {}) }); // for the Level 3 data browser
   const gameParams = () => (game?.params ?? data.params); // the params this life uses (Level 3 may have changed some)
 
@@ -168,7 +170,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
       stage,
       summary: stageSummary(game.state.history, game.startIdx, game.state.nudgeLog.filter(l => l.stageId === stage.id)),
       regimes: gameParams().macro.regimes,
-      eventDefs,
+      eventDefs: eventDefsFor(game.persona),
       cardDefs: gameParams().nudges.cards,
       instruments: gameParams().instruments,
       disclosure,
@@ -192,7 +194,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
       stages: data.stages,
       decisions: data.decisions,
       params: gameParams(),
-      eventDefs,
+      eventDefs: eventDefsFor(game.persona),
       disclosure,
       onSameLuck: () => startGame(game.persona),
       onNewLuck: () => { session.seed = randomSeed(); startGame(game.persona); },

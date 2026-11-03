@@ -1,3 +1,10 @@
 {
-  "personas": ["metro-it.json", "govt-psu.json"]
+  "personas": [
+    "metro-it.json",
+    "govt-psu.json",
+    "freelance-designer.json",
+    "resident-doctor.json",
+    "school-teacher.json",
+    "shop-heir.json"
+  ]
 }

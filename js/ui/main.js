@@ -1,4 +1,4 @@
-import { loadJSON, applyTheme } from '../data/loader.js';
+import { loadJSON } from '../data/loader.js';
 import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
 import { loadParams } from '../data/params.js';
@@ -7,6 +7,7 @@ import { h, mount } from './dom.js';
 import { createFlow } from './flow.js';
 import { browserStore } from './storage.js';
 import { createAbout } from './about.js';
+import { createThemeController, createThemeToggle } from './theme.js';
 
 const app = document.getElementById('app');
 
@@ -20,12 +21,16 @@ function showError(err) {
 async function boot() {
   try {
     const theme = await loadJSON('data/theme.json', { schema: schemas.theme, label: 'theme.json' });
-    // The colour scheme follows the device (and its changes); ?theme=dark or ?theme=light forces one.
-    const media = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
-    const forced = new URLSearchParams(location.search).get('theme');
-    const scheme = () => (forced === 'dark' || forced === 'light' ? forced : media?.matches ? 'dark' : 'light');
-    applyTheme(theme, document.documentElement, scheme());
-    media?.addEventListener?.('change', () => applyTheme(theme, document.documentElement, scheme()));
+    // The colour theme: Automatic (follows the device), Light or Dark, chosen with the button at the top right and
+    // remembered. ?theme=dark (or light, or auto) overrides it for this visit.
+    const store = browserStore();
+    const themeControl = createThemeController({
+      theme, root: document.documentElement, store,
+      media: globalThis.matchMedia?.('(prefers-color-scheme: dark)'),
+      initial: new URLSearchParams(location.search).get('theme'),
+    });
+    themeControl.apply();
+    document.body.append(createThemeToggle(themeControl));
     if (theme.fonts.googleFontsUrl) {
       document.head.append(h('link', { rel: 'stylesheet', href: theme.fonts.googleFontsUrl }));
     }
@@ -40,7 +45,6 @@ async function boot() {
     // Files the Level 3 data browser lists besides the params (each carries its own provenance).
     const sources = { 'stages.json': stagesData, ...Object.fromEntries(personas.map(p => [`personas/${p.id}.json`, p])) };
 
-    const store = browserStore();
     const saved = store.loadSettings();
     const session = {
       personaId: personas.some(p => p.id === saved.personaId) ? saved.personaId : null, // the last persona played

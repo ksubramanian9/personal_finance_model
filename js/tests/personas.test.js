@@ -11,8 +11,8 @@ const memFetch = (files) => async (path) => path in files
 
 test('real persona files load and validate', async () => {
   const personas = await loadPersonas({ fetchImpl: realFetch });
-  assert(personas.length >= 2, 'expected at least 2 personas');
-  assertEqual(personas.map(p => p.id).sort(), ['govt-psu', 'metro-it']);
+  assert(personas.length >= 6, 'expected at least 6 personas');
+  assertEqual(personas.map(p => p.id).sort(), ['freelance-designer', 'govt-psu', 'metro-it', 'resident-doctor', 'school-teacher', 'shop-heir']);
 });
 
 test('personas differ in the ways the intent says they should', async () => {

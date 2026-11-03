@@ -48,6 +48,7 @@ export function createState(persona, params, { seed, retirementAge, custom = nul
       employerHealthCover: persona.career.employerHealthCover,
       pension: persona.career.pension,
       skillPayoff: persona.career.skillPayoff,
+      severanceMonths: persona.career.severanceMonths ?? null, // null: whatever the layoff event says
     },
 
     // balances

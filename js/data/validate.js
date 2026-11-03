@@ -106,9 +106,10 @@ export const schemas = {
     obligations: { parentsSupportMonthly: 'number', siblingSupportMonthly: 'number' },
     career: {
       salaryGrowthPct: 'number', jobSwitchJumpPct: 'number', layoffRisk: 'number', cyclicality: 'number',
-      pension: 'boolean', employerHealthCover: 'boolean', skillPayoff: 'number',
+      pension: 'boolean', employerHealthCover: 'boolean', skillPayoff: 'number', severanceMonths: 'number?',
     },
     biases: { lifestyleCreep: 'number', panicSell: 'number', overConservatism: 'number' },
+    eventText: 'object?',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
   theme: {

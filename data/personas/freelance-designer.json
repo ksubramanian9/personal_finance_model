@@ -1,0 +1,59 @@
+{
+  "id": "freelance-designer",
+  "firstName": "Kavya",
+  "name": "Kavya, the Freelance Designer",
+  "emoji": "🎨",
+  "accent": "accent2",
+  "tagline": "Her own boss: great months, lean months, no safety net.",
+  "story": "Left the agency to freelance on her own terms in Pune. When clients say yes the money is lovely; when they go quiet it is not. No employer cover, no provident fund, no pension, and nobody else to fall back on but the clients she keeps.",
+  "profile": {
+    "startAge": 24,
+    "city": "Pune",
+    "cityTier": 1,
+    "education": "B.Des",
+    "job": "Freelance UI designer"
+  },
+  "money": {
+    "startingSalary": 540000,
+    "startingSavings": 80000,
+    "startingDebt": 0,
+    "monthlyExpenses": 14000,
+    "monthlyRent": 12000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 5000,
+    "siblingSupportMonthly": 0
+  },
+  "career": {
+    "salaryGrowthPct": 6.8,
+    "jobSwitchJumpPct": 25,
+    "layoffRisk": 0.09,
+    "cyclicality": 1,
+    "skillPayoff": 1.3,
+    "severanceMonths": 0,
+    "pension": false,
+    "employerHealthCover": false
+  },
+  "biases": {
+    "lifestyleCreep": 0.5,
+    "panicSell": 0.6,
+    "overConservatism": 0.2
+  },
+  "eventText": {
+    "job_loss": {
+      "name": "A big client left",
+      "emoji": "📉",
+      "story": "Your biggest client walked away and the work dried up for {months} months. Your new clients paid {pct}% less."
+    },
+    "job_offer": {
+      "name": "A big new client",
+      "emoji": "🤝",
+      "story": "A big new client came along and took you on. Your income jumped {pct}%."
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative: a mid-level independent designer in a large city, mid-2020s. Her yearly billings after costs are the salary. A 9% yearly chance of losing a big client (layoff risk), income that follows the economy fully, no severance and no employer health cover are the point of the persona. Base pay growth of 6.8% a year is nominal (about 2.3 points above the 4.5% inflation average).",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

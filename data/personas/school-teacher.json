@@ -1,0 +1,58 @@
+{
+  "id": "school-teacher",
+  "firstName": "Sneha",
+  "name": "Sneha, the School Teacher",
+  "emoji": "📚",
+  "accent": "accent3",
+  "tagline": "A modest salary and a family that counts on it.",
+  "story": "Teaches at a private school in Coimbatore. The pay is modest and so is the cover: no pension, no employer health plan. Her parents and her brother lean on her salary, so every rupee has to do two jobs, and one bad year can undo a lot.",
+  "profile": {
+    "startAge": 23,
+    "city": "Coimbatore",
+    "cityTier": 2,
+    "education": "B.Ed",
+    "job": "Teacher, private school"
+  },
+  "money": {
+    "startingSalary": 420000,
+    "startingSavings": 15000,
+    "startingDebt": 0,
+    "monthlyExpenses": 9000,
+    "monthlyRent": 5000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 8000,
+    "siblingSupportMonthly": 4000
+  },
+  "career": {
+    "salaryGrowthPct": 5,
+    "jobSwitchJumpPct": 10,
+    "layoffRisk": 0.02,
+    "cyclicality": 0.2,
+    "skillPayoff": 0.5,
+    "pension": false,
+    "employerHealthCover": false
+  },
+  "biases": {
+    "lifestyleCreep": 0.15,
+    "panicSell": 0.5,
+    "overConservatism": 0.9
+  },
+  "eventText": {
+    "job_loss": {
+      "name": "School cutbacks",
+      "emoji": "📉",
+      "story": "The school cut its staff and you were out of work for {months} months. Your next school paid {pct}% less."
+    },
+    "job_offer": {
+      "name": "A better school",
+      "emoji": "📞",
+      "story": "A better school offered you a post. Your pay rose {pct}%."
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative: a teacher at a private school in a tier-2 city, mid-2020s, earning about 35,000 a month and supporting parents and a sibling. The thin safety net (no employer cover, no pension) and the heavy family support are the point. Pay growth of 5% a year is nominal (0.5 points above the 4.5% inflation average).",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

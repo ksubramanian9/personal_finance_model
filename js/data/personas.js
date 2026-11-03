@@ -12,6 +12,11 @@ export function checkPersona(p, label) {
     if (typeof v !== 'number' || v < 0 || v > 1) problems.push(`"biases.${k}" should be between 0 and 1`);
   }
   if (p.career.skillPayoff < 0 || p.career.skillPayoff > 2) problems.push('"career.skillPayoff" should be between 0 and 2 (0 = skills do not move pay)');
+  if (p.career.severanceMonths !== undefined && (p.career.severanceMonths < 0 || p.career.severanceMonths > 12)) problems.push('"career.severanceMonths" should be from 0 to 12 (months of pay on losing the job)');
+  for (const [id, t] of Object.entries(p.eventText ?? {})) {
+    if (!t || typeof t !== 'object') { problems.push(`"eventText.${id}" should be { name, emoji, story }`); continue; }
+    for (const f of ['name', 'emoji', 'story']) if (t[f] !== undefined && (typeof t[f] !== 'string' || !t[f])) problems.push(`"eventText.${id}.${f}" should be text`);
+  }
   if (p.career.layoffRisk < 0 || p.career.layoffRisk > 1) problems.push('"career.layoffRisk" should be between 0 and 1');
   if (p.career.cyclicality < 0 || p.career.cyclicality > 1) problems.push('"career.cyclicality" should be between 0 and 1 (0 = immune to the economy, 1 = fully exposed)');
   if (!ACCENTS.includes(p.accent)) problems.push(`"accent" should be one of ${ACCENTS.join(', ')}`);

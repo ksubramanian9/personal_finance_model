@@ -1006,3 +1006,42 @@ test('a custom life resumes as a custom life', () => {
   playStageScreen(v);
   assert(/10 steady\./.test(text(v.root)), 'still steady weather after resuming');
 });
+
+// ---- more personas ----
+
+test('the picker offers six people, and each one shows a starting line without stray words', () => {
+  const g = newGame(4271);
+  click(g.root, /Let's start/);
+  const cards = findAll(g.root, n => hasClass(n, 'persona-card'));
+  assertEqual(cards.length, 6);
+  for (let i = 0; i < cards.length; i++) {
+    findAll(g.root, n => hasClass(n, 'persona-card'))[i].click();
+    const t = text(g.root);
+    assert(new RegExp(`Meet ${personas[i].firstName}`).test(t), `${personas[i].firstName} introduced`);
+    assert(/earns a year/.test(t) && /Begin this life/.test(t));
+    assert(!/undefined|null|NaN|false|\[object/.test(t), `no stray words for ${personas[i].id}`);
+  }
+});
+
+test('a persona\'s own words for job events replace the standard ones on the results', () => {
+  const kavya = personas.findIndex(p => p.id === 'freelance-designer');
+  let seen = false;
+  for (let seed = 1; seed <= 20 && !seen; seed++) {
+    const g = newGame(seed);
+    begin(g, kavya);
+    playStageScreen(g);
+    const t = text(g.root);
+    assert(!/Layoff|Recruiter's call/.test(t), 'the standard job words never appear for her');
+    if (/A big client left|A big new client/.test(t)) seen = true;
+  }
+  assert(seen, 'her own words showed up');
+});
+
+test('a persona who starts at 26 begins mid-stage and plays to the end', () => {
+  const rohan = personas.findIndex(p => p.id === 'resident-doctor');
+  const g = newGame(4271);
+  begin(g, rohan);
+  assert(/Early career · age 26 to 32/.test(text(g.root)), text(g.root).slice(0, 200));
+  finish(g, {});
+  assert(/Could you stop working/.test(text(g.root)));
+});

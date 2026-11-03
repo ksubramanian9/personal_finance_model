@@ -9,6 +9,7 @@ import { loadStages } from '../data/stages.js';
 import { loadJSON } from '../data/loader.js';
 import { schemas } from '../data/validate.js';
 import { createAbout } from '../ui/about.js';
+import { createThemeController, createThemeToggle } from '../ui/theme.js';
 
 const results = [];
 const check = (name, ok, detail = '') => results.push({ name, ok: Boolean(ok), detail: ok ? '' : detail });
@@ -121,7 +122,22 @@ async function run() {
   check('and closes again', about.element.open === false);
   about.element.remove();
 
-  // 6. Storage in this browser.
+  // 6. The theme button: Automatic, Light, Dark, and round again, on the real page.
+  const themeData = await loadJSON('data/theme.json', { schema: schemas.theme, label: 'theme.json' });
+  const control = createThemeController({ theme: themeData, root: document.documentElement, store: createStore(memory()), media: globalThis.matchMedia?.('(prefers-color-scheme: dark)') });
+  const toggle = createThemeToggle(control);
+  document.body.append(toggle);
+  const was = document.documentElement.dataset.theme;
+  toggle.click(); toggle.click();
+  check('the theme button reaches Dark', document.documentElement.dataset.theme === 'dark' && getComputedStyle(document.documentElement).getPropertyValue('--c-bg').trim() === themeData.dark.colors.bg);
+  toggle.click();
+  check('and goes back to Automatic', toggle.getAttribute('aria-label').includes('Automatic'));
+  check('the button sits at the top right', (() => { const r = toggle.getBoundingClientRect(); return r.right > window.innerWidth - 40 && r.top < 40; })(), JSON.stringify(toggle.getBoundingClientRect()));
+  control.cycle(); control.cycle(); control.cycle(); // back to where we were
+  document.documentElement.dataset.theme = was ?? 'light';
+  toggle.remove();
+
+  // 7. Storage in this browser.
   check('this browser allows saving a life', browserStore().available, 'localStorage is blocked or missing; the game still works but remembers nothing');
 }
 

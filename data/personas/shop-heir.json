@@ -1,0 +1,54 @@
+{
+  "id": "shop-heir",
+  "firstName": "Imran",
+  "name": "Imran, the Family-Shop Heir",
+  "emoji": "🏪",
+  "accent": "accent1",
+  "tagline": "The shop pays for the whole joint family, in good years and bad.",
+  "story": "Took over the family hardware shop in a tier-2 town. Income rises and falls with the neighbourhood and the economy, there is no employer cover or pension, and the joint family leans on the shop. There is some family capital to start with, and a real fear of selling anything in a bad year.",
+  "profile": {
+    "startAge": 24,
+    "city": "Nashik",
+    "cityTier": 2,
+    "education": "B.Com",
+    "job": "Runs the family hardware shop"
+  },
+  "money": {
+    "startingSalary": 600000,
+    "startingSavings": 300000,
+    "startingDebt": 0,
+    "monthlyExpenses": 12000,
+    "monthlyRent": 3000
+  },
+  "obligations": {
+    "parentsSupportMonthly": 10000,
+    "siblingSupportMonthly": 5000
+  },
+  "career": {
+    "salaryGrowthPct": 5,
+    "jobSwitchJumpPct": 0,
+    "layoffRisk": 0.04,
+    "cyclicality": 1,
+    "skillPayoff": 0.7,
+    "severanceMonths": 0,
+    "pension": false,
+    "employerHealthCover": false
+  },
+  "biases": {
+    "lifestyleCreep": 0.3,
+    "panicSell": 0.7,
+    "overConservatism": 0.7
+  },
+  "eventText": {
+    "job_loss": {
+      "name": "A bad stretch at the shop",
+      "emoji": "📉",
+      "story": "Business turned bad and the shop's takings fell for {months} months. When it recovered you earned {pct}% less."
+    }
+  },
+  "provenance": {
+    "basis": "Illustrative: the owner-manager of a small family shop in a tier-2 city, mid-2020s, drawing about 50,000 a month, with 3 lakh of family capital. Income that follows the economy fully, a 4% yearly chance of a bad stretch (layoff risk), no severance, no employer cover and heavy joint-family support are the point. The game does not model the shop itself or its property. Pay growth of 5% a year is nominal.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

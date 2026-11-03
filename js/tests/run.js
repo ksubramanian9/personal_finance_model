@@ -14,6 +14,8 @@ import './capability.test.js';
 import './nudges.test.js';
 import './level3.test.js';
 import './about.test.js';
+import './morepersonas.test.js';
+import './theme.test.js';
 import './explain.test.js';
 import './charts.test.js';
 import './stages.test.js';
