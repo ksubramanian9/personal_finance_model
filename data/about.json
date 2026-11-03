@@ -1,0 +1,39 @@
+{
+  "title": "About this tool",
+  "sections": [
+    {
+      "heading": "What it is",
+      "paragraphs": [
+        "An educational game about a lifetime of money for a young professional in India. Pick a person, make the big calls at each stage of life, and watch how your choices and a bit of luck add up over the decades."
+      ]
+    },
+    {
+      "heading": "What it is not",
+      "paragraphs": [
+        "This is not financial, tax or investment advice. The numbers are illustrative and simplified, and real life, real laws and real markets are messier. Talk to a qualified adviser before you decide anything with real money."
+      ]
+    },
+    {
+      "heading": "Where the numbers come from",
+      "paragraphs": [
+        "Most numbers are rounded game values or rough estimates from public sources as of 2026 (the RBI, tax rules, bank rates, press summaries). Every one has a source note and a confidence level. Under \"Advanced: under the hood\" on the screen where you pick a person, \"Where the numbers come from\" lists them all."
+      ]
+    },
+    {
+      "heading": "What is simplified",
+      "bullets": [
+        "Only the new income-tax regime, with no deductions to optimise.",
+        "One kind of home to buy, with one fixed-rate 20-year loan.",
+        "A partner is an income, not a second person with a career of their own.",
+        "Money you cannot spend (a home you live in) is not counted as savings.",
+        "Luck comes from a seed: the same seed and the same choices give the same life."
+      ]
+    },
+    {
+      "heading": "Your data",
+      "paragraphs": [
+        "Nothing leaves your browser. Your progress, your last choice of person and your display choices are saved on this device only. \"Forget my progress\" on the first screen clears a saved life."
+      ]
+    }
+  ]
+}

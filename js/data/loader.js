@@ -22,11 +22,16 @@ export async function loadJSON(path, { schema, label, fetchImpl = fetch } = {}) 
 }
 
 // Writes theme tokens onto an element as CSS custom properties.
-export function applyTheme(theme, root) {
+export function applyTheme(theme, root, scheme = 'light') {
+  const dark = scheme === 'dark' && theme.dark;
+  const colors = { ...theme.colors, ...(dark ? theme.dark.colors : {}) };
+  const chart = { ...theme.chart, ...(dark ? theme.dark.chart : {}) };
   const set = (name, value) => root.style.setProperty(name, value);
-  for (const [k, v] of Object.entries(theme.colors)) set(`--c-${k}`, v);
+  for (const [k, v] of Object.entries(colors)) set(`--c-${k}`, v);
   for (const [k, v] of Object.entries(theme.sizes)) set(`--s-${k}`, v);
-  for (const [k, v] of Object.entries(theme.chart)) set(`--ch-${k}`, v);
+  for (const [k, v] of Object.entries(chart)) set(`--ch-${k}`, v);
+  set('color-scheme', dark ? 'dark' : 'light'); // so scrollbars and form controls follow
+  if (root.dataset) root.dataset.theme = dark ? 'dark' : 'light';
   set('--f-display', theme.fonts.display);
   set('--f-body', theme.fonts.body);
 }

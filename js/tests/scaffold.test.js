@@ -1,6 +1,7 @@
 import { test, assert, assertEqual, assertThrows } from './harness.js';
 import { validate, schemas, ValidationError } from '../data/validate.js';
 import { loadJSON, applyTheme } from '../data/loader.js';
+import { getFetch } from './dataFetch.js';
 
 const goodTheme = {
   fonts: { display: 'x', body: 'y' },
@@ -86,4 +87,19 @@ test('applyTheme writes CSS custom properties', () => {
   assertEqual(props['--f-display'], 'x');
   assertEqual(props['--ch-equity'], '#c5');
   assertEqual(props['--ch-grid'], '#e');
+});
+
+test('the real theme has a dark scheme with the same keys, and applyTheme picks it', async () => {
+  const theme = await (await getFetch())('data/theme.json').then(r => r.json());
+  assertEqual(Object.keys(theme.dark.colors).sort(), Object.keys(theme.colors).sort());
+  assertEqual(Object.keys(theme.dark.chart).sort(), Object.keys(theme.chart).sort());
+  const apply = (scheme) => { const props = {}; applyTheme(theme, { style: { setProperty: (k, v) => { props[k] = v; } }, dataset: {} }, scheme); return props; };
+  const light = apply('light');
+  const dark = apply('dark');
+  assertEqual(light['--c-bg'], theme.colors.bg);
+  assertEqual(dark['--c-bg'], theme.dark.colors.bg);
+  assertEqual(dark['--ch-cash'], theme.dark.chart.cash);
+  assertEqual([light['color-scheme'], dark['color-scheme']], ['light', 'dark']);
+  assertEqual(dark['--s-base'], light['--s-base']); // sizes do not change
+  assertEqual(apply('whatever')['--c-bg'], theme.colors.bg); // unknown scheme falls back to light
 });

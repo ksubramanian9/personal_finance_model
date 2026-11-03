@@ -6,6 +6,9 @@ import { createStore, browserStore } from '../ui/storage.js';
 import { loadParams } from '../data/params.js';
 import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
+import { loadJSON } from '../data/loader.js';
+import { schemas } from '../data/validate.js';
+import { createAbout } from '../ui/about.js';
 
 const results = [];
 const check = (name, ok, detail = '') => results.push({ name, ok: Boolean(ok), detail: ok ? '' : detail });
@@ -51,6 +54,7 @@ async function run() {
     flow.showLanding();
     check(`${label}: the landing page shows`, has(/Let's start|Start a new life/));
     press(/Let's start|Start a new life/);
+    check(`${label}: focus moves to the new screen's heading`, document.activeElement?.tagName === 'H1', document.activeElement?.tagName);
     host.querySelectorAll('.persona-card')[personaIndex].click();
     press(/Begin this life/);
     for (let i = 0; i < stages.length; i++) {
@@ -108,7 +112,16 @@ async function run() {
   check('the Advanced panel and data browser exist', host.querySelector('details.hood') && host.querySelectorAll('details.source').length >= 20, `${host.querySelectorAll('details.source').length} sources`);
   check('the page has one main landmark and a heading', document.querySelectorAll('main').length === 1 && host.querySelector('h1'));
 
-  // 5. Storage in this browser.
+  // 5. The About panel opens as a real dialog and closes again.
+  const about = createAbout(await loadJSON('data/about.json', { schema: schemas.about, label: 'about.json' }));
+  document.body.append(about.element);
+  about.open();
+  check('the About panel opens as a dialog', about.element.open === true && /not financial, tax or investment advice/.test(about.element.textContent));
+  about.close();
+  check('and closes again', about.element.open === false);
+  about.element.remove();
+
+  // 6. Storage in this browser.
   check('this browser allows saving a life', browserStore().available, 'localStorage is blocked or missing; the game still works but remembers nothing');
 }
 

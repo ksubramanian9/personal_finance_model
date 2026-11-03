@@ -85,6 +85,7 @@ export const schemas = {
     affordabilityBuffer: 'number', forcedSaleDebtMonths: 'number',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  about: { title: 'string', sections: 'array' },
   tax: {
     incomeTax: 'object', instruments: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

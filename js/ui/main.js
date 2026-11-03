@@ -6,6 +6,7 @@ import { schemas } from '../data/validate.js';
 import { h, mount } from './dom.js';
 import { createFlow } from './flow.js';
 import { browserStore } from './storage.js';
+import { createAbout } from './about.js';
 
 const app = document.getElementById('app');
 
@@ -19,12 +20,21 @@ function showError(err) {
 async function boot() {
   try {
     const theme = await loadJSON('data/theme.json', { schema: schemas.theme, label: 'theme.json' });
-    applyTheme(theme, document.documentElement);
+    // The colour scheme follows the device (and its changes); ?theme=dark or ?theme=light forces one.
+    const media = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+    const forced = new URLSearchParams(location.search).get('theme');
+    const scheme = () => (forced === 'dark' || forced === 'light' ? forced : media?.matches ? 'dark' : 'light');
+    applyTheme(theme, document.documentElement, scheme());
+    media?.addEventListener?.('change', () => applyTheme(theme, document.documentElement, scheme()));
     if (theme.fonts.googleFontsUrl) {
       document.head.append(h('link', { rel: 'stylesheet', href: theme.fonts.googleFontsUrl }));
     }
     const params = await loadParams();
     const personas = await loadPersonas();
+    // The About panel, opened from the footer.
+    const about = createAbout(await loadJSON('data/about.json', { schema: schemas.about, label: 'about.json' }));
+    document.body.append(about.element);
+    document.getElementById('about-link')?.addEventListener('click', about.open);
     const stagesData = await loadStages({ instrumentIds: params.instruments.map(i => i.id) });
     const { stages, decisions } = stagesData;
     // Files the Level 3 data browser lists besides the params (each carries its own provenance).

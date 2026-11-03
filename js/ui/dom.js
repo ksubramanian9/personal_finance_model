@@ -2,6 +2,15 @@
 // (which the DOM would otherwise print as the words "undefined" / "null" / "false").
 export function mount(root, ...children) {
   root.replaceChildren(...children.flat().filter(c => c != null && c !== false));
+  // On the main screen area, move focus to the new screen's heading so keyboard and screen-reader users
+  // land at the top of what changed (screen readers read the heading; the area is not a live region).
+  if (root.hasAttribute?.('data-announce')) {
+    const heading = root.querySelector?.('h1');
+    if (heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus?.();
+    }
+  }
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';

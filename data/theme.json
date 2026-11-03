@@ -40,8 +40,40 @@
     "band": "#52514e"
   },
   "provenance": {
-    "basis": "Chart colours are the first six slots of the dataviz skill reference palette in fixed order (blue, orange, aqua, yellow, magenta, green), validated with its script against a white card: CVD adjacent dE 9.1, normal-vision 19.6 (the sixth slot, green, was added for the home and changes neither number). Aqua, yellow and magenta sit below 3:1 on white, so every chart ships a legend, a readout and a year-by-year table. Entities keep their colour everywhere: cash blue, fixed deposits orange, provident funds aqua, gold yellow, equity magenta, home green. Loans are neutral grey (they hang below the axis).",
+    "basis": "Chart colours are the first six slots of the dataviz skill reference palette in fixed order (blue, orange, aqua, yellow, magenta, green), validated with its script against a white card: CVD adjacent dE 9.1, normal-vision 19.6 (the sixth slot, green, was added for the home and changes neither number). Aqua, yellow and magenta sit below 3:1 on white, so every chart ships a legend, a readout and a year-by-year table. Entities keep their colour everywhere: cash blue, fixed deposits orange, provident funds aqua, gold yellow, equity magenta, home green. Loans are neutral grey (they hang below the axis). Dark scheme (follows the device setting): page and card colours are game choices (ink on background 16:1, secondary ink 10:1, dark ink on the yellow highlight 10:1); the chart colours are the reference palette's dark steps (blue, orange, aqua, yellow, magenta, green), validated with its script against its dark surface #1a1a19: CVD adjacent dE 8.4, normal-vision 19.3, all six at least 3:1. The chart card here is a slightly purple dark (#1f1c33) rather than #1a1a19, a near-identical surface, so the validated numbers carry over.",
     "confidence": "high",
     "asOf": 2026
+  },
+  "dark": {
+    "colors": {
+      "bg": "#14121f",
+      "surface": "#1f1c33",
+      "ink": "#f2eefc",
+      "inkSoft": "#c1b9e3",
+      "primary": "#ffd23f",
+      "primaryInk": "#2b2350",
+      "accent1": "#2ec4b6",
+      "accent2": "#ff6f9c",
+      "accent3": "#9b83ff",
+      "good": "#3ccf93",
+      "warn": "#f0a020",
+      "bad": "#ff6b77"
+    },
+    "chart": {
+      "cash": "#3987e5",
+      "fd": "#d95926",
+      "pf": "#199e70",
+      "gold": "#c98500",
+      "equity": "#d55181",
+      "home": "#008300",
+      "loans": "#898781",
+      "earned": "#3987e5",
+      "spent": "#d95926",
+      "surface": "#1f1c33",
+      "grid": "#383553",
+      "axis": "#6d6890",
+      "muted": "#a49fc4",
+      "band": "#c3c2b7"
+    }
   }
 }

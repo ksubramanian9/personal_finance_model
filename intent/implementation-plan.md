@@ -10,7 +10,7 @@ Working rules for every increment:
 - Pick up `intent/open-questions.md` items just before the increment that needs them (flagged below).
 - At the end of each increment, update [architecture.md](architecture.md) so it describes the code as built.
 
-Progress: increments 0, 1, 2, 3, 4, 5, 6, 7 done; 8 done (housing, then family); 9 done (the ending, lifestyle drift, the refined skills model and instinct cards); 10 in parts (remembering and Level 3 done; polish next).
+Progress: increments 0, 1, 2, 3, 4, 5, 6, 7 done; 8 done (housing, then family); all increments 0 to 10 done: v1 is complete.
 
 ## Target layout
 ```

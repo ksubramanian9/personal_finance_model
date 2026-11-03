@@ -13,6 +13,12 @@ Behind a collapsed "Advanced: under the hood" panel on the persona picker (nothi
 - **Where the numbers come from:** a read-only browser listing every provenance block in every data file (26 or more sources) with its source text, confidence and year, and the numbers it covers.
 - **Marking:** a life that used a script or changed numbers is saved as such, resumes as such, and shows a "This life used custom settings" banner on its end screen so it is never mistaken for a default life. "Reset to defaults" clears the script and the changes.
 
+## Polish as built (increment 10)
+- **Colour schemes:** light and dark, following the device (`prefers-color-scheme`) and its changes; `?theme=dark` or `?theme=light` forces one. Both live in `data/theme.json`. The chart colours in dark are the reference palette's dark steps, validated with its script (all six at least 3:1 on the dark surface, adjacent colour-blind separation 8.4). Text on the yellow highlight always uses the dark ink.
+- **Phones:** every screen was checked at phone width in a real browser. Cards stack in one column; charts keep a minimum width and scroll sideways instead of shrinking their text (the readout and the table beside each chart carry the same facts in normal type); tap targets are at least 44px.
+- **Keyboard and screen readers:** every control is a real button, input or details element; focus moves to the new screen's heading on each screen change (the area is not a live region, so nothing is announced twice); charts answer the arrow keys; focus rings are visible; reduced motion turns transitions off.
+- **About and disclaimer:** the footer keeps "Educational tool. Illustrative numbers, not financial or tax advice." and links to an About panel (a native dialog, so it traps focus and closes on Escape) with the full wording, what is simplified and what is kept in the browser. Its text is `data/about.json`.
+
 ## Levels
 **Level 1: Story (default)**
 One life stage at a time, one big question, 2-3 big friendly choice cards. After each stage a decade card with three numbers (net worth, "could you stop working?", a resilience color/emoji) and a one-line event headline. No tables, sliders or percentages. Includes the retirement-age choice, family choices and the occasional nudge card.
