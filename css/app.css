@@ -275,6 +275,7 @@ h1, h2, h3 {
   border: 2px solid var(--c-ink);
   border-radius: 999px;
   background: var(--c-bg);
+  color: var(--c-ink); /* its own text colour: a selected card sets dark ink, which vanishes on this pill in dark mode */
 }
 
 .btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 0 5px 0 var(--c-ink); transform: none; }
