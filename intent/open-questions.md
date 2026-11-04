@@ -7,5 +7,5 @@
 3. ~~**Disclaimer wording.**~~ *Resolved in increment 10: the footer line stays, and an About panel (`data/about.json`) says it in full; see decision 63.*
 4. ~~**Persistence in v1.**~~ *Resolved in the increment 10 grilling: resume a life in progress, plus display settings and the last persona; see [ux-disclosure](ux-disclosure.md) and decision 60.*
 5. ~~**Life expectancy.**~~ *Resolved in the ending grilling: random, hidden until the end, on its own random stream; see [outcomes](outcomes.md) and decision 49.*
-6. **Language.** English only, or Hinglish touches in the informal tone?
+6. **Language.** English only, or Hinglish touches in the informal tone? *Settled for the Learn pages only: plain English (decision 71). Still open for the game itself.*
 7. ~~**Dark theme.**~~ *Resolved in increment 10: a dark scheme follows the device setting, with the chart palette's dark steps validated; see decision 64.*

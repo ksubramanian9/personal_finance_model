@@ -22,5 +22,8 @@
 - Monte Carlo spread view
 - Save and share runs
 
+## Learn pages (planned, any version)
+Eight short reference pages opened on request from the footer or from the matching decision, built pilot-first in four increments. See [learn-pages](learn-pages.md).
+
 ## Why this order
 The debrief is the most valuable learning feature but needs a solid engine first. Two contrasting personas (high variance vs stability) exercise the engine best.

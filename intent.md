@@ -35,6 +35,7 @@ Pick a persona. Move through life stages (early career, family building, peak ea
 | India scope: instruments, tax, costs | [india-scope](intent/india-scope.md) |
 | Outcomes and the debrief | [outcomes](intent/outcomes.md) |
 | The three disclosure levels | [ux-disclosure](intent/ux-disclosure.md) |
+| Learn pages: reference pages on the key concepts (planned) | [learn-pages](intent/learn-pages.md) |
 | Technical ground rules | [tech](intent/tech.md) |
 | v1 / v2 / v3 staging | [roadmap](intent/roadmap.md) |
 | Code architecture as built | [architecture](intent/architecture.md) |
