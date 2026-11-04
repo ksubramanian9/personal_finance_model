@@ -6,6 +6,9 @@ import { loadPersonas } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
 import { getFetch } from './dataFetch.js';
 import { createStore } from '../ui/storage.js';
+import { createLearn } from '../ui/learn.js';
+import { gameNumbers } from '../ui/learnText.js';
+import { loadLearn } from '../data/learn.js';
 
 installFakeDom();
 
@@ -1044,4 +1047,27 @@ test('a persona who starts at 26 begins mid-stage and plays to the end', () => {
   assert(/Early career · age 26 to 32/.test(text(g.root)), text(g.root).slice(0, 200));
   finish(g, {});
   assert(/Could you stop working/.test(text(g.root)));
+});
+
+test('the health question has a quiet Learn link that opens its page; other questions have none; no Learn means no link', async () => {
+  const panel = createLearn(await loadLearn({ fetchImpl }), gameNumbers(params, decisions));
+  const root = createRoot();
+  const flow = createFlow(root, { personas, params, stages, decisions, learn: { pageFor: panel.pageFor, open: panel.open } }, { personaId: null, retirementAge: 60, seed: 4271 });
+  flow.showLanding();
+  const g = { root };
+  begin(g);
+  const link = () => findAll(root, n => n.tagName === 'BUTTON' && /^Learn: /.test(n.textContent));
+  assertEqual(link().length, 0, 'the first question has no matching page');
+  for (let i = 0; i < qIndex(0, 'health'); i++) click(root, /^Next$/);
+  assert(/Hospital bills can wipe out years of saving/.test(text(root)), 'this is the health question');
+  assertEqual(link().map(b => b.textContent), ['Learn: Health insurance']);
+  link()[0].click();
+  assertEqual(panel.element.attrs.open, '', 'the page is open');
+  assert(/How this game treats it/.test(panel.element.textContent));
+  assert(/Hospital bills can wipe out years of saving/.test(text(root)), 'the question is still there underneath');
+  assert(!/Learn: /.test(text(createRoot())), 'nothing else is affected');
+  const bare = newGame();
+  begin(bare);
+  for (let i = 0; i < qIndex(0, 'health'); i++) click(bare.root, /^Next$/);
+  assertEqual(findAll(bare.root, n => n.tagName === 'BUTTON' && /^Learn: /.test(n.textContent)).length, 0, 'without Learn pages there is no link');
 });

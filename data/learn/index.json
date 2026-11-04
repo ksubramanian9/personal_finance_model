@@ -1,0 +1,15 @@
+{
+  "title": "Learn",
+  "intro": "Short reference pages on the money topics in the game: how each one works in India, what to decide, and how the game treats it. General information, not advice.",
+  "pages": [
+    {
+      "id": "health-insurance",
+      "title": "Health insurance",
+      "emoji": "🩺",
+      "blurb": "How cover works, what to look for, and why to buy it early."
+    }
+  ],
+  "decisions": {
+    "health": "health-insurance"
+  }
+}

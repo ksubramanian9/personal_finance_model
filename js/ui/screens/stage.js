@@ -44,7 +44,8 @@ function optionCard(option, selected, isCurrent, onPick, { extras = [], disabled
 }
 
 // One decision at a time. ctx is mutated: ctx.step and ctx.picks.
-// ctx: { persona, stages, stage, decisions, state, params, picks, step, isFirst, doneIds, onPlay }
+// ctx: { persona, stages, stage, decisions, state, params, picks, step, isFirst, doneIds, onPlay, learn? }
+// (learn is { pageFor(decisionId), open(pageId) }; without it no Learn links appear)
 export function renderStageDecisions(root, ctx) {
   const { stage, decisions, state, picks, stages } = ctx;
   ctx.step ??= 0;
@@ -63,6 +64,7 @@ export function renderStageDecisions(root, ctx) {
   const offer = ref.id === 'home' ? homeOffer(state, ctx.params) : null;
   const offerText = offer ? describeOffer(offer, state.priceIndex) : null;
   const yearsLabel = `age ${from} to ${to}`;
+  const learnPage = ctx.learn?.pageFor(ref.id) ?? null; // a quiet link to the matching Learn page, if there is one
 
   mount(root,
     journeyBar(stages, stage.id, ctx.doneIds),
@@ -78,6 +80,8 @@ export function renderStageDecisions(root, ctx) {
         !ctx.isFirst && current?.id === o.id,
         () => { picks[ref.id] = o.id; redraw(); },
         offer ? { extras: o.effects.buyHome ? offerText.buy : [offerText.rent], disabled: o.effects.buyHome === 1 && !offer.affordable } : {}))),
+    learnPage && h('p', { class: 'learn-hint' },
+      h('button', { class: 'link-button', type: 'button', text: `Learn: ${learnPage.title}`, onClick: () => ctx.learn.open(learnPage.id) })),
     h('div', { class: 'actions inline' },
       ctx.step > 0 && h('button', {
         class: 'btn secondary', type: 'button', text: 'Back',

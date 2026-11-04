@@ -1,6 +1,6 @@
 # Learn Pages
 
-**Summary:** Eight short reference pages (banking and credit, health insurance, life insurance, investing and wealth, tax, skills and income, housing, retirement), opened on request from a "Learn" link in the footer or from a quiet link at the matching decision. Each page has real-world India essentials first, then how the game treats the topic. Content is JSON, sourced like the rest of the game's numbers. **Status: planned, not built.** Settled in a grilling session on 2026-11-04; see decisions 68 to 75.
+**Summary:** Eight short reference pages (banking and credit, health insurance, life insurance, investing and wealth, tax, skills and income, housing, retirement), opened on request from a "Learn" link in the footer or from a quiet link at the matching decision. Each page has real-world India essentials first, then how the game treats the topic. Content is JSON, sourced like the rest of the game's numbers. **Status: increment 1 built (container plus the health insurance page); the other seven pages are planned.** Settled in a grilling session on 2026-11-04; see decisions 68 to 76. Increment 1 is waiting for the user's review before more pages are written.
 
 ## Purpose
 Each page does two jobs (decision 68):
@@ -77,8 +77,15 @@ Plain English only, on these pages and across the game (decision 76). The game's
 
 Each increment ends the way the earlier ones did: tests, a real-browser run, update [architecture.md](architecture.md), commit.
 
+## Increment 1 as built
+- Dialog, index, loader and schema, footer "Learn" link, the in-context link on the `health` decision, and the **Health insurance** page. How it was built is under "Learn pages" in [architecture](architecture.md).
+- **Sources used for the page:** the IRDAI (Insurance Products) Regulations 2024 (Gazette of India, 22 March 2024) and the IRDAI Master Circular on Health Insurance Business (29 May 2024), both read as text from irdai.gov.in; confidence high. **One fact is medium confidence:** that individual health premiums have been GST-free since 22 September 2025. It rests on secondary reports; the CBIC notification could not be opened. Check it before relying on it.
+- **Findings worth knowing:** IRDAI's older 48-month waiting period and 8-year moratorium are gone; the current figures are 36 and 60 months. The cashless limits are one hour to decide and three hours to authorise discharge.
+- **For the review:** length (about 430 words are always visible, within the 400 to 600 target, but the whole page is about 1,000 words once the three closed sections are counted, most of it the India facts (about 340)), tone, the "If you are..." notes, and whether the India section is too long.
+
 ## Not decided yet (settle while building)
 - Exact wording and placement of the in-context link on each decision card, and the exact mapping above.
 - Whether collapsible sections should default open on a first visit (current plan: closed).
 - Whether the year bridge's tax line should link to the Tax page.
+- Whether the 400 to 600 word target should count only the visible text or the India facts too (the health page is about 430 visible and about 1,000 in all).
 - Page file names and the index file's shape.

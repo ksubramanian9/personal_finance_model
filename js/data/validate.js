@@ -86,6 +86,15 @@ export const schemas = {
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
   about: { title: 'string', sections: 'array' },
+  learnIndex: { title: 'string', intro: 'string', pages: 'array', decisions: 'object' },
+  learnPage: {
+    id: 'string', title: 'string', emoji: 'string', short: 'string',
+    how: { paragraphs: 'array', bullets: 'array' },
+    decide: { paragraphs: 'array', bullets: 'array', notes: 'array' },
+    traps: 'array', india: 'array',
+    game: { paragraphs: 'array', bullets: 'array' },
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   tax: {
     incomeTax: 'object', instruments: 'object',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },

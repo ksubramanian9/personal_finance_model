@@ -515,6 +515,25 @@ dialog.about { max-width: min(42rem, 92vw); max-height: 85vh; overflow: auto; bo
 dialog.about::backdrop { background: rgba(20, 18, 31, 0.6); }
 dialog.about h2 { margin-top: 0; }
 dialog.about h3 { margin-bottom: 0.25rem; }
+/* Learn pages: the same dialog as About, with an index of topics and one page at a time */
+dialog.learn { max-width: min(46rem, 92vw); }
+.learn-list { list-style: none; padding: 0; margin: 0.75rem 0; display: grid; gap: 0.75rem; }
+.learn-item { width: 100%; text-align: left; font: inherit; color: var(--c-ink); background: var(--c-surface); border: 3px solid var(--c-ink); border-radius: var(--s-radius); padding: 0.75rem 1rem; min-height: 44px; cursor: pointer; display: grid; grid-template-columns: auto 1fr; column-gap: 0.75rem; align-items: center; }
+.learn-item:hover { border-color: var(--c-accent3); }
+.learn-emoji { grid-row: span 2; font-size: 1.75rem; }
+.learn-item-title { font-weight: 700; }
+.learn-item-blurb { color: var(--c-inkSoft); }
+.learn-back { padding-left: 0; }
+.learn-short { font-size: 1.1rem; }
+.learn-fold { margin: 0.5rem 0; border: 2px solid var(--c-inkSoft); border-radius: 0.75rem; padding: 0 1rem; }
+.learn-fold > summary { cursor: pointer; font-weight: 700; padding: 0.75rem 0; min-height: 44px; display: flex; align-items: center; }
+.learn-fold[open] > summary { border-bottom: 1px solid var(--c-inkSoft); margin-bottom: 0.5rem; }
+.learn-fact + .learn-fact { border-top: 1px solid var(--c-inkSoft); }
+.learn-source { margin-top: -0.5rem; }
+.learn-source a { color: var(--c-ink); }
+.learn-notes { padding-left: 1.1rem; }
+.learn-game { background: var(--c-bg); border-radius: 0.75rem; padding: 0.25rem 1rem 0.5rem; margin: 0.75rem 0; }
+.learn-hint { margin: 0.25rem 0 0; text-align: center; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }

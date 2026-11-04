@@ -9,6 +9,9 @@ import { loadStages } from '../data/stages.js';
 import { loadJSON } from '../data/loader.js';
 import { schemas } from '../data/validate.js';
 import { createAbout } from '../ui/about.js';
+import { createLearn } from '../ui/learn.js';
+import { loadLearn } from '../data/learn.js';
+import { gameNumbers } from '../ui/learnText.js';
 import { createThemeController, createThemeToggle } from '../ui/theme.js';
 
 const results = [];
@@ -121,6 +124,25 @@ async function run() {
   about.close();
   check('and closes again', about.element.open === false);
   about.element.remove();
+
+  // 5b. The Learn dialog: the index, a page, the game's own numbers, folds closed, links safe, and focus.
+  const learn = createLearn(await loadLearn(), gameNumbers(params, decisions));
+  document.body.append(learn.element);
+  const opener = document.createElement('button');
+  document.body.append(opener); opener.focus();
+  learn.open();
+  check('the Learn index opens as a dialog with the topics', learn.element.open === true && /Health insurance/.test(learn.element.textContent));
+  learn.element.querySelector('.learn-item').click();
+  check('a Learn page shows, with focus on its heading', /How this game treats it/.test(learn.element.textContent) && document.activeElement?.tagName === 'H2', document.activeElement?.tagName);
+  check('the cover and premium from the game appear on it', /₹5 lakh/.test(learn.element.textContent) && /₹12,000/.test(learn.element.textContent));
+  const folds = [...learn.element.querySelectorAll('details.learn-fold')];
+  check('its collapsible sections start closed and open on a tap', folds.length === 3 && folds.every(d => !d.open) && (folds[0].querySelector('summary').click(), folds[0].open === true));
+  check('external links open safely', [...learn.element.querySelectorAll('a')].every(a => /noopener/.test(a.rel) && a.target === '_blank'));
+  check('and nothing shows a stray word', !/undefined|NaN|\[object|\{health|(^|\W)false(\W|$)/.test(learn.element.textContent));
+  learn.close();
+  check('closing returns focus to where the player was', learn.element.open === false && document.activeElement === opener, document.activeElement?.tagName);
+  opener.remove();
+  learn.element.remove();
 
   // 6. The theme button: Automatic, Light, Dark, and round again, on the real page.
   const themeData = await loadJSON('data/theme.json', { schema: schemas.theme, label: 'theme.json' });

@@ -1,0 +1,89 @@
+{
+  "id": "health-insurance",
+  "title": "Health insurance",
+  "emoji": "🩺",
+  "short": "One hospital bill can undo years of saving. Health insurance pays the hospital for you, up to a limit, in return for a yearly premium. It is cheapest and easiest to get while you are young and healthy, so buy it before you need it.",
+  "how": {
+    "paragraphs": [
+      "You pay a premium each year. If you are admitted to hospital, the insurer pays the bill up to your sum insured (the cover). Many plans pay the hospital directly (cashless) at hospitals the insurer works with, or repay you afterwards (reimbursement)."
+    ],
+    "bullets": [
+      "Waiting periods. A condition you already had is not covered at first. Some named illnesses and treatments are also not covered for an initial period. The policy tells you how long.",
+      "Sub-limits and co-pay. A plan can cap what it pays for some items, such as room rent (a sub-limit), or make you pay a share of each claim (a co-pay). Both are written in the policy, and the cheapest plans often have more of them.",
+      "Staying continuous. Keep the policy running without a break. Waiting periods you have served, and the cover you have built up, carry over if you renew on time or move to another insurer.",
+      "Honesty on the form. Tell the insurer about every condition. A missed one can lead to a rejected claim, until you have had five years of continuous cover."
+    ]
+  },
+  "decide": {
+    "paragraphs": [
+      "Two decisions matter: how much cover, and who is on the policy. Pick a cover big enough that a serious hospital stay does not force you to sell investments or borrow, remembering that hospitals in big cities cost more."
+    ],
+    "bullets": [
+      "Buy your own policy even if your employer gives you cover. Employer cover usually ends with the job, and by then you may be older or have a condition that makes cover harder to get.",
+      "Buy early. A condition you have to declare later is covered only after the waiting period, and the premium rises with your age.",
+      "One family policy shares a single sum insured between everyone on it; separate policies give each person their own. For your parents, a separate policy usually works better, so their claims do not use up yours.",
+      "Renew on time, every time. Do not let the policy lapse to save a small amount."
+    ],
+    "notes": [
+      { "who": "If you are salaried with employer cover", "text": "Treat it as a bonus, not your plan. Buy your own base policy early so you are not starting from zero if you lose the job." },
+      { "who": "If you are self-employed or have no employer cover", "text": "Your own policy is your only protection. Put it ahead of most investing." }
+    ]
+  },
+  "traps": [
+    "Waiting until you are ill. By then the condition is pre-existing and covered only after a wait.",
+    "Relying only on employer cover, which can disappear with a layoff, exactly when a bill hurts most.",
+    "Buying on premium alone. Look at sub-limits, co-pay and exclusions, not just the yearly price.",
+    "Leaving a condition off the form. It can come back as a rejected claim.",
+    "Letting the policy lapse. Late renewal can cost you the waiting periods you have already served."
+  ],
+  "india": [
+    {
+      "text": "The longest waiting period an insurer can set for a pre-existing condition you declare is 36 months of continuous cover. A pre-existing condition is one diagnosed, or treated on a doctor's advice, in the 36 months before the policy began. Named illnesses and treatments can have a waiting period of up to 36 months.",
+      "provenance": { "basis": "IRDAI (Insurance Products) Regulations, 2024, Gazette of India, 22 March 2024: the health insurance schedule, clauses on pre-existing disease, specific waiting period and waiting periods.", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4590475" }
+    },
+    {
+      "text": "After 60 continuous months of cover (counting time on a previous policy that was ported or migrated), the insurer cannot reject a policy or claim for something you failed to disclose, except for established fraud. This is called the moratorium.",
+      "provenance": { "basis": "IRDAI (Insurance Products) Regulations, 2024, health insurance schedule, clause on the moratorium; Master Circular on Health Insurance Business, 29 May 2024, item 13.", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4590475" }
+    },
+    {
+      "text": "Renewal cannot be refused because you made a claim. Renewal premiums on an individual policy are loaded across the insurer's whole book, not raised because of your own claims, although an insurer may give a discount for a good claims record. A delayed renewal within the grace period (15 days if you pay monthly, 30 days otherwise) is not treated as a break.",
+      "provenance": { "basis": "IRDAI (Insurance Products) Regulations, 2024, health insurance schedule, renewal clauses 9.2 to 9.4; Master Circular on Health Insurance Business, 29 May 2024, items 8 and 10.", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4942918" }
+    },
+    {
+      "text": "You can move an indemnity policy to another insurer (port it) and carry over your sum insured, waiting-period credits and no-claim bonus. The old insurer must send the details within 72 hours and the new one must decide within 5 days of receiving them.",
+      "provenance": { "basis": "Master Circular on Health Insurance Business, IRDAI, 29 May 2024, item 12 (portability).", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4942918" }
+    },
+    {
+      "text": "On a new policy of a year or more you have a 30-day free-look period after you receive the documents to cancel if you do not like the terms.",
+      "provenance": { "basis": "Master Circular on Health Insurance Business, IRDAI, 29 May 2024, item 5 (free look period).", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4942918" }
+    },
+    {
+      "text": "For cashless claims the insurer must decide on authorisation within one hour of the request and give final authorisation for discharge within three hours of the hospital's request. Beyond three hours, the extra hospital charges fall on the insurer.",
+      "provenance": { "basis": "Master Circular on Health Insurance Business, IRDAI, 29 May 2024, items 15 and 16.", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4942918" }
+    },
+    {
+      "text": "If a claim is rejected or you are unhappy with the insurer's reply, its response must tell you how to escalate to the Insurance Ombudsman, and the insurer must comply with an ombudsman's award within 30 days.",
+      "provenance": { "basis": "Master Circular on Health Insurance Business, IRDAI, 29 May 2024, items 19 and 20.", "confidence": "high", "asOf": 2024, "url": "https://irdai.gov.in/document-detail?documentId=4942918" }
+    },
+    {
+      "text": "Premiums on individual health policies, family floaters included, have been free of GST since 22 September 2025. This was reported by several secondary sources citing CBIC notification 16/2025-Central Tax (Rate); the notification itself could not be opened.",
+      "provenance": { "basis": "Secondary sources only (an insurance-broker market update and tax-news reports, September 2025). The CBIC notification was not available to check, so verify before relying on it.", "confidence": "medium", "asOf": 2025, "url": "https://www.wtwco.com/en-in/insights/2025/09/wtw-market-update-gst-exemption-on-individual-insurance-premiums" }
+    }
+  ],
+  "game": {
+    "paragraphs": [
+      "The game asks about health cover at the start of each stage. If you rely on work's cover, you have {health.employerCover} of cover a year for your own stays, and only while you hold the job; people whose persona has no employer cover start with none. Your own policy is on top of that."
+    ],
+    "bullets": [
+      "Basic cover is {health.basic.cover} for about {health.basic.premium} a year at age 30. Strong cover is {health.strong.cover} for about {health.strong.premium} a year at age 30. The premium then rises by {health.ageLoadingPct}% of its starting value for every year after 30.",
+      "A hospital stay is paid from the employer cover first, then from yours, and you pay the rest. A parent's health scare is paid from your own cover only, never from work's.",
+      "Left out: waiting periods, sub-limits, co-pay, claim rejections, no-claim bonuses and portability. Every covered bill is paid in full, up to the cover.",
+      "The premiums and cover amounts are rounded game numbers, not quotes. They are listed under \"Where the numbers come from\"."
+    ]
+  },
+  "provenance": {
+    "basis": "Editorial guidance written for this tool from the sources cited next to each fact in \"India\". General rules of thumb (buy early, buy your own cover, read sub-limits, keep cover continuous) are common practice, not a rule of any regulator. Numbers about the game come from its own data files.",
+    "confidence": "medium",
+    "asOf": 2025
+  }
+}

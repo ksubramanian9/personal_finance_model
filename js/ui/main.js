@@ -7,6 +7,9 @@ import { h, mount } from './dom.js';
 import { createFlow } from './flow.js';
 import { browserStore } from './storage.js';
 import { createAbout } from './about.js';
+import { createLearn } from './learn.js';
+import { loadLearn } from '../data/learn.js';
+import { gameNumbers } from './learnText.js';
 import { createThemeController, createThemeToggle } from './theme.js';
 
 const app = document.getElementById('app');
@@ -45,13 +48,29 @@ async function boot() {
     // Files the Level 3 data browser lists besides the params (each carries its own provenance).
     const sources = { 'stages.json': stagesData, ...Object.fromEntries(personas.map(p => [`personas/${p.id}.json`, p])) };
 
+    // The Learn pages, opened from the footer or from a quiet link at a matching decision. They are optional:
+    // if they fail to load the game works as before, with no Learn link.
+    let learn = null;
+    try {
+      const loaded = await loadLearn();
+      const panel = createLearn(loaded, gameNumbers(params, decisions));
+      document.body.append(panel.element);
+      const link = document.getElementById('learn-link');
+      link?.addEventListener('click', () => panel.open());
+      link?.removeAttribute('hidden');
+      learn = { pageFor: panel.pageFor, open: panel.open };
+      for (const [id, page] of Object.entries(loaded.pages)) sources[`learn/${id}.json`] = page;
+    } catch (err) {
+      console.warn('The Learn pages are unavailable:', err.message);
+    }
+
     const saved = store.loadSettings();
     const session = {
       personaId: personas.some(p => p.id === saved.personaId) ? saved.personaId : null, // the last persona played
       retirementAge: [55, 60, 65].includes(saved.retirementAge) ? saved.retirementAge : 60,
       seed: null,
     };
-    const flow = createFlow(app, { personas, params, stages, decisions, sources }, session, store);
+    const flow = createFlow(app, { personas, params, stages, decisions, sources, learn }, session, store);
     // ?seed=4271 replays a run; otherwise every run gets fresh luck.
     session.seed = new URLSearchParams(location.search).get('seed') ?? flow.randomSeed();
     flow.showLanding();

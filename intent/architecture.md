@@ -2,6 +2,8 @@
 
 **Summary:** Three layers with one-way imports: `data` (load and validate JSON) and `engine` (pure simulation) feed `ui` (render and collect choices). Everything tunable lives in JSON. This file describes the code *as built*; the plan in [implementation-plan](implementation-plan.md) says what comes next. Update this file at the end of each increment.
 
+**Learn pages (increment L1, 2026-11-04):** the dialog, index, schema and loader, footer link and in-context link are built, with one page (health insurance). Details under "Learn pages" below.
+
 **Status:** v1 complete as of increment 10 (remembering between visits, Level 3, polish: dark scheme, phone and accessibility pass, About panel). What is left is on the loose-ends list below and in [open-questions](open-questions.md) (language). Planned-but-unbuilt modules are listed at the bottom.
 
 ## Module map (as built)
@@ -25,12 +27,15 @@ data/                   all tunable numbers and content (JSON)
   housing.json          home price by city tier and by economy, the loan, one-off and upkeep costs, forced-sale rule
   tax.json              income-tax slabs, rebate, cess, surcharge; how each instrument is taxed (exempt / interest / capitalGains)
   stages.json           decision library (options + effects) and the ordered life stages
+  learn/index.json      the Learn pages (id, title, blurb) and which decision opens which
+  learn/<id>.json       one Learn page: short version, how it works, what to decide, traps, India facts (each with provenance), how the game treats it
   personas/index.json   lists persona files, in display order
   personas/*.json       one thick persona each
 
 js/data/                load + validate; no DOM, no engine
   validate.js           tiny schema checker + the schemas table
   overrides.js          Level 3: normalizeOverrides, applyOverrides (a copy of params), describeOverrides
+  learn.js              loadLearn: the index and every page it lists, validated up front (ids agree, every decision maps to a page, every India fact has provenance)
   provenance.js         Level 3: collectSources (every provenance block and the numbers it covers)
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks
@@ -62,6 +67,8 @@ js/ui/                  rendering and user input; may import data/ and engine/
   housingText.js        describeOffer: the renting-versus-buying facts shown on the home question
   eventText.js          describeEvent, describeCoping, fillTemplate: event wording
   about.js              createAbout: the About dialog
+  learn.js              createLearn: the Learn dialog (an index of reference pages, one page at a time) and pageFor(decisionId)
+  learnText.js          gameNumbers (the game's own figures for the pages), fill and tokensIn ({health.basic.cover} style tokens)
   theme.js              the colour theme: modes, controller (applies and remembers it), the top-right button
   advanced.js           advancedPanel: seed, economy scripts, overrides, data browser (Level 3)
   storage.js            createStore: settings and a life in progress in localStorage, every call guarded; createNoStore
@@ -164,6 +171,8 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 
 **Add a stage or a choice.** Edit `data/stages.json` only: add an option to a decision, or a stage whose `decisions` reference decision ids. Stages must be contiguous and the last must end with `toAge: null`. `checkStages` reports mistakes in plain words. A new *kind* of effect needs a line in `EFFECT_RANGES` (`js/data/stages.js`), `SETTABLE` (`js/engine/stages.js`) and the tick that uses it.
 
+**Add a Learn page.** Write `data/learn/<id>.json` (copy `health-insurance.json`: six sections, 400 to 600 words, each India fact with its own `provenance` and a `url` to the primary source) and add it to `data/learn/index.json`, with a `decisions` entry if a decision card should link to it. Numbers the game defines are written as `{health.basic.cover}` tokens, never typed; a new token needs a line in `gameNumbers` (`ui/learnText.js`). `loadLearn` and `learn.test.js` check the rest. The pages and their rules are in [learn-pages](learn-pages.md).
+
 **Add a test.** Create `js/tests/<name>.test.js` using `test/assert*` from `harness.js`, then import it in **both** `run.js` (browser) and `run-node.mjs` (Node). Use `getFetch()` from `dataFetch.js` to load real data files in either environment.
 
 ## Running
@@ -177,6 +186,15 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 - Engine tests assert **invariants** (every year's net-worth change is fully explained; balances never negative; determinism; save/reload continues identically) rather than only golden numbers.
 - One **golden-value** test pins seed 4271. When parameters change on purpose, re-pin it; if they did not change, something broke.
 - Data tests load the real files and also feed deliberately broken ones to check error messages.
+
+## Learn pages (as built, increment 1)
+- **Loading.** `main.js` calls `loadLearn()` in a try block after the game's data. If it fails the game runs as before, with no Learn link and no in-context links (a warning goes to the console). Each page is added to the sources the Level 3 data browser lists, as `learn/<id>.json`, so every India fact appears there with its source, confidence and year.
+- **The dialog.** `createLearn` builds a native dialog like About's (focus trapped, Escape closes, the game untouched). `open()` shows the index, `open(pageId)` goes straight to a page; focus lands on the heading on each view. Collapsible sections are `<details>`, closed to begin with: How it works, Common traps, India as of 2026. What to decide and How this game treats it are always visible.
+- **In-context link.** `stage.js` shows a quiet "Learn: <title>" text link under the option cards when `ctx.learn.pageFor(decisionId)` finds a page. `flow.js` passes `data.learn` in as `ctx.learn`. The mapping lives in `data/learn/index.json` (`decisions`), not in code. Only `health` is mapped so far.
+- **Numbers.** Pages write `{health.basic.cover}`-style tokens for any figure the game defines; `fill` turns an unknown token into an error rather than the word "undefined". `learn.test.js` fails if a page types one of those figures.
+- **Tests.** `learn.test.js` (loading, mismatched ids, tokens, provenance, length, the dialog) and one flow test for the link; `smoke.html` opens the dialog in a real browser. Run in headless Edge in increment L1: 396 of 396 tests in `tests.html`, and every check in `smoke.html`. The phone layout was checked in a 390px frame (a narrow headless window is wider than it says).
+- **Gotcha found.** `h()` flattens children one level, so passing `[paragraphs, bullets]` (arrays of arrays) printed "[object Object]"; `learn.js` flattens deeply and drops `false`. The fake DOM caught it.
+- **Not built yet:** the other seven pages, the in-context links for them, and a link from the year bridge's tax line (see [learn-pages](learn-pages.md)).
 
 ## Planned but not built yet
 Tracked in [implementation-plan](implementation-plan.md). New modules expected: `engine/nudges.js`, `outcomes.js`. (`income.js` and `assets.js` from the original plan were folded into `tick.js` and `macro.js`.)

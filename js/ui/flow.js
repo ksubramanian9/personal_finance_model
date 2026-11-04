@@ -128,6 +128,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
       isFirst: game.state.history.length === 0,
       doneIds: doneIds(),
       onPlay: playCurrentStage,
+      learn: data.learn,
     });
     persist('decisions');
   }
