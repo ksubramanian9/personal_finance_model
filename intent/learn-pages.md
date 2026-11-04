@@ -67,7 +67,7 @@ Target 400 to 600 words, about a three-minute read.
 Pages are the same for every player. Where a decision genuinely flips by employment type (employer health cover, EPF, pension, advance tax), the "What to decide" section carries a fixed "If you are salaried / self-employed / in government" note. Nothing reads the current persona. Most pages need one or two such notes; Banking probably none.
 
 ## Language (decision 71)
-Plain English only on these pages. The game's informal tone may show in the short opening line. The game-wide Hinglish question stays open (open question 6).
+Plain English only, on these pages and across the game (decision 76). The game's informal tone may show in the short opening line.
 
 ## Build order (decision 73)
 1. **Increment 1, the container and a pilot.** The Learn dialog, index, schema and validation, footer link, in-context link mechanism, and the **Health insurance** page, fully researched and sourced; tests; a real-browser check. **Stop for the user's review** before writing more: fix template, tone or depth once.
