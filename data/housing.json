@@ -2,18 +2,18 @@
   "cityTiers": {
     "1": {
       "name": "Metro",
-      "homePrice": 8000000,
+      "homePrice": 4500000,
       "provenance": {
-        "basis": "A typical two-bedroom apartment in a large metro such as Bengaluru, in today's rupees. A round illustrative number: no price per square foot was found in this pass.",
+        "basis": "A modest two-bedroom apartment in a large metro, such as an outer-city or smaller flat in Bengaluru, in today's rupees. Tuned down from 80 lakh in November 2026 so that a saver can reach it by 32; a central-city flat costs far more. A round illustrative number: no price per square foot was found in this pass.",
         "confidence": "low",
         "asOf": 2026
       }
     },
     "2": {
       "name": "Tier-2 city",
-      "homePrice": 4000000,
+      "homePrice": 3000000,
       "provenance": {
-        "basis": "A typical two-bedroom apartment in a tier-2 city, in today's rupees. A round illustrative number, about half the metro price; not sourced.",
+        "basis": "A typical two-bedroom apartment in a tier-2 city, in today's rupees. A round illustrative number, about two thirds of the metro price; tuned down from 40 lakh in November 2026 alongside the metro price; not sourced.",
         "confidence": "low",
         "asOf": 2026
       }

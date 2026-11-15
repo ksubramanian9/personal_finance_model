@@ -9,8 +9,7 @@ export function describeOffer(offer, priceIndex) {
     `Home price ${formatINR(offer.price * k)}. You pay ${formatINR(offer.needed * k)} now for the down payment and buying costs.`,
     `Then about ${formatINR(offer.paymentPerMonth * k)} a month for ${offer.years} years, plus upkeep of about ${formatINR(offer.upkeepPerYear * k)} a year.`,
   ];
-  if (!offer.affordable && !offer.owns) {
-    buy.push(`Not yet: you are ${formatINR(offer.shortfall * k)} short in cash and savings.`);
-  }
-  return { rent, buy };
+  // Shown apart from the other facts, so it can stand out on a closed card.
+  const need = !offer.affordable && !offer.owns ? `Not yet: you are ${formatINR(offer.shortfall * k)} short in cash and savings.` : null;
+  return { rent, buy, need };
 }

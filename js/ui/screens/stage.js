@@ -28,7 +28,7 @@ function projectedEnd(stage, state, decisions, picks) {
   return stageEnd(stage, { retirementAge });
 }
 
-function optionCard(option, selected, isCurrent, onPick, { extras = [], disabled = false } = {}) {
+function optionCard(option, selected, isCurrent, onPick, { extras = [], need = null, disabled = false } = {}) {
   return h('button', {
     type: 'button',
     class: `option-card${selected ? ' selected' : ''}${disabled ? ' unavailable' : ''}`,
@@ -40,6 +40,7 @@ function optionCard(option, selected, isCurrent, onPick, { extras = [], disabled
     h('span', { class: 'option-title', text: option.title }),
     h('span', { class: 'option-blurb', text: option.blurb }),
     extras.map(t => h('span', { class: 'option-extra', text: t })),
+    need && h('span', { class: 'option-need', role: 'note', text: need }),
     isCurrent && h('span', { class: 'option-tag', text: 'what you do now' }));
 }
 
@@ -79,7 +80,7 @@ export function renderStageDecisions(root, ctx) {
         picks[ref.id] === o.id,
         !ctx.isFirst && current?.id === o.id,
         () => { picks[ref.id] = o.id; redraw(); },
-        offer ? { extras: o.effects.buyHome ? offerText.buy : [offerText.rent], disabled: o.effects.buyHome === 1 && !offer.affordable } : {}))),
+        offer ? { extras: o.effects.buyHome ? offerText.buy : [offerText.rent], need: o.effects.buyHome ? offerText.need : null, disabled: o.effects.buyHome === 1 && !offer.affordable } : {}))),
     learnPage && h('p', { class: 'learn-hint' },
       h('button', { class: 'link-button', type: 'button', text: `Learn: ${learnPage.title}`, onClick: () => ctx.learn.open(learnPage.id) })),
     h('div', { class: 'actions inline' },

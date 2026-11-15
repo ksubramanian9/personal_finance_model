@@ -100,11 +100,11 @@ test('describeOffer talks in today\'s rupees and names the shortfall', () => {
   s.homePrice *= 2;
   s.rent *= 2;
   const text = describeOffer(homeOffer(s, params), s.priceIndex);
-  assert(/₹80 lakh/.test(text.buy[0]), `price in today's rupees: ${text.buy[0]}`);
-  assert(/short/.test(text.buy.at(-1)), 'shortfall line');
+  assert(/₹45 lakh/.test(text.buy[0]), `price in today's rupees: ${text.buy[0]}`);
+  assert(/short/.test(text.need), 'shortfall line');
   assert(/₹15,000|₹15000/.test(text.rent) || /1\.5 lakh|15,000/.test(text.rent) || /₹15/.test(text.rent), `rent ${text.rent}`);
   s.cash = 1e9;
-  assert(!/short/.test(describeOffer(homeOffer(s, params), s.priceIndex).buy.join(' ')), 'no shortfall line when affordable');
+  assertEqual(describeOffer(homeOffer(s, params), s.priceIndex).need, null);
 });
 
 // ---- buying ----

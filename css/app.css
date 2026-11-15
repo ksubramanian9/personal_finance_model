@@ -457,10 +457,12 @@ h1, h2, h3 {
   .btn { transition: none; }
 }
 
-/* A choice that cannot be taken yet (for example a home you cannot afford) */
-.option-card.unavailable { opacity: 0.6; cursor: not-allowed; }
+/* A choice that cannot be taken yet (for example a home you cannot afford). Only the description is dimmed: the reason stays at full strength. */
+.option-card.unavailable { cursor: not-allowed; }
+.option-card.unavailable > :not(.option-need) { opacity: 0.6; }
 .option-card.unavailable:hover { transform: none; box-shadow: none; }
 .option-extra { font-size: 0.95rem; color: var(--c-inkSoft); text-align: left; }
+.option-need { margin-top: 0.25rem; padding: 0.4rem 0.75rem; font-weight: 700; color: var(--c-ink); background: var(--c-bg); border: 2px solid var(--c-warn); border-left-width: 0.5rem; border-radius: 0.75rem; }
 
 /* The verdict on a finished life */
 .verdict { border-left-width: 12px; }
