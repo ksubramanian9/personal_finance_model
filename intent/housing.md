@@ -4,7 +4,7 @@
 
 ## What the player decides (Level 1)
 - At the start of the "Building a life" stage (about 32) and the "Peak earning" stage (about 42), while still renting: **keep renting**, or **buy a home**. The question is skipped once you own one. (Built in increment 8, part 1.)
-- A buy option is closed, with the shortfall shown, until the player can pay the down payment and one-off costs from cash and savings.
+- A buy option is closed, with the shortfall shown as its own callout, until the player can pay the down payment and one-off costs from cash and savings.
 
 ## Mechanics
 - **Rent** leaves the persona's `monthlyExpenses` and becomes its own line (`housing.monthlyRent` in the persona file). It rises with prices. A tier-1 city rent is higher than a tier-2 city's.

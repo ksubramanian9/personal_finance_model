@@ -69,6 +69,7 @@ async function boot() {
       personaId: personas.some(p => p.id === saved.personaId) ? saved.personaId : null, // the last persona played
       retirementAge: [55, 60, 65].includes(saved.retirementAge) ? saved.retirementAge : 60,
       seed: null,
+      start: {}, // changed starting numbers, by persona id (see personaPicker.js)
     };
     const flow = createFlow(app, { personas, params, stages, decisions, sources, learn }, session, store);
     // ?seed=4271 replays a run; otherwise every run gets fresh luck.

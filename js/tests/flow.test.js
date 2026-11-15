@@ -2,7 +2,7 @@ import { test, assert, assertEqual } from './harness.js';
 import { installFakeDom, createRoot, findAll, buttons, buttonWithText, hasClass } from './fakeDom.js';
 import { createFlow } from '../ui/flow.js';
 import { loadParams } from '../data/params.js';
-import { loadPersonas } from '../data/personas.js';
+import { loadPersonas, personaWithStart } from '../data/personas.js';
 import { loadStages } from '../data/stages.js';
 import { getFetch } from './dataFetch.js';
 import { createStore } from '../ui/storage.js';
@@ -59,6 +59,7 @@ const playNow = (g) => { click(g.root, /^Play these/); resolveNudges(g); };
 function begin(g, personaIndex = 0) {
   click(g.root, /Let's start/);
   findAll(g.root, n => hasClass(n, 'persona-card'))[personaIndex].click();
+  click(g.root, /^Next: set up/);
   click(g.root, /Begin this life/);
 }
 
@@ -99,15 +100,21 @@ test('names come from the persona files: renaming one changes every screen that 
   click(root, /Let's start/);
   assert(/Zoya Without A Comma/.test(text(root)), 'full name on the card');
   findAll(root, n => hasClass(n, 'persona-card'))[0].click();
+  click(root, /^Next: set up/);
   assert(/Meet Zoya/.test(text(root)) &&!/Meet Zoya Without/.test(text(root)), 'first name in the greeting');
 });
 
-test('Begin is only offered once a persona is picked', () => {
+test('the picker moves on only once a persona is picked; Begin is on the next page, which can go back', () => {
   const g = newGame();
   click(g.root, /Let's start/);
-  assert(!buttonWithText(g.root, /Begin this life/), 'no begin button before picking');
+  assert(!buttonWithText(g.root, /^Next: set up/) && !buttonWithText(g.root, /Begin this life/), 'nothing to go on with before picking');
   findAll(g.root, n => hasClass(n, 'persona-card'))[0].click();
-  assert(buttonWithText(g.root, /Begin this life/), 'begin button after picking');
+  assert(buttonWithText(g.root, /^Next: set up/) && !buttonWithText(g.root, /Begin this life/), 'next, but not begin, after picking');
+  click(g.root, /^Next: set up/);
+  assert(buttonWithText(g.root, /Begin this life/) && !findAll(g.root, n => hasClass(n, 'persona-card')).length, 'begin on the second page');
+  click(g.root, /Pick someone else/);
+  assert(findAll(g.root, n => hasClass(n, 'persona-card')).length === 6, 'back on the picker');
+  assert(g.session.personaId === personas[0].id, 'the choice is kept');
 });
 
 test('first question has no "what you do now" tag, Next is enabled by the default pick', () => {
@@ -238,6 +245,7 @@ test('a start age past the first stage skips straight to the stage it is in', ()
   flow.showLanding();
   click(root, /Let's start/);
   findAll(root, n => hasClass(n, 'persona-card'))[0].click();
+  click(root, /^Next: set up/);
   click(root, /Begin this life/);
   assert(/Peak earning/.test(text(root)), 'should start in Peak earning');
   assert(buttons(root).length > 0, 'has buttons');
@@ -254,6 +262,8 @@ test('no screen leaks stray words like "undefined", "null", "NaN" or "false"', (
   snap('picker, nobody chosen yet');
   findAll(g.root, n => hasClass(n, 'persona-card'))[1].click();
   snap('picker, persona chosen');
+  click(g.root, /^Next: set up/);
+  snap('set-up page');
   click(g.root, /Begin this life/);
   for (let i = 0; i < stages.length; i++) {
     for (;;) {
@@ -927,9 +937,9 @@ const chooseScript = (root, id) => {
   radio.checked = true;
   radio.dispatch('change');
 };
-const toPicker = (g) => { click(g.root, /Let's start|Start a new life/); findAll(g.root, n => hasClass(n, 'persona-card'))[0].click(); };
+const toPicker = (g) => { click(g.root, /Let's start|Start a new life/); findAll(g.root, n => hasClass(n, 'persona-card'))[0].click(); click(g.root, /^Next: set up/); }; // the set-up page, where the Advanced panel is
 
-test('the picker has an Advanced panel with a seed, economy scripts, a few numbers and the data browser', () => {
+test('the set-up page has an Advanced panel with a seed, economy scripts, a few numbers and the data browser', () => {
   const g = newGame(4271);
   toPicker(g);
   const t = text(g.root);
@@ -1019,10 +1029,13 @@ test('the picker offers six people, and each one shows a starting line without s
   assertEqual(cards.length, 6);
   for (let i = 0; i < cards.length; i++) {
     findAll(g.root, n => hasClass(n, 'persona-card'))[i].click();
+    click(g.root, /^Next: set up/);
     const t = text(g.root);
     assert(new RegExp(`Meet ${personas[i].firstName}`).test(t), `${personas[i].firstName} introduced`);
-    assert(/earns a year/.test(t) && /Begin this life/.test(t));
+    for (const label of ['earns a year', 'saved so far', 'owes', 'sends home']) assert(t.includes(label), `${label} shown`);
+    assert(/Begin this life/.test(t));
     assert(!/undefined|null|NaN|false|\[object/.test(t), `no stray words for ${personas[i].id}`);
+    click(g.root, /Pick someone else/);
   }
 });
 
@@ -1070,4 +1083,95 @@ test('the health question has a quiet Learn link that opens its page; other ques
   begin(bare);
   for (let i = 0; i < qIndex(0, 'health'); i++) click(bare.root, /^Next$/);
   assertEqual(findAll(bare.root, n => n.tagName === 'BUTTON' && /^Learn: /.test(n.textContent)).length, 0, 'without Learn pages there is no link');
+});
+
+// ---- the starting numbers on the set-up page ----
+
+// The minus or plus button of one starting number: 'a year' (pay), 'saved' (savings), 'Owe' (debt), 'a month' (sends home).
+const stepButton = (root, which, word) => findAll(root, n => n.tagName === 'BUTTON' && new RegExp(`${which === 'more' ? 'more' : 'less'}(?: saved)?$`).test(n.attrs['aria-label'] ?? '') && (n.attrs['aria-label'] ?? '').includes(word))[0];
+const payButton = (root, which) => stepButton(root, which, 'a year');
+const setUpAs = (g, i) => { findAll(g.root, n => hasClass(n, 'persona-card'))[i].click(); click(g.root, /^Next: set up/); };
+const startPicker = (g) => click(g.root, /Let's start/);
+
+test('the starting pay goes up and down by ₹50,000, and says what it usually is', () => {
+  const g = newGame();
+  startPicker(g);
+  setUpAs(g, 0); // Arjun starts on ₹8 lakh
+  assert(/₹8 lakh/.test(text(g.root)) && !/Usually/.test(text(g.root)), 'the usual pay, no note');
+  payButton(g.root, 'more').click();
+  assert(/₹8\.5 lakh/.test(text(g.root)) && /Usually ₹8 lakh/.test(text(g.root)), text(g.root).slice(0, 400));
+  payButton(g.root, 'less').click();
+  payButton(g.root, 'less').click();
+  assert(/₹7\.5 lakh/.test(text(g.root)), 'two steps down');
+  payButton(g.root, 'more').click();
+  assert(/₹8 lakh/.test(text(g.root)) && !/Usually/.test(text(g.root)), 'back to the usual pay');
+});
+
+test('saved so far, owes and sends home also have buttons, with a floor of zero', () => {
+  const g = newGame();
+  startPicker(g);
+  setUpAs(g, 0); // Arjun: ₹50,000 saved, owes ₹4 lakh, sends ₹15,000 a month
+  const stat = (cls) => findAll(g.root, n => hasClass(n, cls))[0].textContent;
+  stepButton(g.root, 'more', 'saved').click();
+  assert(/₹60,000/.test(stat('start-savings')) && /Usually ₹50,000/.test(stat('start-savings')), stat('start-savings'));
+  stepButton(g.root, 'more', 'Owe').click();
+  assert(/₹4\.5 lakh/.test(stat('start-debt')), stat('start-debt'));
+  stepButton(g.root, 'less', 'a month').click();
+  assert(/₹14,000\/month/.test(stat('start-support')) && /Usually ₹15,000\/month/.test(stat('start-support')), stat('start-support'));
+  // down to zero, and no further
+  for (let i = 0; i < 20 && !stepButton(g.root, 'less', 'saved').disabled; i++) stepButton(g.root, 'less', 'saved').click();
+  assert(stepButton(g.root, 'less', 'saved').disabled && /₹0/.test(stat('start-savings')), 'savings stop at zero');
+  for (let i = 0; i < 20 && !stepButton(g.root, 'less', 'Owe').disabled; i++) stepButton(g.root, 'less', 'Owe').click();
+  assert(stepButton(g.root, 'less', 'Owe').disabled && /₹0/.test(stat('start-debt')), 'debt stops at zero');
+  for (let i = 0; i < 20 && !stepButton(g.root, 'less', 'a month').disabled; i++) stepButton(g.root, 'less', 'a month').click();
+  assert(stepButton(g.root, 'less', 'a month').disabled && /₹0\/month/.test(stat('start-support')), 'sends home stops at zero');
+  assert(!stepButton(g.root, 'more', 'saved').disabled, 'can still go up');
+});
+
+test('each person keeps their own starting numbers, and the pay stays within limits', () => {
+  const g = newGame();
+  startPicker(g);
+  setUpAs(g, 0);
+  payButton(g.root, 'more').click();
+  click(g.root, /Pick someone else/);
+  setUpAs(g, 1);
+  assert(!/Usually/.test(text(g.root)), 'the second person is unchanged');
+  click(g.root, /Pick someone else/);
+  setUpAs(g, 0);
+  assert(/₹8\.5 lakh/.test(text(g.root)), 'the first person kept the change');
+  click(g.root, /Pick someone else/);
+  setUpAs(g, personas.findIndex(p => p.id === 'school-teacher')); // ₹4.2 lakh: three steps down hits the floor of ₹3 lakh
+  for (let i = 0; i < 5; i++) if (!payButton(g.root, 'less').disabled) payButton(g.root, 'less').click();
+  assert(payButton(g.root, 'less').disabled && /₹3 lakh/.test(text(g.root)), 'stops at ₹3 lakh');
+  assert(!payButton(g.root, 'more').disabled, 'can still go up');
+});
+
+test('a life begins on the numbers that were set, and a saved life remembers them', () => {
+  const storage = memory();
+  const g = newGame(4271, 60, createStore(storage));
+  startPicker(g);
+  setUpAs(g, 0);
+  payButton(g.root, 'more').click();
+  payButton(g.root, 'more').click(); // ₹9 lakh
+  stepButton(g.root, 'less', 'saved').click(); // ₹40,000
+  stepButton(g.root, 'less', 'Owe').click(); // ₹3.5 lakh
+  stepButton(g.root, 'less', 'a month').click(); // ₹14,000 a month
+  click(g.root, /Begin this life/);
+  const life = createStore(storage).loadLife();
+  assertEqual([life.state.salary, life.state.cash, life.state.debt, life.state.support], [900000, 40000, 350000, 14000 * 12]);
+  assertEqual(life.changes, { salary: 900000, savings: 40000, debt: 350000, support: 14000 });
+  const again = revisit(storage);
+  click(again.root, /Continue/);
+  assertEqual(again.session.start, { [personas[0].id]: { salary: 900000, savings: 40000, debt: 350000, support: 14000 } });
+  assertEqual(personas[0].money.startingSalary, 800000, 'the persona file is untouched');
+});
+
+test('sends home is one amount: the sibling share is kept where it fits', () => {
+  const arjun = personas[0]; // parents 10,000 and sibling 5,000
+  const split = (support) => { const p = personaWithStart(arjun, { support }); return [p.obligations.parentsSupportMonthly, p.obligations.siblingSupportMonthly]; };
+  assertEqual(split(20000), [15000, 5000]);
+  assertEqual(split(3000), [0, 3000]);
+  assertEqual(split(0), [0, 0]);
+  assertEqual(personaWithStart(arjun, {}), arjun, 'no changes, same persona');
+  assertEqual(personaWithStart(arjun, { savings: -5 }).money.startingSavings, 0, 'never below zero');
 });

@@ -553,3 +553,10 @@ dialog.learn { max-width: min(46rem, 92vw); }
 .theme-toggle:hover { transform: translateY(-1px); }
 .theme-toggle:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-ink); }
 #app { padding-top: 3.25rem; } /* room for the button above the first heading */
+
+/* A starting number on the set-up page: the amount, then a minus and a plus button */
+.stepper { display: flex; gap: 0.75rem; margin: 0.4rem 0 0.35rem; } /* the two buttons sit under the amount, so the amount has the whole tile */
+.step-btn { flex: none; width: 2.75rem; height: 2.75rem; padding: 0; font: inherit; font-size: 1.4rem; font-weight: 700; line-height: 1; cursor: pointer; background: var(--c-surface); color: var(--c-ink); border: 3px solid var(--c-ink); border-radius: 50%; box-shadow: 0 3px 0 var(--c-ink); }
+.step-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-ink); }
+.step-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.stat-note { font-size: 0.85rem; color: var(--c-inkSoft); }

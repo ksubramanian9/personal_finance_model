@@ -60,6 +60,7 @@ async function run() {
     press(/Let's start|Start a new life/);
     check(`${label}: focus moves to the new screen's heading`, document.activeElement?.tagName === 'H1', document.activeElement?.tagName);
     host.querySelectorAll('.persona-card')[personaIndex].click();
+    press(/^Next: set up/);
     press(/Begin this life/);
     for (let i = 0; i < stages.length; i++) {
       playStage();
@@ -99,7 +100,7 @@ async function run() {
     const session = { personaId: null, retirementAge: 60, seed: 1234 };
     const flow = createFlow(host, { personas, params, stages, decisions, sources: {} }, session, createStore(storage));
     flow.showLanding(); press(/Let's start/);
-    host.querySelectorAll('.persona-card')[0].click(); press(/Begin this life/);
+    host.querySelectorAll('.persona-card')[0].click(); press(/^Next: set up/); press(/Begin this life/);
     playStage(); // one stage played, its result on screen
     return flow;
   })();

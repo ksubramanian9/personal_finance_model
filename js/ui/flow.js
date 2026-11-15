@@ -3,7 +3,7 @@ import { nextStage, askedDecisions, playRetirement, beginStage, continueStage } 
 import { answerNudge } from '../engine/nudges.js';
 import { stageSummary } from '../engine/summary.js';
 import { h, mount } from './dom.js';
-import { renderPersonaPicker } from './screens/personaPicker.js';
+import { renderPersonaPicker, renderPersonaSetup } from './screens/personaPicker.js';
 import { renderStageDecisions, renderStageResult } from './screens/stage.js';
 import { renderNudge } from './screens/nudge.js';
 import { renderLifeSummary } from './screens/lifeSummary.js';
@@ -12,6 +12,7 @@ import { createNoStore } from './storage.js';
 import { advancedPanel } from './advanced.js';
 import { applyOverrides, normalizeOverrides } from '../data/overrides.js';
 import { collectSources } from '../data/provenance.js';
+import { personaWithStart, changesBetween } from '../data/personas.js';
 
 const randomSeed = () => Math.floor(Math.random() * 9000) + 1000;
 
@@ -52,7 +53,7 @@ export function createFlow(root, data, session, store = createNoStore()) {
   function persist(phase, card = null) {
     if (!game) return;
     store.saveLife({
-      phase, personaId: game.persona.id, seed: session.seed, retirementAge: session.retirementAge,
+      phase, personaId: game.persona.id, seed: session.seed, retirementAge: session.retirementAge, changes: changesBetween(game.persona, data.personas.find(p => p.id === game.persona.id)),
       stageId: phase === 'decisions' ? null : game.stage.id,
       state: game.state, picks: game.picks, startIdx: game.startIdx, picked: game.picked ?? [], endAge: game.endAge ?? null, card,
     });
@@ -62,10 +63,12 @@ export function createFlow(root, data, session, store = createNoStore()) {
     session.seed = life.seed;
     session.retirementAge = life.retirementAge;
     session.personaId = persona.id;
+    const played = personaWithStart(persona, life.changes); // the starting numbers this life was begun with
+    session.start = { ...session.start, [persona.id]: changesBetween(played, persona) };
     const custom = life.state.custom ?? { scriptId: null, overrides: {} };
     session.script = custom.scriptId;
     session.overrides = custom.overrides;
-    game = { persona, params: applyOverrides(data.params, custom.overrides), state: life.state, stage, picks: life.picks ?? {}, startIdx: life.startIdx ?? 0, picked: life.picked ?? [], endAge: life.endAge };
+    game = { persona: played, params: applyOverrides(data.params, custom.overrides), state: life.state, stage, picks: life.picks ?? {}, startIdx: life.startIdx ?? 0, picked: life.picked ?? [], endAge: life.endAge };
     if (life.phase === 'card') showCard(life.card);
     else if (life.phase === 'result') showResult();
     else enterNextStage();
@@ -90,14 +93,22 @@ export function createFlow(root, data, session, store = createNoStore()) {
 
   function showPicker() {
     game = null;
-    renderPersonaPicker(root, data.personas, session, startGame, () => advancedPanel({
+    renderPersonaPicker(root, data.personas, session, showSetup);
+  }
+
+  // The second page: the chosen person's starting numbers, when to stop working, and the Advanced panel.
+  function showSetup() {
+    const persona = data.personas.find(p => p.id === session.personaId);
+    if (!persona) return showPicker();
+    renderPersonaSetup(root, persona, session, startGame, showPicker, () => advancedPanel({
       session, params: data.params, entries, randomSeed,
-      onReset: showPicker,
+      onReset: showSetup,
     }));
   }
 
   // A fresh life for this persona with the session's seed and retirement age.
-  function startGame(persona) {
+  function startGame(chosen) {
+    const persona = personaWithStart(chosen, session.start?.[chosen.id]); // the numbers the player changed, if any
     store.saveSettings({ ...store.loadSettings(), personaId: persona.id, retirementAge: session.retirementAge });
     // Level 3: this life may use fixed weather and a few changed numbers.
     const custom = { scriptId: session.script ?? null, overrides: normalizeOverrides(session.overrides) };

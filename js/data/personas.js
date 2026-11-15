@@ -5,6 +5,40 @@ const DIR = 'data/personas/';
 const ACCENTS = ['accent1', 'accent2', 'accent3'];
 const CONFIDENCE = ['high', 'medium', 'low'];
 
+// The starting numbers the player may change on the set-up page, each in steps within limits. `read` is the
+// persona's own number; amounts are rupees (a year, or a month for `support`).
+export const START_FIELDS = {
+  salary: { label: 'earns a year', step: 50000, min: 300000, max: 3000000, read: (p) => p.money.startingSalary },
+  savings: { label: 'saved so far', step: 10000, min: 0, max: 1000000, read: (p) => p.money.startingSavings },
+  debt: { label: 'owes', step: 50000, min: 0, max: 5000000, read: (p) => p.money.startingDebt },
+  support: { label: 'sends home', step: 1000, min: 0, max: 50000, read: (p) => p.obligations.parentsSupportMonthly + p.obligations.siblingSupportMonthly },
+};
+export const clampStart = (key, value) => Math.min(START_FIELDS[key].max, Math.max(START_FIELDS[key].min, value));
+
+// Every changeable starting number of a persona: { salary, savings, debt, support }.
+export const startOf = (persona) => Object.fromEntries(Object.entries(START_FIELDS).map(([k, f]) => [k, f.read(persona)]));
+
+// A copy of the persona with some starting numbers changed (`changes` holds only the ones that differ).
+// Sends-home is one amount: the sibling's share is kept where it fits, and the parents' share is the rest.
+export function personaWithStart(persona, changes = {}) {
+  const has = (k) => Number.isFinite(changes[k]);
+  if (!Object.keys(START_FIELDS).some(has)) return persona;
+  const value = (k) => (has(k) ? clampStart(k, changes[k]) : START_FIELDS[k].read(persona));
+  const sibling = persona.obligations.siblingSupportMonthly;
+  const parents = Math.max(0, value('support') - sibling);
+  return {
+    ...persona,
+    money: { ...persona.money, startingSalary: value('salary'), startingSavings: value('savings'), startingDebt: value('debt') },
+    obligations: { ...persona.obligations, parentsSupportMonthly: parents, siblingSupportMonthly: value('support') - parents },
+  };
+}
+
+// What differs between a played persona and the one in the file (to restore a saved life's changes).
+export function changesBetween(played, original) {
+  const was = startOf(original);
+  return Object.fromEntries(Object.entries(startOf(played)).filter(([k, v]) => v !== was[k]));
+}
+
 // Checks beyond types: ranges and allowed values.
 export function checkPersona(p, label) {
   const problems = [];

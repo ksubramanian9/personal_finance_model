@@ -22,6 +22,11 @@ A persona carries:
 
 Future ideas (not committed): career-break returner, Gulf/NRI route.
 
+## Choosing and setting up a persona
+The picker is two pages. Page one is only the six people and a "Next: set up …" button. Page two (`renderPersonaSetup`) holds the story, the starting numbers, when to stop working, "Begin this life" (with "Pick someone else" to go back) and the Advanced panel.
+
+Four starting numbers have minus and plus buttons (`START_FIELDS` in `js/data/personas.js`): pay a year (steps of ₹50,000, from ₹3 lakh to ₹30 lakh), saved so far (₹10,000, from zero to ₹10 lakh), owes (₹50,000, from zero to ₹50 lakh) and sends home a month (₹1,000, from zero to ₹50,000). A note under each changed number shows the usual amount. "Sends home" is the parents' and sibling's support as one amount: the sibling's share is kept where it fits and the parents' share is the rest. Each persona keeps its own changes for the visit (`session.start`). The persona file is never edited: `startGame` makes a copy with the new numbers, and a saved life stores what was changed (`changes`) so Continue and "same luck" replays match. Expenses and rent stay as the persona has them, so a lower pay is a tighter life. Changes are not remembered between visits.
+
 ## As built: six personas
 - **Arjun** (metro IT): high growth, layoff risk, supports parents and a sibling.
 - **Meera** (government officer): stable, a pension, a cautious saver.
