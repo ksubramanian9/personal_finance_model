@@ -214,5 +214,5 @@ export function createFlow(root, data, session, store = createNoStore()) {
     });
   }
 
-  return { showLanding, showPicker, randomSeed, disclosure };
+  return { showLanding, showPicker, showSetup, randomSeed, disclosure };
 }

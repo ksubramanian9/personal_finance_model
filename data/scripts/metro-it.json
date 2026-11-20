@@ -1,0 +1,140 @@
+{
+  "personaId": "metro-it",
+  "seed": 35,
+  "freshSeed": 36,
+  "retirementAge": 60,
+  "cards": "resist",
+  "picks": {
+    "early": { "savings": "balanced", "invest": "mixed", "emergency": "none", "health": "none", "growth": "light", "marry": "single" },
+    "family": { "marryLater": "single", "savings": "balanced", "invest": "mixed", "home": "rent", "emergency": "none", "health": "none", "growth": "light" },
+    "peak": { "savings": "balanced", "invest": "mixed", "home": "rent", "growth": "light" },
+    "pre": { "savings": "balanced", "invest": "mixed", "health": "none", "growth": "light", "retire": "at60", "retirementStyle": "comfortable" }
+  },
+  "keyChoices": [
+    {
+      "stage": "early",
+      "decision": "savings",
+      "why": "{firstName} sends {support} home every month and starts with a loan, so saving more means a tighter month now.",
+      "weigh": ["What you can live on today against what you will have at 60.", "Whether the money sent home can change."]
+    },
+    {
+      "stage": "early",
+      "decision": "invest",
+      "why": "{firstName} has almost forty years before the money is needed, which is long enough to ride out bad years, but not to ignore them.",
+      "weigh": ["How much a bad year would hurt against how much a good decade is worth.", "Whether you would really hold on in a crash."]
+    },
+    {
+      "stage": "early",
+      "decision": "emergency",
+      "why": "In the game, a software job has a {layoffRiskPct}% chance of ending in any year. Recruiters still call, but a layoff can come at a bad time.",
+      "weigh": ["Cash in a cushion earns little, but it is there when pay stops.", "What happens if the job ends and the rent and the money sent home still have to be paid."]
+    },
+    {
+      "stage": "early",
+      "decision": "health",
+      "why": "Work's cover is gone the moment the job is, and a hospital bill does not wait for the next job.",
+      "weigh": ["A yearly premium you may never use against a bill you cannot predict.", "The Learn link under this question explains how cover works."]
+    },
+    {
+      "stage": "family",
+      "decision": "home",
+      "why": "A home uses most of {firstName}'s savings now and a loan for twenty years, at the age a layoff can still happen.",
+      "weigh": ["Look at the card: does it say you can afford it, and what is left after you pay?", "Renting is light and easy to leave; owning is a large asset that cannot be eaten."]
+    },
+    {
+      "stage": "family",
+      "decision": "growth",
+      "why": "Pay can jump fast in {firstName}'s line of work, and skills are what move it.",
+      "weigh": ["Time and money spent on learning now against pay later.", "How the effort level changes how the year feels."]
+    }
+  ],
+  "observe": [
+    { "stage": "early", "id": "obs-early", "label": "Did anything shake {firstName}'s plan before 32? How did the money cope?" },
+    { "stage": "family", "id": "obs-family", "label": "Did your answer to the home question still look right ten years later?" }
+  ],
+  "change": {
+    "decision": "invest",
+    "to": "bold",
+    "why": "Putting more of the savings into shares is the classic bigger-reward, bigger-swing choice, and {firstName}'s long horizon makes it tempting."
+  },
+  "overrides": {
+    "choose": {
+      "facilitator": {
+        "discuss": ["Which choice was hardest for {firstName} in particular, given the money sent home and the layoff risk?"]
+      }
+    }
+  },
+  "extras": [
+    {
+      "after": "observe",
+      "id": "layoff",
+      "title": "Look closely at the layoff",
+      "minutes": 5,
+      "student": {
+        "lead": ["Somewhere in {firstName}'s early career the job ends. Find that year on the result screen and open the Why button."],
+        "prompts": [
+          { "id": "layoff-year", "label": "At what age did the job end, and what was the economy like that year?" },
+          { "id": "layoff-coping", "label": "How did the money cope: from cash, by selling investments, or by borrowing? Which of your choices made that possible?" }
+        ]
+      },
+      "facilitator": {
+        "lead": ["This is the persona's own lesson: {firstName}'s layoff risk is the reason the cushion question exists."],
+        "discuss": ["Would a bigger cushion have changed this year? What would it have cost in the other years?"]
+      }
+    }
+  ],
+  "expect": [
+    {
+      "step": "observe",
+      "text": "Luck, whatever the choices: a crash runs from age 29 to 32, and {firstName} loses the job at 32, in the last year of it. With the reference plan, no year needs borrowing.",
+      "checks": [
+        { "type": "regime", "run": "baseline", "regime": "crisis", "fromAge": 29, "toAge": 32 },
+        { "type": "event", "run": "baseline", "event": "job_loss", "fromAge": 32, "toAge": 32 },
+        { "type": "regime", "run": "changed", "regime": "crisis", "fromAge": 29, "toAge": 32 },
+        { "type": "event", "run": "changed", "event": "job_loss", "fromAge": 32, "toAge": 32 },
+        { "type": "borrowed", "run": "baseline", "is": false }
+      ]
+    },
+    {
+      "step": "layoff",
+      "text": "The job ends at 32, in the last year of the crash. With the reference plan the savings and cash cover it without any borrowing.",
+      "checks": [
+        { "type": "event", "run": "baseline", "event": "job_loss", "fromAge": 32, "toAge": 32 },
+        { "type": "borrowed", "run": "baseline", "fromAge": 30, "toAge": 36, "is": false }
+      ]
+    },
+    {
+      "step": "verdict",
+      "text": "With the reference plan the money lasts, with about ₹13 crore spendable at 60 in today's rupees. {firstName} lives only to 68 on this luck, so retirement is short; how long a life lasts is luck too.",
+      "checks": [
+        { "type": "verdict", "run": "baseline", "is": "lasted" },
+        { "type": "metric", "run": "baseline", "metric": "spendableAtRetirementReal", "min": 120000000, "max": 150000000 },
+        { "type": "metric", "run": "baseline", "metric": "deathAge", "min": 68, "max": 68 }
+      ]
+    },
+    {
+      "step": "change",
+      "text": "Going for growth beats the reference plan on this luck: about ₹19 crore spendable at 60, against about ₹13 crore. It also swings more in the crash years.",
+      "checks": [
+        { "type": "higher", "metric": "spendableAtRetirementReal", "a": "changed", "b": "baseline" },
+        { "type": "metric", "run": "changed", "metric": "spendableAtRetirementReal", "min": 175000000, "max": 215000000 },
+        { "type": "verdict", "run": "changed", "is": "lasted" }
+      ]
+    },
+    {
+      "step": "newluck",
+      "text": "The same growth plan on seed 36 ends with only about ₹2 crore spendable at 60, ten times less, and below what the reference plan would have made on that seed (about ₹2.9 crore). Same plan, different luck: a late run of crashes from 48 to 54 hit just before retirement.",
+      "checks": [
+        { "type": "lower", "metric": "spendableAtRetirementReal", "a": "fresh", "b": "changed" },
+        { "type": "metric", "run": "fresh", "metric": "spendableAtRetirementReal", "min": 15000000, "max": 25000000 },
+        { "type": "lower", "metric": "spendableAtRetirementReal", "a": "fresh", "b": "freshFirst" },
+        { "type": "regime", "run": "fresh", "regime": "crisis", "fromAge": 48, "toAge": 54 }
+      ]
+    }
+  ],
+  "provenance": {
+    "basis": "Checked by replaying seeds 35 and 36 with the picks above (tests: scripts.test.js). Figures are in today's rupees and are illustrative, like the rest of the game; if the model is retuned the test says which lines to revisit.",
+    "confidence": "low",
+    "asOf": 2026
+  }
+}

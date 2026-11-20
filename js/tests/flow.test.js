@@ -1175,3 +1175,26 @@ test('sends home is one amount: the sibling share is kept where it fits', () => 
   assertEqual(personaWithStart(arjun, {}), arjun, 'no changes, same persona');
   assertEqual(personaWithStart(arjun, { savings: -5 }).money.startingSavings, 0, 'never below zero');
 });
+
+// ---- opening a person's set-up page from a link ----
+
+test('a link can open a person\'s set-up page directly, with the seed and stopping age already set', () => {
+  const storage = memory();
+  const root = createRoot();
+  const session = { personaId: personas[0].id, retirementAge: 65, seed: '35' };
+  const flow = createFlow(root, { personas, params, stages, decisions }, session, createStore(storage));
+  flow.showSetup();
+  assert(/Set up Arjun's start/.test(text(root)) && buttonWithText(root, /Begin this life/), 'the set-up page');
+  const chosen = findAll(root, n => n.tagName === 'INPUT' && n.attrs.name === 'retirement' && n.checked)[0];
+  assertEqual(chosen.attrs.value, '65');
+  click(root, /Begin this life/);
+  assertEqual(createStore(storage).loadLife().state.seed, '35');
+  assertEqual(createStore(storage).loadLife().retirementAge, 65);
+});
+
+test('showSetup with nobody chosen falls back to the picker', () => {
+  const root = createRoot();
+  const flow = createFlow(root, { personas, params, stages, decisions }, { personaId: null, retirementAge: 60, seed: 1 });
+  flow.showSetup();
+  assert(/Who are you playing\?/.test(text(root)), text(root).slice(0, 100));
+});

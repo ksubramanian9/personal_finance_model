@@ -560,3 +560,42 @@ dialog.learn { max-width: min(46rem, 92vw); }
 .step-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--c-ink); }
 .step-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .stat-note { font-size: 0.85rem; color: var(--c-inkSoft); }
+
+/* Student scripts (scripts.html) */
+a.learn-item { text-decoration: none; }
+.script-time { color: var(--c-inkSoft); margin: 0; }
+.script-tools { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; justify-content: center; margin: 0.5rem 0 0; }
+.script-switch { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 44px; font-weight: 600; cursor: pointer; }
+.script-step h2 { font-size: 1.5rem; }
+.script-minutes { display: inline-block; margin-left: 0.4rem; padding: 0.05rem 0.6rem; font-size: 0.85rem; font-weight: 600; color: var(--c-ink); background: var(--c-bg); border: 2px solid var(--c-ink); border-radius: 999px; vertical-align: middle; }
+.script-page a { color: var(--c-ink); font-weight: 600; overflow-wrap: anywhere; }
+.answer { margin: 1rem 0; }
+.answer label, .script-intro > label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+.script-page textarea, .script-page input[type="text"] { width: 100%; font: inherit; padding: 0.5rem 0.7rem; color: var(--c-ink); background: var(--c-surface); border: 2px solid var(--c-ink); border-radius: 0.75rem; }
+.script-page textarea { min-height: 5rem; resize: vertical; overflow: hidden; }
+.script-intro input[type="text"] { max-width: 22rem; margin-bottom: 0.5rem; }
+.script-choice { margin-top: 1rem; padding: 0.75rem 1rem; background: var(--c-bg); border-radius: 1rem; }
+.script-choice p { margin: 0.25rem 0; }
+.script-options, .script-choice ul { margin: 0.25rem 0; padding-left: 1.25rem; }
+.script-weigh-head, .script-note-head { margin: 0.5rem 0 0.1rem; font-weight: 700; }
+.script-plan { margin: 1rem 0; }
+.script-plan > summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.script-plan h4 { margin: 0.5rem 0 0.1rem; }
+.script-plan ul { margin: 0; padding-left: 1.25rem; }
+/* Facilitator notes: hidden until the switch is on */
+.facilitator-note { display: none; margin: 1rem 0 0; padding: 0.75rem 1rem; color: var(--c-ink); background: var(--c-bg); border: 2px dashed var(--c-inkSoft); border-radius: 1rem; }
+.show-facilitator .facilitator-note { display: block; }
+.facilitator-note p { margin: 0.25rem 0; }
+.facilitator-note ul { margin: 0.1rem 0 0.5rem; padding-left: 1.25rem; }
+.script-note-tag { display: inline-block; padding: 0 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--c-ink); border: 2px solid var(--c-ink); border-radius: 999px; }
+.script-status { min-height: 1.5rem; margin: 0.5rem 0 0; text-align: center; font-weight: 600; }
+.script-finish .actions { margin-top: 0.75rem; }
+@media print {
+  :root { --c-bg: #fff !important; --c-surface: #fff !important; --c-ink: #000 !important; --c-inkSoft: #333 !important; --ch-surface: #fff !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .no-print, .theme-toggle, .footer, #app > .hero + .script-tools { display: none !important; }
+  #app { padding-top: 0; max-width: none; }
+  .card { margin-top: 0.75rem; break-inside: avoid-page; }
+  .script-page textarea { border: 1px solid #666; resize: none; overflow: visible; }
+  .script-page a { text-decoration: none; }
+}

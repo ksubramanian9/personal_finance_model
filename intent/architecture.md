@@ -39,6 +39,7 @@ js/data/                load + validate; no DOM, no engine
   provenance.js         Level 3: collectSources (every provenance block and the numbers it covers)
   loader.js             loadJSON (fetch + friendly errors), applyTheme
   personas.js           loadPersonas: index -> files -> schema -> range checks; START_FIELDS, personaWithStart, startOf, changesBetween (the starting numbers the player may change)
+  scripts.js            loadScripts: the student-script template and each persona's script, checked against the game's stages and decisions (see student-scripts.md)
   stages.js             loadStages + checkStages (ranges, contiguity, same-effects rule, allocation sums)
   params.js             loadParams: engine + macro + instruments + events + tax + housing + family + retirement + capability + nudges, with cross-file checks
 
@@ -59,7 +60,7 @@ js/engine/              pure simulation; no DOM, no fetch, no data/ or ui/ impor
   explain.js            bridge (why net worth moved), chart series, year rows, inflationOver; real or nominal
 
 js/ui/                  rendering and user input; may import data/ and engine/
-  main.js               boot: load theme + data, create the flow, show landing
+  main.js               boot: load theme + data, create the flow, show landing (or, for ?persona=<id>&seed=&retire=, that person's set-up page)
   flow.js               createFlow(root, data, session): screen-to-screen game flow
   dom.js                h(): element builder (textContent); mount(): safe replaceChildren
   format.js             formatINR (lakh/crore)
@@ -71,7 +72,11 @@ js/ui/                  rendering and user input; may import data/ and engine/
   learnText.js          gameNumbers (the game's own figures for the pages), fill and tokensIn ({health.basic.cover} style tokens)
   theme.js              the colour theme: modes, controller (applies and remembers it), the top-right button
   advanced.js           advancedPanel: seed, economy scripts, overrides, data browser (Level 3)
-  storage.js            createStore: settings and a life in progress in localStorage, every call guarded; createNoStore
+  storage.js            createStore: settings, a life in progress and a student's script answers in localStorage, every call guarded; createNoStore
+  scriptMain.js         boot for scripts.html: theme, data, then the index or one script (?persona=<id>, &facilitator=1 starts with the notes showing)
+  scriptPage.js         renderScript (steps, saved text boxes, facilitator switch, print, copy) and renderScriptIndex
+  scriptText.js         buildScript (template + a persona's script -> steps), fillTokens, answersAsText; pure
+  scriptRun.js          playScriptLife / playScriptRuns (replay a script's lives through the engine) and holds (run a claim's check)
   disclosure.js         createDisclosure: the level the player has asked for + real/nominal choice
   charts.js             hand-drawn SVG: netWorthChart (stacked columns), cashflowChart (two lines), niceTicks, stackedDomain
   whyPanel.js           whyPanel (bridge + named forces), yearTable (the table twin), moneyToggle, whyToggle
@@ -154,6 +159,8 @@ data/*.json --fetch--> loader.js --validate.js--> persona / params objects
 ## Recipes
 
 **Add a persona.** Copy `data/personas/metro-it.json`, give it a unique `id`, edit (`name` is the full title shown on cards and the end screen; `firstName` is used in sentences such as "Meet Arjun"; optional `career.severanceMonths` and `eventText` give it its own severance and its own words for events, see `freelance-designer.json`), and add the filename to `data/personas/index.json`. `loadPersonas` validates it (schema in `validate.js`, ranges in `personas.js:checkPersona`) and a card appears. No code change.
+
+**Add a student script for a persona.** Copy `data/scripts/metro-it.json`, set `personaId`, the seed and fresh seed, the reference `picks` (every question of every stage), four to six `keyChoices`, the `change` and the `expect` findings with their `checks`, and list the file in `data/scripts/index.json`. `checkScript` explains mistakes; `scripts.test.js` replays the seed and fails if a claim is no longer true. The full steps are in [student-scripts](student-scripts.md).
 
 **Add a JSON data file.**
 1. Add the file under `data/`.

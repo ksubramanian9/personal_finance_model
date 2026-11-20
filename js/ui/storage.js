@@ -12,6 +12,7 @@ export function createNoStore() {
     available: false,
     loadSettings: () => ({}), saveSettings: () => false,
     loadLife: () => null, saveLife: () => false, clearLife: () => {},
+    loadAnswers: () => ({}), saveAnswers: () => false,
   };
 }
 
@@ -39,6 +40,12 @@ export function createStore(storage) {
       const record = read();
       delete record.life;
       write(record);
+    },
+    // A student's written answers to one script, by script id: { promptId: text }. Kept on this device only.
+    loadAnswers: (scriptId) => read().answers?.[scriptId] ?? {},
+    saveAnswers: (scriptId, answers) => {
+      const record = read();
+      return write({ ...record, answers: { ...record.answers, [scriptId]: answers } });
     },
   };
 }

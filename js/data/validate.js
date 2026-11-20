@@ -107,6 +107,16 @@ export const schemas = {
     instruments: 'array',
     provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
   },
+  scriptTemplate: {
+    title: 'string', intro: 'array', facilitatorIntro: 'array', minutes: 'number', steps: 'array', rubric: 'array',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
+  script: {
+    personaId: 'string', seed: 'number', freshSeed: 'number', retirementAge: 'number', picks: 'object', keyChoices: 'array',
+    change: { decision: 'string', to: 'string', why: 'string' },
+    expect: 'array', observe: 'array?', overrides: 'object?', extras: 'array?',
+    provenance: { basis: 'string', confidence: 'string', asOf: 'number' },
+  },
   persona: {
     id: 'string', firstName: 'string', name: 'string', emoji: 'string', accent: 'string',
     tagline: 'string', story: 'string',

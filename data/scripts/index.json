@@ -1,0 +1,4 @@
+{
+  "template": "template.json",
+  "scripts": ["metro-it.json"]
+}

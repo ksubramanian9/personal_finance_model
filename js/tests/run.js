@@ -20,6 +20,7 @@ import './theme.test.js';
 import './explain.test.js';
 import './charts.test.js';
 import './stages.test.js';
+import './scripts.test.js';
 import './flow.test.js';
 
 const results = await runAll();

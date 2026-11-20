@@ -6,7 +6,8 @@ No build step and no dependencies: HTML, CSS, JavaScript modules and JSON.
 
 ## Run it
 - Serve this folder with a static server (for example the VS Code Live Server extension) and open `index.html`. It will not work from `file://`, because the data files are fetched.
-- `?seed=4271` replays a life; the same seed and the same choices give the same life.
+- `?seed=4271` replays a life; the same seed and the same choices give the same life. `?persona=metro-it&retire=60` opens that person's set-up page.
+- `scripts.html` has the student scripts: a guided walk through a persona's life for a class or self-study (`scripts.html?persona=metro-it`, and `&facilitator=1` shows the facilitator notes). Only Arjun has one so far; see [intent/student-scripts.md](intent/student-scripts.md).
 
 ## Check it
 - `npm test` (or `node js/tests/run-node.mjs`) runs the test suite in Node.

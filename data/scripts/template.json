@@ -1,0 +1,165 @@
+{
+  "title": "A walk through {firstName}'s life",
+  "intro": [
+    "You will live {firstName}'s whole life in the game, one stage at a time. You will predict how it ends, make some big choices and say why, watch what happens, change one choice and replay it, and then explain how the journey went.",
+    "Write in the boxes as you go. They save on this device while you type. When you finish, use Print or Copy as text at the bottom to hand in your answers."
+  ],
+  "facilitatorIntro": [
+    "About {minutes} minutes in total, working alone or in pairs. Each step shows its own time. Every student plays the same luck (seed {seed}), so the class can compare like with like.",
+    "The game's rules are the same for everyone; only {firstName}'s numbers differ between personas. The notes headed Facilitator are hidden from students when the switch is off."
+  ],
+  "minutes": 80,
+  "steps": [
+    {
+      "id": "meet",
+      "title": "Meet {firstName} and make a prediction",
+      "minutes": 8,
+      "student": {
+        "lead": [
+          "{firstName} is {age}, a {job} in {city}. {story}",
+          "Before you play anything, write down what you expect."
+        ],
+        "prompts": [
+          { "id": "predict", "label": "How do you think {firstName}'s life will end? Will the money last through retirement?" },
+          { "id": "worry", "label": "What is the biggest danger to {firstName}'s money, and what is the biggest chance?" }
+        ]
+      },
+      "facilitator": {
+        "lead": ["Ask for the written prediction before anyone touches the game. It is what the verdict is compared with later."],
+        "discuss": ["Who expects it to go well, and who badly? What are they basing that on?"]
+      }
+    },
+    {
+      "id": "setup",
+      "title": "Open the game",
+      "minutes": 4,
+      "student": {
+        "lead": [
+          "Open the game with this link: {startLink}",
+          "It opens {firstName}'s set-up page with the luck already fixed (seed {seed}) and the stopping age set to {retireAge}. Leave the starting numbers as they are and press Begin this life."
+        ],
+        "prompts": []
+      },
+      "facilitator": {
+        "lead": ["If a student's seed on the end screen is not {seed}, they opened the game another way. The game shows the seed under Advanced on the set-up page."],
+        "discuss": []
+      }
+    },
+    {
+      "id": "choose",
+      "title": "Make the key choices, and say why",
+      "minutes": 25,
+      "generated": "keyChoices",
+      "student": {
+        "lead": [
+          "You will answer every question in the game. For the {keyCount} below, write your reasoning before you press Next: what you picked, what you gave up, and what you expect to happen.",
+          "For every other question, use the plan in the table so that everyone starts level. If an instinct card appears, choose the calm answer (Resist) both times you play, so only your changed choice differs between the two lives."
+        ],
+        "prompts": []
+      },
+      "facilitator": {
+        "lead": ["Circulate and read reasons, not picks. A reason that names a trade-off ('safer but slower') is better than a pick with no reason."],
+        "discuss": ["Which choice was hardest? Which did someone pick differently from you, and why?"]
+      }
+    },
+    {
+      "id": "observe",
+      "title": "Watch what happens",
+      "minutes": 12,
+      "generated": "stages",
+      "student": {
+        "lead": ["After each stage the game shows a result. Write one line each time: what happened, and was it luck or your choice? Open the Why button on the result to see where the money went."],
+        "prompts": []
+      },
+      "facilitator": {
+        "lead": ["Students often describe what happened to the net worth and skip the cause. Ask 'why' once more."],
+        "discuss": ["Where did luck change the story? Where did a choice?"]
+      }
+    },
+    {
+      "id": "verdict",
+      "title": "Read the verdict",
+      "minutes": 5,
+      "student": {
+        "lead": ["At the end the game answers one question: could {firstName} stop working, and did the money last? Compare it with your prediction."],
+        "prompts": [
+          { "id": "verdict", "label": "What was the verdict, and how much spendable money did {firstName} have when they stopped working? (The end screen shows both.)" },
+          { "id": "versus", "label": "How close was your prediction? What surprised you?" }
+        ]
+      },
+      "facilitator": {
+        "lead": ["Note the figure each student quotes. It is the baseline for the next step."],
+        "discuss": []
+      }
+    },
+    {
+      "id": "change",
+      "title": "Change one thing and replay the same luck",
+      "minutes": 12,
+      "student": {
+        "lead": [
+          "Pick the one choice you think mattered most. Press Same luck on the end screen, change only that choice (and keep the new answer wherever the game asks it again), and make every other choice the same as before.",
+          "If you are unsure what to try, try this: {changeDecision}, from {changeFrom} to {changeTo}."
+        ],
+        "prompts": [
+          { "id": "changed", "label": "Which choice did you change, and why that one?" },
+          { "id": "guess", "label": "Before you play: do you expect it to help or hurt, and by roughly how much?" },
+          { "id": "compare", "label": "What happened? Write both results side by side (the verdict and the spendable money at {retireAge})." }
+        ]
+      },
+      "facilitator": {
+        "lead": ["The luck is identical, so any difference comes from the change. Make sure students changed exactly one thing."],
+        "discuss": ["Was the change worth it? What did it cost along the way, not only at the end?"]
+      }
+    },
+    {
+      "id": "newluck",
+      "title": "Same plan, fresh luck",
+      "minutes": 8,
+      "student": {
+        "lead": [
+          "Now play your changed plan again with the same choices, but on different luck: {freshLink} (seed {freshSeed}). You can also press New luck for a random one.",
+          "Nothing about the plan changes this time. Only the luck does."
+        ],
+        "prompts": [
+          { "id": "fresh", "label": "What happened this time? Write the verdict and the spendable money at {retireAge}." },
+          { "id": "luck", "label": "The plan was the same. What does that tell you about how much of the first result was luck?" }
+        ]
+      },
+      "facilitator": {
+        "lead": ["This is the step that separates a good plan from a good draw. Do not tell students what to conclude."],
+        "discuss": ["Would you still choose the changed plan? Why or why not?"]
+      }
+    },
+    {
+      "id": "explain",
+      "title": "Explain the journey",
+      "minutes": 10,
+      "student": {
+        "lead": ["Write the story of {firstName}'s life in your own words, using the frame below. Use the game's own numbers (the Why button and the year table) as your evidence."],
+        "prompts": [
+          { "id": "where", "label": "Where did {firstName} end up, and was that a good result? Say what you mean by good." },
+          { "id": "choices", "label": "Which two choices mattered most? For each, give one number from the game that shows it." },
+          { "id": "luckpart", "label": "Which parts of the story were luck, and how do you know?" },
+          { "id": "again", "label": "What would you do differently, and what would you give up for it?" },
+          { "id": "limits", "label": "One thing this game leaves out that could change the answer in real life." }
+        ]
+      },
+      "facilitator": {
+        "lead": ["Use the rubric below. It is guidance for you, not a score for the game: the game never scores a life."],
+        "discuss": ["Ask two students with different plans to explain why their results differ."]
+      }
+    }
+  ],
+  "rubric": [
+    { "id": "evidence", "label": "Uses evidence", "looksLike": "Quotes a number from the game (the Why button, the year table or the end screen) for each choice it names." },
+    { "id": "separates", "label": "Separates choice from luck", "looksLike": "Says which parts of the story the player controlled and which were weather or events, and uses the fresh-luck run to support it." },
+    { "id": "tradeoff", "label": "Names the trade-off", "looksLike": "Says what a choice gave up as well as what it gained (for example, more growth but a bigger swing)." },
+    { "id": "limits", "label": "Is honest about limits", "looksLike": "Does not treat one run as proof, and names something the game simplifies." }
+  ],
+  "provenance": {
+    "basis": "Teaching design agreed with the author in November 2026 (see intent/student-scripts.md): a fixed spine of eight steps, the same for every persona; a persona file fills the slots.",
+    "confidence": "medium",
+    "asOf": 2026
+  }
+}

@@ -74,7 +74,16 @@ async function boot() {
     const flow = createFlow(app, { personas, params, stages, decisions, sources, learn }, session, store);
     // ?seed=4271 replays a run; otherwise every run gets fresh luck.
     session.seed = new URLSearchParams(location.search).get('seed') ?? flow.randomSeed();
-    flow.showLanding();
+    // ?persona=metro-it opens that person's set-up page (with ?retire=60 setting when they stop working), for a
+    // link in a student script; otherwise the game starts at the landing page.
+    const query = new URLSearchParams(location.search);
+    const linked = personas.find(p => p.id === query.get('persona'));
+    const retire = Number(query.get('retire'));
+    if (linked) {
+      session.personaId = linked.id;
+      if ([55, 60, 65].includes(retire)) session.retirementAge = retire;
+      flow.showSetup();
+    } else flow.showLanding();
   } catch (err) {
     showError(err);
   }
